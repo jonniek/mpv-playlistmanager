@@ -1,5 +1,5 @@
 # Mpv-Playlistmanager
-Mpv lua script to create and manage playlists
+Mpv lua script to create and manage playlists. All parts work independently as long as on_loaded() is present, so if you want only certain features feel free to remove the others.
 
 ## Current features
 - Loadfiles(P)
