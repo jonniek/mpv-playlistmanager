@@ -60,7 +60,6 @@ end
 
 --Attempts to add all files following the currently playing one to the playlist
 --For exaple, Folder has 12 files, you open the 5th file and run this, the remaining 7 are added behind the 5th file
-
 function playlist()
     local popen = io.popen('dir /b "'..path..'*"') --windows version
     --local popen = io.popen('find '..path..'* -type f -printf "%f\\n"') --linux version, not tested
@@ -87,14 +86,18 @@ end
 function save_playlist()
     local savename = os.time().."-size_"..plen.."-playlist.m3u"
     local file = io.open(filepath..savename, "w")
-    local x=0
-    while x < plen do
-        local filename = mp.get_property('playlist/'..x..'/filename')
-        file:write(filename, "\n")
-        x=x+1
+    if file==nil then
+        mp.msg.info("Error in creating playlist file, check permissions and paths")
+    else
+        local x=0
+        while x < plen do
+            local filename = mp.get_property('playlist/'..x..'/filename')
+            file:write(filename, "\n")
+            x=x+1
+        end
+        print("Playlist written to: "..filepath..savename)
+        file:close()
     end
-    print("Playlist written to: "..filepath..savename)
-    file:close()
 end
 
 mp.add_key_binding('P', 'loadfiles', playlist)
