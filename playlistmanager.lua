@@ -80,6 +80,7 @@ function playlist()
         popen:close()
         if c > 0 then mp.osd_message("Added total of: "..c.." files to playlist") end
     end
+    plen = tonumber(mp.get_property('playlist-count'))
 end
 
 mp.add_key_binding('P', 'loadfiles', playlist)
