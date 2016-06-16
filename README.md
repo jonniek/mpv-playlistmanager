@@ -5,7 +5,7 @@ Mpv lua script to create and manage playlists. All parts work independently as l
 - Loadfiles(P)
   - Attempts to load all files after the currently playing file to the playlist
   - Ex. Open 5th file from a 12file directory, press P, the remaining 7 are loaded to playlist
-  - Default is windows version, linux one is untested
+  - Default is windows version, linux one is untested(lua row 66, uncomment if on linux, and comment windows out)
 - Save playlist(p)
   - Saves the current playlist to m3u file, change filepath in lua to a path in your system
 - Remove current file(F4)
