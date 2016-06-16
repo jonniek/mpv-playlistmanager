@@ -2,6 +2,7 @@ local mp=require 'mp'
 local os=require 'os'
 local file = nil
 local path = nil
+local filepath = "X:\\code\\mpv\\"  --Change this to the path where you want to save playlists, notice trailing \
 
 function on_loaded()
     mpvpath = mp.get_property('path')
@@ -83,7 +84,6 @@ function playlist()
 end
 
 --saves the current playlist into a m3u file
-local filepath = "X:\\code\\mpv\\"      --Change this to the path where you want to save playlists, notice trailing \
 function save_playlist()
     local savename = os.time().."-size_"..plen.."-playlist.m3u"
     local file = io.open(filepath..savename, "w")
