@@ -1,7 +1,7 @@
 # Mpv-Playlistmanager
-Mpv lua script to create and manage playlists. All parts work independently as long as on_loaded() and relevant variables from first rows are present, so if you want only certain features feel free to remove the others. Edit bottom rows of lua to change keybindings. Please notice that this script needs you to have `F9 show-text "${playlist}" 5000` in your input config, if you use another key for displaying playlist, please edit the lua code where F9 is present.
+Mpv lua script to create and manage playlists. All parts work independently as long as on_loaded() and relevant variables from first rows are present, so if you want only certain features feel free to remove the others. Edit bottom rows of lua to change keybindings. Please notice that this script needs you to have `F9 show-text "${playlist}" 5000` in your input config, if you use another key for displaying playlist, please edit the lua code where F9 is present. I suggest using `--osd-playing-msg=${playlist}` or none at all, otherwise it will interfere when managing playlist.
   
-See demo of script in here: http://puu.sh/puSep/5131dcbcbe.mp4
+See demo of script in here: http://puu.sh/pvg1H/df5191c0c1.mp4
 
 ## Features
 - Loadfiles(P)
