@@ -21,10 +21,10 @@ See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
   - This allows you to use currently playing file as a cursor to remove other files from playlist seamlessly
 - Move next file up(CTRL+UP)
   - Moves the file after currently playing file forwards
-  - This allows you to use currently playing file as a cursor to move other files in playlist seamlessly
+  - This allows you to use currently playing file as a cursor to move other files in the playlist seamlessly
 - Move next file down(CTRL+DOWN)
   - Moves the file after currently playing file backwards
-  - This allows you to use currently playing file as a cursor to move other files in playlist seamlessly
+  - This allows you to use currently playing file as a cursor to move other files in the playlist seamlessly
 
   
 Leave me suggestions for new features!
