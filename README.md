@@ -19,7 +19,7 @@ See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
 - __Remove next file__(Shift+DOWN)
   - Removes the file after currently playing file from playlist
   - This allows you to use currently playing file as a cursor to remove other files from playlist seamlessly
-- __Move next file up__(CTRL+UP)
+- __Move previous file up__(CTRL+UP)
   - Moves the file after currently playing file forwards
   - This allows you to use currently playing file as a cursor to move other files in the playlist seamlessly
 - __Move next file down__(CTRL+DOWN)
