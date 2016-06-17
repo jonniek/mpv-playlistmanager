@@ -1,14 +1,11 @@
 local mp=require 'mp'
 local os=require 'os'
-local file = nil
-local path = nil
 local filepath = "X:\\code\\mpv\\"  --Change this to the path where you want to save playlists, notice trailing \
 
 function on_loaded()
     mpvpath = mp.get_property('path')
     pos = mp.get_property('playlist-pos')
     plen = tonumber(mp.get_property('playlist-count'))
-
     path = string.sub(mp.get_property("path"), 1, string.len(mp.get_property("path"))-string.len(mp.get_property("filename")))
     file = mp.get_property("filename")
 end
@@ -22,7 +19,7 @@ end
 
 --Removes the file below current file from playlist
 --this makes it easy to navigate with moveup and movedown through playlist and delete files
-function removefile()
+function removenextfile()
     mp.commandv("playlist-remove", pos+1)
     plen = tonumber(mp.get_property('playlist-count'))
     mp.commandv("keypress", "F9")
@@ -52,10 +49,28 @@ function movedown()
     plen = tonumber(mp.get_property('playlist-count'))
 end
 
---moves a file to the end of playlist, and starts playing the next file
-function movetoend()
-    mp.commandv("loadfile", mpvpath, "append")
-    mp.commandv("playlist-remove", "current")
+--moves the previous file up, allowing seamless reordering
+function moveprevup()
+    if pos-2~=-1 then
+        mp.commandv("playlist-move", pos-1,pos-2)
+    else
+        mp.commandv("playlist-move", pos-1,plen)
+    end
+    mp.commandv("keypress", "F9")
+    pos = mp.get_property('playlist-pos')
+    plen = tonumber(mp.get_property('playlist-count'))
+end
+
+--moves the next file down, allowing seamless reordering
+function movenextdown()
+    if pos+2<plen then
+        mp.commandv("playlist-move", pos+1,pos+3)
+    else
+        mp.commandv("playlist-move", pos+1,0)
+    end
+    mp.commandv("keypress", "F9")
+    pos = mp.get_property('playlist-pos')
+    plen = tonumber(mp.get_property('playlist-count'))
 end
 
 --Attempts to add all files following the currently playing one to the playlist
@@ -104,10 +119,11 @@ mp.add_key_binding('P', 'loadfiles', playlist)
 mp.add_key_binding('p', 'saveplaylist', save_playlist)
 
 --add> F9 show-text "${playlist}" 5000 <to your input conf to display playlist when navigating
-mp.add_key_binding('F4', 'removecurrentfile', removecurrentfile)
-mp.add_key_binding('F5', 'removefile', removefile)
-mp.add_key_binding('F6', 'moveup', moveup)
-mp.add_key_binding('F7', 'movedown', movedown)
-mp.add_key_binding('F8', 'movetoend', movetoend)
+mp.add_key_binding('UP', 'moveup', moveup)
+mp.add_key_binding('DOWN', 'movedown', movedown)
+mp.add_key_binding('CTRL+UP', 'moveprevup', moveprevup)
+mp.add_key_binding('CTRL+DOWN', 'movenextdown', movenextdown)
+mp.add_key_binding('Shift+UP', 'removecurrentfile', removecurrentfile)
+mp.add_key_binding('Shift+DOWN', 'removenextfile', removenextfile)
 
 mp.register_event('file-loaded', on_loaded)
