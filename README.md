@@ -1,5 +1,5 @@
 # Mpv-Playlistmanager
-Mpv lua script to create and manage playlists. All parts work independently as long as on_loaded() and relevant variables from settings are present, so if you want only certain features feel free to remove the others. Edit bottom rows of lua to change keybindings. If you use some other than `--osd-playing-msg=${playlist}` in mpv.conf it will override the playlist display when deleting current file.
+Mpv lua script to create and manage playlists. All parts work independently as long as on_loaded() and relevant variables from settings are present, so if you want only certain features feel free to remove the others. Before using check the settings array in top of lua and change what is necessary. If you use some other than `--osd-playing-msg=${playlist}` in mpv.conf it will override the playlist display when removing current file.
   
 See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
 
@@ -7,7 +7,7 @@ See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
 - __Loadfiles__(P)
   - Attempts to load all files after the currently playing file to the playlist
   - Ex. Open 5th file from a 12file directory, press P, the remaining 7 are loaded to playlist
-  - Default is windows version, linux one is untested(lua row 83, uncomment if on linux, and comment windows out)
+  - Default is windows version, linux one is untested, change boolean in settings to switch
 - __Save playlist__(p)
   - Saves the current playlist to m3u file, change filepath in lua to a path in your system
 - __Move up__(UP)
@@ -27,8 +27,7 @@ See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
   - This allows you to use currently playing file as a cursor to move other files in the playlist seamlessly
 
   
-Leave me suggestions for new features!
 
 #### My other mpv scripts
-- https://github.com/donmaiq/unseen-playlistmaker    Doesn't work in combination with playlist manager, I'm creating a combined one soon
+- https://github.com/donmaiq/unseen-playlistmaker    Doesn't work in combination with playlist manager(2 conflicts), I'm creating a combined one soon
 - https://github.com/donmaiq/Mpv-Radio
