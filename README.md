@@ -1,5 +1,5 @@
 # Mpv-Playlistmanager
-Mpv lua script to create and manage playlists. All parts work independently as long as on_loaded() and relevant variables from first rows are present, so if you want only certain features feel free to remove the others. Edit bottom rows of lua to change keybindings. Please notice that this script needs you to have `F9 show-text "${playlist}" 5000` in your input config, if you use another key for displaying playlist, please edit the lua code where F9 is present. I suggest using `--osd-playing-msg=${playlist}` in mpv.conf or none at all, otherwise it will interfere when managing playlist.
+Mpv lua script to create and manage playlists. All parts work independently as long as on_loaded() and relevant variables from settings are present, so if you want only certain features feel free to remove the others. Edit bottom rows of lua to change keybindings. If you use some other than `--osd-playing-msg=${playlist}` in mpv.conf it will override the playlist display when deleting current file.
   
 See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
 
@@ -7,7 +7,7 @@ See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
 - __Loadfiles__(P)
   - Attempts to load all files after the currently playing file to the playlist
   - Ex. Open 5th file from a 12file directory, press P, the remaining 7 are loaded to playlist
-  - Default is windows version, linux one is untested(lua row 66, uncomment if on linux, and comment windows out)
+  - Default is windows version, linux one is untested(lua row 83, uncomment if on linux, and comment windows out)
 - __Save playlist__(p)
   - Saves the current playlist to m3u file, change filepath in lua to a path in your system
 - __Move up__(UP)
