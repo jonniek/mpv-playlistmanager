@@ -53,7 +53,6 @@ function moveup()
     end
     mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration)
     pos = mp.get_property('playlist-pos')
-    plen = tonumber(mp.get_property('playlist-count'))
 end
 
 --Moves a file down in playlist order
@@ -65,7 +64,6 @@ function movedown()
     end
     mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration)
     pos = mp.get_property('playlist-pos')
-    plen = tonumber(mp.get_property('playlist-count'))
 end
 
 --moves the previous file up, allowing seamless reordering
@@ -77,7 +75,6 @@ function moveprevup()
     end
     mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration)
     pos = mp.get_property('playlist-pos')
-    plen = tonumber(mp.get_property('playlist-count'))
 end
 
 --moves the next file down, allowing seamless reordering
@@ -89,7 +86,6 @@ function movenextdown()
     end
     mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration)
     pos = mp.get_property('playlist-pos')
-    plen = tonumber(mp.get_property('playlist-count'))
 end
 
 --Attempts to add all files following the currently playing one to the playlist
