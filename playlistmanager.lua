@@ -1,6 +1,9 @@
 local mp=require 'mp'
 local os=require 'os'
-local filepath = "X:\\code\\mpv\\"  --Change this to the path where you want to save playlists, notice trailing \
+local settings = {
+    filepath = "X:\\code\\mpv\\",    --Change this to the path where you want to save playlists, notice trailing \
+    osd_duration_seconds = 5
+}
 
 function on_loaded()
     mpvpath = mp.get_property('path')
@@ -14,7 +17,7 @@ end
 function removecurrentfile()
     mp.commandv("playlist-remove", "current")
     plen = tonumber(mp.get_property('playlist-count'))
-    mp.commandv("keypress", "F9")
+    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration)
 end
 
 --Removes the file below current file from playlist
@@ -22,7 +25,7 @@ end
 function removenextfile()
     mp.commandv("playlist-remove", pos+1)
     plen = tonumber(mp.get_property('playlist-count'))
-    mp.commandv("keypress", "F9")
+    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration)
 end
 
 --Moves a file up in playlist order
@@ -32,7 +35,7 @@ function moveup()
     else
         mp.commandv("playlist-move", pos,plen)
     end
-    mp.commandv("keypress", "F9")
+    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration)
     pos = mp.get_property('playlist-pos')
     plen = tonumber(mp.get_property('playlist-count'))
 end
@@ -44,7 +47,7 @@ function movedown()
     else
         mp.commandv("playlist-move", pos,0)
     end
-    mp.commandv("keypress", "F9")
+    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration)
     pos = mp.get_property('playlist-pos')
     plen = tonumber(mp.get_property('playlist-count'))
 end
@@ -56,7 +59,7 @@ function moveprevup()
     else
         mp.commandv("playlist-move", pos-1,plen)
     end
-    mp.commandv("keypress", "F9")
+    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration)
     pos = mp.get_property('playlist-pos')
     plen = tonumber(mp.get_property('playlist-count'))
 end
@@ -68,7 +71,7 @@ function movenextdown()
     else
         mp.commandv("playlist-move", pos+1,0)
     end
-    mp.commandv("keypress", "F9")
+    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration)
     pos = mp.get_property('playlist-pos')
     plen = tonumber(mp.get_property('playlist-count'))
 end
@@ -100,7 +103,7 @@ end
 --saves the current playlist into a m3u file
 function save_playlist()
     local savename = os.time().."-size_"..plen.."-playlist.m3u"
-    local file = io.open(filepath..savename, "w")
+    local file = io.open(settings.filepath..savename, "w")
     if file==nil then
         mp.msg.info("Error in creating playlist file, check permissions and paths")
     else
@@ -110,7 +113,7 @@ function save_playlist()
             file:write(filename, "\n")
             x=x+1
         end
-        print("Playlist written to: "..filepath..savename)
+        print("Playlist written to: "..settings.filepath..savename)
         file:close()
     end
 end
@@ -118,7 +121,6 @@ end
 mp.add_key_binding('P', 'loadfiles', playlist)
 mp.add_key_binding('p', 'saveplaylist', save_playlist)
 
---add> F9 show-text "${playlist}" 5000 <to your input conf to display playlist when navigating
 mp.add_key_binding('UP', 'moveup', moveup)
 mp.add_key_binding('DOWN', 'movedown', movedown)
 mp.add_key_binding('CTRL+UP', 'moveprevup', moveprevup)
