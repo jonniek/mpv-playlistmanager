@@ -17,7 +17,7 @@ function on_loaded()
 
     search =' '
     if settings.filetypes == true then
-        search = path
+        search = path..'*'
     else
         for w in pairs(settings.filetypes) do
             if settings.linux_over_windows then
