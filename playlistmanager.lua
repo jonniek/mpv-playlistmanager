@@ -1,9 +1,12 @@
 local mp=require 'mp'
 local os=require 'os'
 local settings = {
-    filepath = "X:\\code\\mpv\\",    --Change this to the path where you want to save playlists, notice trailing \
-    osd_duration_seconds = 5
+    filepath = "X:\\code\\mpv\\",                     --Change this to the path where you want to save playlists, notice trailing \ or /
+    osd_duration_seconds = 5,                         --osd duration displayed when navigating
+    filetypes = {'*mkv','*mp4','*jpg','*gif','*png'}, --filetypes to search, if true all filetypes are opened
+    linux_over_windows = false                        --linux/windows toggle
 }
+
 
 function on_loaded()
     mpvpath = mp.get_property('path')
@@ -11,6 +14,19 @@ function on_loaded()
     plen = tonumber(mp.get_property('playlist-count'))
     path = string.sub(mp.get_property("path"), 1, string.len(mp.get_property("path"))-string.len(mp.get_property("filename")))
     file = mp.get_property("filename")
+
+    search =' '
+    if settings.filetypes == true then
+        search = path
+    else
+        for w in pairs(settings.filetypes) do
+            if settings.linux_over_windows then
+                search = search..path..settings.filetypes[w]..' '
+            else
+                search = search..'"'..path..settings.filetypes[w]..'" '
+            end
+        end
+    end
 end
 
 --removes the current file from playlist
@@ -79,8 +95,13 @@ end
 --Attempts to add all files following the currently playing one to the playlist
 --For exaple, Folder has 12 files, you open the 5th file and run this, the remaining 7 are added behind the 5th file
 function playlist()
-    local popen = io.popen('dir /b "'..path..'*"') --windows version
-    --local popen = io.popen('find '..path..'* -type f -printf "%f\\n"') --linux version, not tested
+    local popen=nil
+    if settings.linux_over_windows then
+        popen = io.popen('find '..search..' -type f -printf "%f\\n"') --linux version, not tested, if it doesn't work fix it to print filenames only 1 per row
+        --print('find '..search..' -type f -printf "%f\\n"')
+    else
+        popen = io.popen('dir /b '..search) --windows version
+    end
     if popen then 
         local cur = false
         local c= 0
@@ -96,6 +117,8 @@ function playlist()
         end
         popen:close()
         if c > 0 then mp.osd_message("Added total of: "..c.." files to playlist") end
+    else
+        print("error: could not scan for files")
     end
     plen = tonumber(mp.get_property('playlist-count'))
 end
@@ -105,7 +128,7 @@ function save_playlist()
     local savename = os.time().."-size_"..plen.."-playlist.m3u"
     local file = io.open(settings.filepath..savename, "w")
     if file==nil then
-        mp.msg.info("Error in creating playlist file, check permissions and paths")
+        print("Error in creating playlist file, check permissions and paths")
     else
         local x=0
         while x < plen do
