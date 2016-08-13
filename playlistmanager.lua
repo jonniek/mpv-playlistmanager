@@ -93,7 +93,7 @@ end
 function playlist()
     local popen=nil
     if settings.linux_over_windows then
-        popen = io.popen('find '..search..' -type f -printf "%f\\n"') --linux version, not tested, if it doesn't work fix it to print filenames only 1 per row
+        popen = io.popen('find '..search..' -type f -printf "%f\\n" 2>/dev/null') --linux version, not tested, if it doesn't work fix it to print filenames only 1 per row
         --print('find '..search..' -type f -printf "%f\\n"')
     else
         popen = io.popen('dir /b '..search) --windows version
