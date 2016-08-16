@@ -7,7 +7,7 @@ See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
 - __Loadfiles__(P)
   - Attempts to load all files after the currently playing file to the playlist
   - Ex. Open 5th file from a 12file directory, press P, the remaining 7 are loaded to playlist
-  - Default is windows version, linux one is untested, change boolean in settings to switch
+  - Default is windows version, change boolean in settings for linux
 - __Save playlist__(p)
   - Saves the current playlist to m3u file, change filepath in lua to a path in your system
 - __Move up__(UP)
