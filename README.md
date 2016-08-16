@@ -29,5 +29,6 @@ See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
   
 
 #### My other mpv scripts
-- https://github.com/donmaiq/unseen-playlistmaker manager + maker combined script here https://github.com/donmaiq/unseen-playlistmaker/blob/master/unseen%2Bplaylistmanager.lua
-- https://github.com/donmaiq/Mpv-Radio
+- [unseen-playlistmaker](https://github.com/donmaiq/unseen-playlistmaker)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[manager+maker combined](https://github.com/donmaiq/unseen-playlistmaker/blob/master/unseen%2Bplaylistmanager.lua)
+- [radio](https://github.com/donmaiq/Mpv-Radio)
+- [nextfile](https://github.com/donmaiq/nextfile)
