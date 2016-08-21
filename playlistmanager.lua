@@ -8,7 +8,8 @@ local settings = {
     remove_old = true,   --removes old files on long playlists, keeping it somewhatreadable/navigatable
     --first value is how long playlist has to be to start removing old entries
     --second value is at what playlist position they should be removed at
-    old_buffer = {14,8}                              
+    old_buffer = {14,8}, 
+    old_loop = false     --instead of removing, move them to end of playlist, creating a infinitely looping playlist                      
 }
 
 
@@ -16,7 +17,13 @@ function on_loaded()
     if settings.remove_old then
         if tonumber(mp.get_property('playlist-count')) > settings.old_buffer[1] and 
            tonumber(mp.get_property('playlist-pos'))> settings.old_buffer[2] then
-            mp.commandv("playlist-remove", 0)
+                if settings.old_loop then
+                    local oldfile = mp.get_property('playlist/0/filename')
+                    mp.commandv("playlist-remove", 0) 
+                    mp.commandv("loadfile", oldfile, "append")
+                else
+                    mp.commandv("playlist-remove", 0)
+                end
         end
     end
 
