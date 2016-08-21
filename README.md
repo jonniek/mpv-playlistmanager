@@ -5,7 +5,7 @@ See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
 
 ## Features
 - __remove old__ ()
-  - Remoes seen entries from the start of the playlist keeping the playlist list readable and navigatable. Edit 
+  - Remoes seen entries from the start of the playlist keeping the playlist list readable and navigatable. Edit settings to change ranges, or if you want files to be appended at end of playlist instead of removed.
 - __sort playlist__(CTRL+p)  
   - Sorts the current playlist alphabetically based on whole path. Stops currently playing file and starts playlist from start of new playlist. Option to run at mpv start automatically in settings.
 - __Loadfiles__(P)
