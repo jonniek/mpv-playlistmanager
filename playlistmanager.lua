@@ -1,21 +1,31 @@
-local mp=require 'mp'
-local os=require 'os'
 local settings = {
     filepath = "X:\\code\\mpv\\",                     --Change this to the path where you want to save playlists, notice trailing \ or /
     osd_duration_seconds = 5,                         --osd duration displayed when navigating
     filetypes = {'*mkv','*mp4','*jpg','*gif','*png'}, --filetypes to search, if true all filetypes are opened, else array like {'*mp4','*mkv'}
     linux_over_windows = false,                       --linux(true)/windows(false) toggle
-    sortplaylist_on_start = false 		      --sort on mpv start
+    sortplaylist_on_start = false, 		              --sort on mpv start
+                                    
+    remove_old = true,   --removes old files on long playlists, keeping it somewhatreadable/navigatable
+    --first value is how long playlist has to be to start removing old entries
+    --second value is at what playlist position they should be removed at
+    old_buffer = {14,8}                              
 }
 
 
 function on_loaded()
+    if settings.remove_old then
+        if tonumber(mp.get_property('playlist-count')) > settings.old_buffer[1] and 
+           tonumber(mp.get_property('playlist-pos'))> settings.old_buffer[2] then
+            mp.commandv("playlist-remove", 0)
+        end
+    end
+
     mpvpath = mp.get_property('path')
     pos = mp.get_property('playlist-pos')
     plen = tonumber(mp.get_property('playlist-count'))
     path = string.sub(mp.get_property("path"), 1, string.len(mp.get_property("path"))-string.len(mp.get_property("filename")))
     file = mp.get_property("filename")
-
+    
     search =' '
     if settings.filetypes == true then
         search = string.gsub(path, "%s+", "\\ ")..'*'
