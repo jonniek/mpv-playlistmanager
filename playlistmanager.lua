@@ -163,7 +163,7 @@ if settings.sortplaylist_on_start then
     mp.add_timeout(0.03, sortplaylist)
 end
 
-mp.add_key_binding('L', 'sortplaylist', sortplaylist)
+mp.add_key_binding('CTRL+p', 'sortplaylist', sortplaylist)
 mp.add_key_binding('P', 'loadfiles', playlist)
 mp.add_key_binding('p', 'saveplaylist', save_playlist)
 
