@@ -4,7 +4,8 @@ local settings = {
     filepath = "X:\\code\\mpv\\",                     --Change this to the path where you want to save playlists, notice trailing \ or /
     osd_duration_seconds = 5,                         --osd duration displayed when navigating
     filetypes = {'*mkv','*mp4','*jpg','*gif','*png'}, --filetypes to search, if true all filetypes are opened, else array like {'*mp4','*mkv'}
-    linux_over_windows = false                        --linux(true)/windows(false) toggle
+    linux_over_windows = false,                       --linux(true)/windows(false) toggle
+    sortplaylist_on_start = false 		      --sort on mpv start
 }
 
 
@@ -138,23 +139,29 @@ function save_playlist()
 end
 
 function sortplaylist()
-	local length = tonumber(mp.get_property('playlist/count'))
+    local length = tonumber(mp.get_property('playlist/count'))
+    if length > 1 then
+        local playlist = {}
+        for i=0,length,1
+        do
+            playlist[i+1] = mp.get_property('playlist/'..i..'/filename')
+        end
+        table.sort(playlist)
+        local first = true
+        for index,file in pairs(playlist) do
+            print(file)
+            if first then 
+                mp.commandv("loadfile", file, "replace")
+                first=false
+            else
+                mp.commandv("loadfile", file, "append") 
+            end
+        end
+    end
+end
 
-	local playlist = {}
-	for i=0,length,1
-	do
-		playlist[i+1] = mp.get_property('playlist/'..i..'/filename')
-	end
-	table.sort(playlist)
-	local first = true
-	for index,file in pairs(playlist) do
-		if first then 
-			mp.commandv("loadfile", file, "replace")
-			first=false
-		else
-			mp.commandv("loadfile", file, "append") 
-		end
-	end
+if settings.sortplaylist_on_start then
+    mp.add_timeout(0.03, sortplaylist)
 end
 
 mp.add_key_binding('L', 'sortplaylist', sortplaylist)
