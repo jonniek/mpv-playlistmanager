@@ -137,6 +137,27 @@ function save_playlist()
     end
 end
 
+function sortplaylist()
+	local length = tonumber(mp.get_property('playlist/count'))
+
+	local playlist = {}
+	for i=0,length,1
+	do
+		playlist[i+1] = mp.get_property('playlist/'..i..'/filename')
+	end
+	table.sort(playlist)
+	local first = true
+	for index,file in pairs(playlist) do
+		if first then 
+			mp.commandv("loadfile", file, "replace")
+			first=false
+		else
+			mp.commandv("loadfile", file, "append") 
+		end
+	end
+end
+
+mp.add_key_binding('L', 'sortplaylist', sortplaylist)
 mp.add_key_binding('P', 'loadfiles', playlist)
 mp.add_key_binding('p', 'saveplaylist', save_playlist)
 
