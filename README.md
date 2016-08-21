@@ -4,6 +4,8 @@ Mpv lua script to create and manage playlists. All parts work independently as l
 See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
 
 ## Features
+- __sort playlist__(L)  
+  - Sorts the current playlist alphabetically based on whole path. Stops currently playing file and starts playlist from start of new playlist
 - __Loadfiles__(P)
   - Attempts to load all files after the currently playing file to the playlist
   - Ex. Open 5th file from a 12file directory, press P, the remaining 7 are loaded to playlist
