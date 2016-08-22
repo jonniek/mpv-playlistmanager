@@ -3,7 +3,7 @@ local settings = {
     osd_duration_seconds = 5,                         --osd duration displayed when navigating
     filetypes = {'*mkv','*mp4','*jpg','*gif','*png'}, --filetypes to search, if true all filetypes are opened, else array like {'*mp4','*mkv'}
     linux_over_windows = false,                       --linux(true)/windows(false) toggle
-    sortplaylist_on_start = false, 		              --sort on mpv start
+    sortplaylist_on_start = false,                    --sort on mpv start
                                     
     remove_old = true,   --removes old files on long playlists, keeping it somewhatreadable/navigatable
     --first value is how long playlist has to be to start removing old entries
@@ -47,11 +47,16 @@ function on_loaded()
     end
 end
 
+function showplaylist()
+    mp.osd_message(mp.get_property_osd("playlist"), settings.playlist_osd_dur)
+end
+
 --removes the current file from playlist
 function removecurrentfile()
+    mark=true
     mp.commandv("playlist-remove", "current")
     plen = tonumber(mp.get_property('playlist-count'))
-    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration_seconds)
+    mp.add_timeout(0.15, showplaylist)
 end
 
 --Removes the file below current file from playlist
@@ -59,31 +64,30 @@ end
 function removenextfile()
     mp.commandv("playlist-remove", pos+1)
     plen = tonumber(mp.get_property('playlist-count'))
-    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration_seconds)
+    showplaylist()
 end
 
---Moves a file up in playlist order
+--Moves current file up in playlist order
 function moveup()
     if pos-1~=-1 then
         mp.commandv("playlist-move", pos,pos-1)
     else
         mp.commandv("playlist-move", pos,plen)
     end
-    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration_seconds)
+    showplaylist()
     pos = mp.get_property('playlist-pos')
 end
 
---Moves a file down in playlist order
+--Moves current file down in playlist order
 function movedown()
     if pos+1<plen then
         mp.commandv("playlist-move", pos,pos+2)
     else
         mp.commandv("playlist-move", pos,0)
     end
-    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration_seconds)
+    showplaylist()
     pos = mp.get_property('playlist-pos')
 end
-
 --moves the previous file up, allowing seamless reordering
 function moveprevup()
     if pos-2~=-1 then
@@ -91,7 +95,7 @@ function moveprevup()
     else
         mp.commandv("playlist-move", pos-1,plen)
     end
-    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration_seconds)
+    showplaylist()
     pos = mp.get_property('playlist-pos')
 end
 
@@ -102,7 +106,7 @@ function movenextdown()
     else
         mp.commandv("playlist-move", pos+1,0)
     end
-    mp.osd_message(mp.get_property_osd("playlist"), settings.osd_duration_seconds)
+    showplaylist()
     pos = mp.get_property('playlist-pos')
 end
 
