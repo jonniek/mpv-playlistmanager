@@ -1,5 +1,5 @@
 # Mpv-Playlistmanager
-Mpv lua script to create and manage playlists. Customize script in the settings array in top of the lua file.
+Mpv lua script to create and manage playlists. Customize script in the settings array in the top of the lua file.
   
 See demo of script in here: https://r.kyaa.sg/fkslzw.mp4
 
