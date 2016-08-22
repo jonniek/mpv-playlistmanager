@@ -134,7 +134,7 @@ function playlist()
             end
         end
         popen:close()
-        if c > 0 then mp.osd_message("Added total of: "..c.." files to playlist") end
+        if c > 0 then mp.osd_message("Added a total of "..c.." files to playlist") end
     else
         print("error: could not scan for files")
     end
