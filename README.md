@@ -1,6 +1,6 @@
 # Mpv-Playlistmanager
-Mpv lua script to create and manage playlists. Before using check the settings array in top of lua and change what is necessary. If you use some other than `--osd-playing-msg=${playlist}` in mpv.conf it will override the playlist display when removing current file.
-
+Mpv lua script to create and manage playlists. Customize script in the settings array in top of the lua file.
+  
 See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
 
 ## Features
@@ -13,7 +13,7 @@ See demo of script in here: http://puu.sh/pwgzK/de7875be98.mp4
   - Ex. Open 5th file from a 12file directory, press P, the remaining 7 are loaded to playlist
   - change boolean in settings for linux/windows
 - __Save playlist__(p)
-  - Saves the current playlist to m3u file, change filepath in lua to a path in your system
+  - Saves the current playlist to m3u file, change filepath in settings to a path in your system
 - __Move up__(UP)
   - Moves the currenly playing file backwards in the playlist queue
 - __Move down__(DOWN)
