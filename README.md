@@ -5,11 +5,11 @@ See demo of script in here: https://r.kyaa.sg/fkslzw.mp4
 
 ## Features
 - __remove old__ 
-  - Remoes seen entries from the start of the playlist keeping the playlist list readable and navigatable. Edit settings to change ranges, or if you want files to be appended at end of playlist instead of removed.
+  - Removes entries from the start of the playlist when moving forward keeping the playlist list readable and navigatable. Edit settings to change ranges, or if you want files to be appended at end of playlist instead of removed.
 - __sort playlist__(CTRL+p)  
   - Sorts the current playlist alphabetically. Stops currently playing file and starts playlist from start of new playlist. Option to run at mpv start automatically in settings.
 - __Loadfiles__(P)
-  - Attempts to load all files after the currently playing file to the playlist
+  - Attempts to load all files after the currently playing file to the playlist from the currently playing files directory
   - Ex. Open 5th file from a 12file directory, press P, the remaining 7 are loaded to playlist
   - change boolean in settings for linux/windows
 - __Save playlist__(p)
