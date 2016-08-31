@@ -20,7 +20,7 @@ local settings = {
     strip_paths = false,
 
     --show playlist every time a new file is loaded
-    show_playlist_on_fileload = true,
+    show_playlist_on_fileload = false,
 
     --sync cursor when file is loaded from outside reasons(file-ending, playlist-next shortcut etc.)
     --has the sideeffect of moving cursor if file happens to change when navigating
