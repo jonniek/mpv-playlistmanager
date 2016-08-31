@@ -1,16 +1,36 @@
 local settings = {
+
     --path where you want to save playlists, notice trailing \ or /
-    filepath = "Documents/",
+    filepath = "$HOME/Documents/",
+
     --osd when navigating in seconds
     osd_duration_seconds = 5,
+
     --filetypes to search {*} for all
     filetypes = {'*mkv','*mp4','*webm','*jpg','*gif','*png'},
+
     --linux(true)/windows(false) toggle
     linux_over_windows = true,
+
     --sort playlist on mpv start
     sortplaylist_on_start = false,
-}
 
+    --attempt to strip path from the playlist filename, usually only nececcary if opened with playlist file
+    --having it on true might have unwanted effects with files containing /
+    strip_paths = false,
+
+    --show playlist every time a new file is loaded
+    show_playlist_on_fileload = true,
+
+    --sync cursor when file is loaded from outside reasons(file-ending, playlist-next shortcut etc.)
+    --has the sideeffect of moving cursor if file happens to change when navigating
+    --good side is cursor always following current file when going back and forth files
+    --2 is true, always follow on load 
+    --1 is sticky, follow if cursor is close
+    --0 is false, never follow
+    sync_cursor_on_load = 2,
+
+}
 
 function on_loaded()
     mpvpath = mp.get_property('path')
@@ -27,22 +47,35 @@ function on_loaded()
             search = search..'"'..path..settings.filetypes[w]..'" '
         end
     end
+
+    if settings.sync_cursor_on_load==2 then
+        cursor=pos
+    elseif settings.sync_cursor_on_load==1 then
+        if cursor == pos -1 then 
+            cursor = cursor + 1 
+        elseif cursor==pos+1 then
+            cursor=cursor-1
+        end
+    end
+    if settings.show_playlist_on_fileload then showplaylist(true) end
 end
 
---hacky solution to remove path from playlist entries
---fucks up if your file has / in the name
+--if you need to strip filepaths from playlist names uncomment if statement below
 function strippath(pathfile)
-    return string.match(pathfile, '.*/(.*)')
+    if settings.strip_paths then
+        local tmp = string.match(pathfile, '.*/(.*)')
+        if tmp then return tmp end
+    end
+    return pathfile 
 end
-
 
 cursor = 0
 function showplaylist(delay)
     if delay then
-        mp.add_timeout(0.15,showplaylist)
+        mp.add_timeout(0.2,showplaylist)
         return
     end
-    if not mp.get_property('playlist-pos') or not mp.get_property('playlist-count') return end
+    if not mp.get_property('playlist-pos') or not mp.get_property('playlist-count') then return end
     pos = tonumber(mp.get_property('playlist-pos'))
     plen = tonumber(mp.get_property('playlist-count'))
     if cursor>plen then cursor=0 end
@@ -61,7 +94,11 @@ function showplaylist(delay)
             if a == plen then break end
             if a == pos then output = output.."->" end
             if a == cursor then
-                output = output.."> "..playlist[a].." <\n"
+                if tag then
+                    output = output..">> "..playlist[a].." <<\n"
+                else
+                    output = output.."> "..playlist[a].." <\n"
+                end
             else
                 output = output..playlist[a].."\n"
             end
@@ -75,7 +112,6 @@ function showplaylist(delay)
     mp.osd_message(output, settings.osd_duration_seconds)
 end
 
-
 tag=nil
 function tagcurrent()
     if not tag then
@@ -83,6 +119,7 @@ function tagcurrent()
     else
         tag=nil
     end
+    showplaylist()
 end
 
 function removefile()
@@ -119,10 +156,15 @@ function jumptofile()
         for x=1,math.abs(cursor-pos),1 do
             mp.commandv("playlist-prev", "weak")
         end
-    else
+    elseif cursor>pos then
         for x=1,math.abs(cursor-pos),1 do
             mp.commandv("playlist-next", "weak")
         end
+    else
+        if cursor~=plen-1 then
+            cursor = cursor + 1
+        end
+        mp.commandv("playlist-next", "weak")
     end
     showplaylist(true)
 end
@@ -207,6 +249,7 @@ mp.add_key_binding('CTRL+p', 'sortplaylist', sortplaylist)
 mp.add_key_binding('P', 'loadfiles', playlist)
 mp.add_key_binding('p', 'saveplaylist', save_playlist)
 
+mp.add_key_binding('Shift+ENTER', 'showplaylist', showplaylist)
 mp.add_key_binding('UP', 'moveup', moveup)
 mp.add_key_binding('DOWN', 'movedown', movedown)
 mp.add_key_binding('CTRL+UP', 'tagcurrent', tagcurrent)
