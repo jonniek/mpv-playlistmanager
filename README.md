@@ -1,6 +1,6 @@
 # Mpv-Playlistmanager - REMADE  
 Mpv lua script to create and manage playlists. Customize script in the settings array in the top of the lua file.  
-This is a remake of my earlier script that can be found in this repo with the [_old suffix](https://github.com/donmaiq/Mpv-Playlistmanager/blob/master/README_old.md).  
+This is a remake of my earlier script that can be found in this repo with the [_old suffix](https://github.com/donmaiq/Mpv-Playlistmanager/tree/master/old).  
 The reason for the remake is to make the playlist prettier, more convienient and more intuitive to use.
   
 ![alt text](https://r.kyaa.sg/gzzvmd.gif "demo gif")
