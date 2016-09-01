@@ -15,8 +15,8 @@ local settings = {
     --sort playlist on mpv start
     sortplaylist_on_start = false,
 
-    --attempt to strip path from the playlist filename, usually only nececcary if opened with playlist file
-    --having it on true might have unwanted effects with files containing /
+    --attempt to strip path from the playlist filename, usually only nececcary if files are opened from another location
+    --having it on true will cut out the first part of files containing a /
     strip_paths = false,
 
     --show playlist every time a new file is loaded
@@ -84,7 +84,7 @@ function showplaylist(delay)
     do
         playlist[i] = strippath(mp.get_property('playlist/'..i..'/filename'))
     end
-    if plen>1 then
+    if plen>0 then
         output = "Playing: "..mp.get_property('media-title').."\n\n"
         output = output.."Playlist - "..(cursor+1).." / "..plen.."\n"
         local b = cursor - 5
