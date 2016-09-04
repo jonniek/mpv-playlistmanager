@@ -2,7 +2,7 @@
 Mpv lua script to create and manage playlists. Customize script in the settings array in the top of the lua file.  
   
 This is a remake of my earlier script that can be found in this repo in the [old folder](https://github.com/donmaiq/Mpv-Playlistmanager/tree/master/old).  
-The reason for the remake is to make the playlist prettier, more convienient and more intuitive to use.
+The reason for the remake is to make the playlist prettier, more convienient and more intuitive to use. Now the cursor is completely separate from the currently playing file making navigation easier.
   
 ![alt text](https://r.kyaa.sg/gzzvmd.gif "demo gif")
 
@@ -28,11 +28,11 @@ The reason for the remake is to make the playlist prettier, more convienient and
   - Opens the file currently selected with the cursor, if cursor on playing file, jump to next file
 - __Select file__(CTRL+Up)
   - Selects the file under the cursor
-  - When moving the cursor the file with follow, allowing reordering of the playlist
+  - When moving the cursor the file will follow, allowing reordering of the playlist
 
   
 
 #### My other mpv scripts
 - [unseen-playlistmaker](https://github.com/donmaiq/unseen-playlistmaker)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[manager+maker combined](https://github.com/donmaiq/unseen-playlistmaker/blob/master/unseen%2Bplaylistmanager.lua)
 - [nextfile](https://github.com/donmaiq/mpv-nextfile)
-- [navigator](https://github.com/donmaiq/mpv-filenavigator)
+- [Filenavigator](https://github.com/donmaiq/mpv-filenavigator)
