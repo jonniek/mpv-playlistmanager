@@ -1,30 +1,33 @@
 local settings = {
 
+    --linux(true)/windows(false) toggle
+    linux_over_windows = true,
+
     --path where you want to save playlists, notice trailing \ or /
     filepath = "$HOME/Documents/",
 
     --osd when navigating in seconds
     osd_duration_seconds = 5,
 
-    --filetypes to search {*} for all
+    --filetypes to search with (P), {*} for all, {'*mkv','*mp4'} for specific
     filetypes = {'*mkv','*mp4','*webm','*jpg','*gif','*png'},
-
-    --linux(true)/windows(false) toggle
-    linux_over_windows = true,
 
     --sort playlist on mpv start
     sortplaylist_on_start = false,
 
-    --attempt to strip path from the playlist filename, usually only nececcary if files are opened from another location
-    --having it on true will cut out the first part of files containing a /
-    strip_paths = false,
+    --attempt to strip path from the playlist filename, usually only nececcary if files have absolute paths
+    --having it on true will cut out everything before the last / if it has one
+    strip_paths = true,
 
-    --show playlist every time a new file is loaded
+    --show playlist every time a new file is loaded, will try to override any fileloaded conf
     show_playlist_on_fileload = false,
+    
+    --show playlist when selecting file within manager (ENTER)
+    show_playlist_on_select = false,
 
     --sync cursor when file is loaded from outside reasons(file-ending, playlist-next shortcut etc.)
     --has the sideeffect of moving cursor if file happens to change when navigating
-    --good side is cursor always following current file when going back and forth files
+    --good side is cursor always following current file when going back and forth files with playlist-next/prev
     --2 is true, always follow on load 
     --1 is sticky, follow if cursor is close
     --0 is false, never follow
@@ -168,7 +171,9 @@ function jumptofile()
         end
         mp.commandv("playlist-next", "weak")
     end
-    showplaylist(true)
+    if settings.show_playlist_on_select then
+        showplaylist(true)
+    end
 end
 
 
