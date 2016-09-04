@@ -63,7 +63,6 @@ function on_loaded()
     if settings.show_playlist_on_fileload then showplaylist(true) end
 end
 
---if you need to strip filepaths from playlist names uncomment if statement below
 function strippath(pathfile)
     if settings.strip_paths then
         local tmp = string.match(pathfile, '.*/(.*)')
