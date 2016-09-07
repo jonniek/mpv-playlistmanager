@@ -45,7 +45,7 @@ function on_loaded()
     search =' '
     for w in pairs(settings.filetypes) do
         if settings.linux_over_windows then
-            search = search..string.gsub(path, "%s+", "\\ ")..settings.filetypes[w]..' '
+            search = search..path:gsub("%s+", "\\ "):gsub("%[","\\["):gsub("%]","\\]")..settings.filetypes[w]..' '
         else
             search = search..'"'..path..settings.filetypes[w]..'" '
         end
