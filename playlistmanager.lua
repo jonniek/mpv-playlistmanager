@@ -10,7 +10,7 @@ local settings = {
     osd_duration_seconds = 5,
 
     --filetypes to search with (P), {*} for all, {'*mkv','*mp4'} for specific
-    filetypes = {'*mkv','*mp4','*webm','*jpg','*gif','*png'},
+    filetypes = {'*mkv','*mp4','*webm','*jpg','*gif','*png','*mp3'},
 
     --sort playlist on mpv start
     sortplaylist_on_start = false,
