@@ -19,7 +19,7 @@ The reason for the remake is to make the playlist prettier, more convienient and
 - __Move up__(UP)
   - Moves the cursor up in playlist, if at first entry loops to end of playlist.
 - __Move down__(DOWN)
-  - Moves the cursor down in playlist, if at first entry loops to start of playlist.
+  - Moves the cursor down in playlist, if at last entry loops to start of playlist.
 - __Show playlist__(SHIFT+ENTER)
   - Displays the playlist
 - __Remove file__(Backspace)
@@ -28,7 +28,7 @@ The reason for the remake is to make the playlist prettier, more convienient and
   - Opens the file currently selected with the cursor, if cursor on playing file, jump to next file
 - __Select file__(CTRL+Up)
   - Selects the file under the cursor
-  - When moving the cursor the file will follow, allowing reordering of the playlist
+  - When moving the cursor the selected file will follow, allowing reordering of the playlist
 
   
 
