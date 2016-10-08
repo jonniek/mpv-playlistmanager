@@ -22,6 +22,11 @@ local settings = {
     --having it on true will cut out everything before the last / if it has one
     strip_paths = true,
 
+    --replace matches on filenames, default ones remove square brackets and spaces before dots, will only apply if strip_paths is true
+    --format: {['string to match'] = 'value to replace as', ...}
+    --put as false or empty to not replace anything
+    strip_replace = {['%[.-%]']='', ['%s%.']='.'},
+
     --show playlist every time a new file is loaded, will try to override any fileloaded conf
     show_playlist_on_fileload = false,
     
@@ -67,11 +72,19 @@ function on_loaded()
 end
 
 function strippath(pathfile)
-    if settings.strip_paths then
-        local tmp = string.match(pathfile, '.*/(.*)')
-        if tmp then return tmp end
+  if settings.strip_paths then
+    local tmp = string.match(pathfile, '.*/(.*)')
+    if not tmp then
+        tmp = pathfile
     end
-    return pathfile 
+    if settings.strip_replace then
+        for k,v in pairs(settings.strip_replace) do
+            tmp = tmp:gsub(k, v)
+        end
+    end
+    return tmp
+  end
+  return pathfile
 end
 
 cursor = 0
@@ -90,14 +103,19 @@ function showplaylist(delay)
         playlist[i] = strippath(mp.get_property('playlist/'..i..'/filename'))
     end
     if plen>0 then
-        output = "Playing: "..mp.get_property('media-title').."\n\n"
+        output = "Playing: "..strippath(mp.get_property('media-title')).."\n\n"
         output = output.."Playlist - "..(cursor+1).." / "..plen.."\n"
         local b = cursor - math.floor(settings.showamount/2)
         local showall = false
+        local showrest = false
         if b<0 then b=0 end
         if plen <= settings.showamount then
             b=0
             showall=true
+        end
+        if b > math.max(plen-settings.showamount-1, 0) then 
+            b=plen-settings.showamount
+            showrest=true
         end
         if b > 0 and not showall then output=output.."...\n" end
         for a=b,b+settings.showamount-1,1 do
@@ -112,7 +130,7 @@ function showplaylist(delay)
             else
                 output = output..playlist[a].."\n"
             end
-            if a == b+settings.showamount-1 and not showall then
+            if a == b+settings.showamount-1 and not showall and not showrest then
               output=output.."..."
             end
         end
