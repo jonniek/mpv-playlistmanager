@@ -22,15 +22,19 @@ local settings = {
     --having it on true will cut out everything before the last / if it has one
     strip_paths = true,
 
-    --replace matches on filenames, default ones remove square brackets and spaces before dots, will only apply if strip_paths is true
-    --format: {['string to match'] = 'value to replace as', ...}
+    --replace matches on filenames, default ones remove square brackets and their wrapping spaces
+    --will only apply if strip_paths is true
+    --format: {['string to match'] = 'value to replace as', ...} - replaces will be done in random order
     --put as false or empty to not replace anything
-    strip_replace = {['%[.-%]']='', ['%s%.']='.'},
+    strip_replace = {['%s*%[.-%]%s*']=''},
 
-    --show playlist every time a new file is loaded, will try to override any fileloaded conf
-    show_playlist_on_fileload = false,
+    --show playlist every time a new file is loaded
+    --will try to override any osd-playing-msg conf, may cause flickering if a osd-playing-msg exists.
+    --2 shows playlist, 1 shows current file(filename strip above applied), 0 shows nothing
+    show_playlist_on_fileload = 1,
     
     --show playlist when selecting file within manager (ENTER)
+    --will interfere with above setting if it is not 0
     show_playlist_on_select = false,
 
     --sync cursor when file is loaded from outside reasons(file-ending, playlist-next shortcut etc.)
@@ -68,7 +72,11 @@ function on_loaded()
             cursor=cursor-1
         end
     end
-    if settings.show_playlist_on_fileload then showplaylist(true) end
+    if settings.show_playlist_on_fileload == 2 then
+        showplaylist(true)
+    elseif settings.show_playlist_on_fileload == 1 then
+        mp.commandv('show-text', strippath(mp.get_property('media-title')), 2000)
+    end
 end
 
 function strippath(pathfile)
