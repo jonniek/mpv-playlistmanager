@@ -18,15 +18,18 @@ local settings = {
     --amount of entries to show before concat. Optimal value depends on font/video size etc.
     showamount = 13,
 
-    --attempt to strip path from the playlist filename, usually only nececcary if files have absolute paths
-    --having it on true will cut out everything before the last / if it has one
-    strip_paths = true,
-
-    --replace matches on filenames, default ones remove square brackets and their wrapping spaces
-    --will only apply if strip_paths is true
+    --replace matches on filenames, recommended to at least strip path
     --format: {['string to match'] = 'value to replace as', ...} - replaces will be done in random order
-    --put as false or empty to not replace anything
-    strip_replace = {['%s*%[.-%]%s*']=''},
+    --put as false to not replace anything
+    strip_replace = {
+        ['^.*/']='',                    --strip paths from file, all before and last / removed
+        ['%s*[%[%(].-[%]%)]%s*']='',    --remove brackets, their content and surrounding white space
+        ['_']=' ',                      --change underscore to space
+        --['%..*$']='',                   --remove extension
+    },
+
+    --set title of window with stripped name
+    set_title_stripped = true,
 
     --show playlist every time a new file is loaded
     --will try to override any osd-playing-msg conf, may cause flickering if a osd-playing-msg exists.
@@ -72,27 +75,25 @@ function on_loaded()
             cursor=cursor-1
         end
     end
+    local stripped = strippath(mp.get_property('media-title'))
     if settings.show_playlist_on_fileload == 2 then
         showplaylist(true)
     elseif settings.show_playlist_on_fileload == 1 then
-        mp.commandv('show-text', strippath(mp.get_property('media-title')), 2000)
+        mp.commandv('show-text', stripped, 2000)
+    end
+    if settings.set_title_stripped then 
+        mp.set_property_native("title", stripped)
     end
 end
 
 function strippath(pathfile)
-  if settings.strip_paths then
-    local tmp = string.match(pathfile, '.*/(.*)')
-    if not tmp then
-        tmp = pathfile
-    end
+    local tmp = pathfile
     if settings.strip_replace then
         for k,v in pairs(settings.strip_replace) do
             tmp = tmp:gsub(k, v)
         end
     end
     return tmp
-  end
-  return pathfile
 end
 
 cursor = 0
