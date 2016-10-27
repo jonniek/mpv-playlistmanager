@@ -83,7 +83,7 @@ function on_loaded()
         mp.commandv('show-text', stripped, 2000)
     end
     if settings.set_title_stripped then 
-        mp.set_property_native("title", stripped..settings.title_suffix)
+        mp.set_property("title", stripped..settings.title_suffix)
     end
 end
 
