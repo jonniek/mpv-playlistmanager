@@ -21,15 +21,16 @@ local settings = {
     --replace matches on filenames, recommended to at least strip path
     --format: {['string to match'] = 'value to replace as', ...} - replaces will be done in random order
     --put as false to not replace anything
-    strip_replace = {
+    filename_replace = {
         ['^.*/']='',                    --strip paths from file, all before and last / removed
         ['%s*[%[%(].-[%]%)]%s*']='',    --remove brackets, their content and surrounding white space
         ['_']=' ',                      --change underscore to space
         --['%..*$']='',                   --remove extension
     },
 
-    --set title of window with stripped name
+    --set title of window with stripped name and suffix("" for empty suffix)
     set_title_stripped = true,
+    title_suffix = " - mpv",
 
     --show playlist every time a new file is loaded
     --will try to override any osd-playing-msg conf, may cause flickering if a osd-playing-msg exists.
@@ -82,14 +83,14 @@ function on_loaded()
         mp.commandv('show-text', stripped, 2000)
     end
     if settings.set_title_stripped then 
-        mp.set_property_native("title", stripped)
+        mp.set_property_native("title", stripped..settings.title_suffix)
     end
 end
 
 function strippath(pathfile)
     local tmp = pathfile
-    if settings.strip_replace then
-        for k,v in pairs(settings.strip_replace) do
+    if settings.filename_replace then
+        for k,v in pairs(settings.filename_replace) do
             tmp = tmp:gsub(k, v)
         end
     end
