@@ -161,6 +161,7 @@ function tagcurrent()
 end
 
 function removefile()
+    if not plen then return end
     tag = nil
     mp.commandv("playlist-remove", cursor)
     if cursor==plen-1 then cursor = cursor - 1 end
@@ -168,6 +169,7 @@ function removefile()
 end
 
 function moveup()
+    if not plen then return end
     if cursor~=0 then
         if tag then mp.commandv("playlist-move", cursor,cursor-1) end
         cursor = cursor-1
@@ -180,6 +182,7 @@ function moveup()
 end
 
 function movedown()
+    if not plen then return end
     if cursor ~= plen-1 then
         if tag then mp.commandv("playlist-move", cursor,cursor+2) end
         cursor = cursor + 1
@@ -191,6 +194,7 @@ function movedown()
 end
 
 function jumptofile()
+    if not plen then return end
     tag = nil
     if cursor < pos then
         for x=1,math.abs(cursor-pos),1 do
