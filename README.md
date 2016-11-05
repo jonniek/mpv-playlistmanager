@@ -6,8 +6,10 @@ The reason for the remake is to make the playlist prettier, more convienient and
   
 ![alt text](https://r.kyaa.sg/gzzvmd.gif "demo gif")
 
+## Settings
+You can modify behaviour of the scripts in the settings variable in the lua file. The settings control for example stripping patterns from filenames making them more readable and shorter, switch for windows/linux, changing window title and more.
 
-## Features
+## Keybinds
 - __sort playlist__(CTRL+p)  
   - Sorts the current playlist alphabetically. Stops currently playing file and starts playlist from start of new playlist. Option to run at mpv start automatically in settings.
 - __Loadfiles__(P)
