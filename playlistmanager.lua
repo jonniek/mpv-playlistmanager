@@ -54,7 +54,15 @@ local settings = {
     --allowing you to use common overlapping keybinds
     dynamic_binds = true,
 
+    --playlist display signs, ["prefix", "suffix"]
+    playing_str = {"->", ""},
+    cursor_str = {">", "<"},
+    cursor_str_selected = {">>", "<<"},
+    concat_str = "...",
+
 }
+require 'mp.options'
+read_options(settings, "playlistmanager")
 
 function on_loaded()
     mpvpath = mp.get_property('path')
@@ -133,21 +141,22 @@ function showplaylist(delay)
             b=plen-settings.showamount
             showrest=true
         end
-        if b > 0 and not showall then output=output.."...\n" end
+        if b > 0 and not showall then output=output..settings.concat_str.."\n" end
         for a=b,b+settings.showamount-1,1 do
             if a == plen then break end
-            if a == pos then output = output.."->" end
+            if a == pos then output = output..settings.playing_str[1] end
             if a == cursor then
                 if tag then
-                    output = output..">> "..playlist[a].." <<\n"
+                    output = output..settings.cursor_str_selected[1]..playlist[a]..settings.cursor_str_selected[2].."\n"
                 else
-                    output = output.."> "..playlist[a].." <\n"
+                    output = output..settings.cursor_str[1]..playlist[a]..settings.cursor_str[2].."\n"
                 end
             else
                 output = output..playlist[a].."\n"
             end
+            if a == pos then output = output..settings.playing_str[2] end
             if a == b+settings.showamount-1 and not showall and not showrest then
-              output=output.."..."
+              output=output..settings.concat_str
             end
         end
     else
@@ -327,6 +336,6 @@ end
 mp.add_key_binding('CTRL+p', 'sortplaylist', sortplaylist)
 mp.add_key_binding('P', 'loadfiles', playlist)
 mp.add_key_binding('p', 'saveplaylist', save_playlist)
-mp.add_key_binding('SHIFT+x', 'showplaylist', showplaylist)
+mp.add_key_binding('SHIFT+ENTER', 'showplaylist', showplaylist)
 
 mp.register_event('file-loaded', on_loaded)
