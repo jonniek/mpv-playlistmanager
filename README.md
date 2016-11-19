@@ -31,8 +31,8 @@ You can modify behaviour of the scripts in the settings variable in the lua file
   - Removes the file currently selected with the cursor from the playlist
 - __jumptofile__(Enter)
   - Opens the file currently selected with the cursor, if cursor on playing file, jump to next file
-- __tagcurrent__(CTRL+Up)
-  - Selects the file under the cursor
+- __tagcurrent__(RIGHT)
+  - Selects or unselects the file under the cursor
   - When moving the cursor the selected file will follow, allowing reordering of the playlist
 
 As you know you can override keybindings by their name in input.conf `ctrl+J script-binding jumptofile`
