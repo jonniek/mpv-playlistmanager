@@ -20,9 +20,9 @@ You can modify behaviour of the scripts in the settings variable in the lua file
 - __saveplaylist__(p)
   - Saves the current playlist to m3u file, change filepath in settings to a path in your system
 - __showplaylist__(SHIFT+ENTER)
-  - Displays the playlist and loads the dynamic keybinds for navigating
+  - Displays the playlist and loads the dynamic keybinds for navigating  
+  
 #### Dynamic keybindings
-  - These keys will only work when playlist is visible, unless you specify otherwise in settings. The reason for this is that these keys are common for keybinds, but they are easiest to navigate with.
 - __moveup__(UP)
   - Moves the cursor up in playlist, if at first entry loops to end of playlist.
 - __movedown__(DOWN)
@@ -35,7 +35,7 @@ You can modify behaviour of the scripts in the settings variable in the lua file
   - Selects or unselects the file under the cursor
   - When moving the cursor the selected file will follow, allowing reordering of the playlist
 
-As you know you can override keybindings by their name in input.conf `ctrl+J script-binding jumptofile`
+Dynamic keybinds will only work when playlist is visible. There is a setting to change them to static ones. The reason for the dynamic keybinds is that many people and scripts want to use arrow keys so overriding them only when using the playlist is more convienient. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`
   
 
 #### My other mpv scripts
