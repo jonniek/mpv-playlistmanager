@@ -28,8 +28,9 @@ local settings = {
         --['%..*$']='',                   --remove extension
     },
 
-    --set title of window with stripped name and suffix("" for empty suffix)
+    --set title of window with stripped name, prefix and suffix("" for empty suffix)
     set_title_stripped = true,
+    title_prefix = "",
     title_suffix = " - mpv",
 
     --show playlist every time a new file is loaded
@@ -48,6 +49,10 @@ local settings = {
     --1 is sticky, follow if cursor is close
     --0 is false, never follow
     sync_cursor_on_load = 2,
+
+    --keybindings force override only while playlist is visible
+    --allowing you to use common overlapping keybinds
+    dynamic_binds = true,
 
 }
 
@@ -83,7 +88,7 @@ function on_loaded()
         mp.commandv('show-text', stripped, 2000)
     end
     if settings.set_title_stripped then 
-        mp.set_property("title", stripped..settings.title_suffix)
+        mp.set_property("title", settings.title_prefix..stripped..settings.title_suffix)
     end
 end
 
@@ -99,6 +104,7 @@ end
 
 cursor = 0
 function showplaylist(delay)
+    add_keybinds()
     if delay then
         mp.add_timeout(0.2,showplaylist)
         return
@@ -148,6 +154,8 @@ function showplaylist(delay)
         output = file
     end
     mp.osd_message(output, settings.osd_duration_seconds)
+    timer:kill()
+    timer:resume()
 end
 
 tag=nil
@@ -212,6 +220,8 @@ function jumptofile()
     end
     if settings.show_playlist_on_select then
         showplaylist(true)
+    else
+        remove_keybinds()
     end
 end
 
@@ -291,15 +301,32 @@ if settings.sortplaylist_on_start then
     mp.add_timeout(0.03, sortplaylist)
 end
 
+function add_keybinds()
+    mp.add_forced_key_binding('UP', 'moveup', moveup, "repeatable")
+    mp.add_forced_key_binding('DOWN', 'movedown', movedown, "repeatable")
+    mp.add_forced_key_binding('RIGHT', 'tagcurrent', tagcurrent)
+    mp.add_forced_key_binding('ENTER', 'jumptofile', jumptofile)
+    mp.add_forced_key_binding('BS', 'removefile', removefile)
+end
+
+function remove_keybinds()
+    if settings.dynamic_binds then
+        mp.remove_key_binding('moveup')
+        mp.remove_key_binding('movedown')
+        mp.remove_key_binding('tagcurrent')
+        mp.remove_key_binding('jumptofile')
+        mp.remove_key_binding('removefile')
+    end
+end
+timer = mp.add_periodic_timer(settings.osd_duration_seconds, remove_keybinds)
+timer:kill()
+if not settings.dynamic_binds then
+    add_keybinds()
+end
+
 mp.add_key_binding('CTRL+p', 'sortplaylist', sortplaylist)
 mp.add_key_binding('P', 'loadfiles', playlist)
 mp.add_key_binding('p', 'saveplaylist', save_playlist)
-
-mp.add_key_binding('Shift+ENTER', 'showplaylist', showplaylist)
-mp.add_key_binding('UP', 'moveup', moveup, "repeatable")
-mp.add_key_binding('DOWN', 'movedown', movedown, "repeatable")
-mp.add_key_binding('CTRL+UP', 'tagcurrent', tagcurrent)
-mp.add_key_binding('ENTER', 'jumptofile', jumptofile)
-mp.add_key_binding('BS', 'removefile', removefile)
+mp.add_key_binding('SHIFT+x', 'showplaylist', showplaylist)
 
 mp.register_event('file-loaded', on_loaded)
