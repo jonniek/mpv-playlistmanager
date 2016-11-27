@@ -18,14 +18,25 @@ local settings = {
     --amount of entries to show before concat. Optimal value depends on font/video size etc.
     showamount = 13,
 
-    --replace matches on filenames, recommended to at least strip path
-    --format: {['string to match'] = 'value to replace as', ...} - replaces will be done in random order
-    --put as false to not replace anything
+    --replaces matches on filenames based on extension, put as false to not replace anything
+    --replaces executed in index order, if order doesn't matter many rules can be placed inside one index
+    --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
     filename_replace = {
-        ['^.*/']='',                    --strip paths from file, all before and last / removed
-        ['%s*[%[%(].-[%]%)]%s*']='',    --remove brackets, their content and surrounding white space
-        ['_']=' ',                      --change underscore to space
-        --['%..*$']='',                   --remove extension
+        [1] = {
+            ['ext'] = { ['all']=true },   --apply rule to all files
+            ['rules'] = {
+                [1] = { ['^.*/'] = '' },  --strip paths from file, all before and last / removed
+                [2] = { ['_'] = ' ' },    --change underscore to space
+            },
+        },
+        [2] = {
+            ['ext'] = { ['mkv']=true, ['mp4']=true },   --apply rule to mkv and mp4 only
+            ['rules'] = {
+                [1] = { ['^(.+)%..+$']='%1' },          --remove extension
+                [2] = { ['%s*[%[%(].-[%]%)]%s*']='' },  --remove brackets, their content and surrounding white space
+                [3] = { ['(%w)%.(%w)']='%1 %2' },       --change dots between alphanumeric chars to spaces
+            },
+        },
     },
 
     --set title of window with stripped name, prefix and suffix("" for empty suffix)
@@ -100,11 +111,20 @@ function on_loaded()
     end
 end
 
+
 function strippath(pathfile)
+    local ext = pathfile:match("^.+%.(.+)$")
+    if not ext then ext = "" end
     local tmp = pathfile
     if settings.filename_replace then
-        for k,v in pairs(settings.filename_replace) do
-            tmp = tmp:gsub(k, v)
+        for k,v in ipairs(settings.filename_replace) do
+            if v['ext'][ext] or v['ext']['all'] then
+                for ruleindex, indexrules in ipairs(v['rules']) do
+                    for rule, override in pairs(indexrules) do
+                        tmp = tmp:gsub(rule, override)
+                    end
+                end
+            end
         end
     end
     return tmp
