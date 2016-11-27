@@ -44,6 +44,9 @@ local settings = {
     title_prefix = "",
     title_suffix = " - mpv",
 
+    --slice long filenames, and how many chars to show
+    slice_longfilenames = {false, 70},
+
     --show playlist every time a new file is loaded
     --will try to override any osd-playing-msg conf, may cause flickering if a osd-playing-msg exists.
     --2 shows playlist, 1 shows current file(filename strip above applied), 0 shows nothing
@@ -126,6 +129,9 @@ function strippath(pathfile)
                 end
             end
         end
+    end
+    if settings.slice_longfilenames[1] and tmp:len()>settings.slice_longfilenames[2]+5 then
+        tmp = tmp:sub(1, settings.slice_longfilenames[2]).." ..."
     end
     return tmp
 end
