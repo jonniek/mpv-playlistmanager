@@ -68,11 +68,12 @@ local settings = {
     --allowing you to use common overlapping keybinds
     dynamic_binds = true,
 
-    --playlist display signs, ["prefix", "suffix"]
+    --playlist display signs, {"prefix", "suffix"}
     playing_str = {"->", ""},
     cursor_str = {">", "<"},
     cursor_str_selected = {">>", "<<"},
-    concat_str = "...",
+    --top and bottom if playlist entries are sliced off from display
+    sliced_str = {"...", "..."},
 
 }
 require 'mp.options'
@@ -167,7 +168,7 @@ function showplaylist(delay)
             b=plen-settings.showamount
             showrest=true
         end
-        if b > 0 and not showall then output=output..settings.concat_str.."\n" end
+        if b > 0 and not showall then output=output..settings.sliced_str[1].."\n" end
         for a=b,b+settings.showamount-1,1 do
             if a == plen then break end
             if a == pos then output = output..settings.playing_str[1] end
@@ -182,7 +183,7 @@ function showplaylist(delay)
             end
             if a == pos then output = output..settings.playing_str[2] end
             if a == b+settings.showamount-1 and not showall and not showrest then
-              output=output..settings.concat_str
+              output=output..settings.sliced_str[2]
             end
         end
     else
