@@ -15,7 +15,7 @@ local settings = {
     --sort playlist on mpv start
     sortplaylist_on_start = false,
 
-    --amount of entries to show before concat. Optimal value depends on font/video size etc.
+	--amount of entries to show before slicing. Optimal value depends on font/video size etc.
     showamount = 13,
 
     --replaces matches on filenames based on extension, put as false to not replace anything
