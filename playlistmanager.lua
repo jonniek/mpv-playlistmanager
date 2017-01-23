@@ -332,6 +332,40 @@ function sortplaylist()
     cursor=0
 end
 
+math.randomseed(os.time())
+function shuffleplaylist()
+	local length = tonumber(mp.get_property('playlist/count'))
+	if length > 1 then
+		--create playlist
+		local playlist = {}
+		for i=0,length,1
+		do
+			playlist[i+1] = mp.get_property('playlist/'..i..'/filename')
+		end
+
+		--shuffle playlist
+		local rand = math.random 
+		local iterations = #playlist
+	    local j
+	    for i = iterations, 2, -1 do
+	        j = rand(i)
+	        playlist[i], playlist[j] = playlist[j], playlist[i]
+	    end
+
+		--load shuffled list
+		local first = true
+		for index,file in pairs(playlist) do
+			print(file)
+			if first then 
+				mp.commandv("loadfile", file, "replace")
+				first=false
+			else
+				mp.commandv("loadfile", file, "append") 
+			end
+		end
+	end
+end
+
 if settings.sortplaylist_on_start then
     mp.add_timeout(0.03, sortplaylist)
 end
@@ -360,6 +394,7 @@ if not settings.dynamic_binds then
 end
 
 mp.add_key_binding('CTRL+p', 'sortplaylist', sortplaylist)
+mp.add_key_binding('CTRL+P', 'shuffleplaylist', shuffleplaylist)
 mp.add_key_binding('P', 'loadfiles', playlist)
 mp.add_key_binding('p', 'saveplaylist', save_playlist)
 mp.add_key_binding('SHIFT+ENTER', 'showplaylist', showplaylist)
