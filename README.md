@@ -39,8 +39,5 @@ You can modify behaviour of the scripts in the settings variable in the lua file
 
 Dynamic keybinds will only work when playlist is visible. There is a setting to change them to static ones. The reason for the dynamic keybinds is that many people and scripts want to use arrow keys so overriding them only when using the playlist is more convienient. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`
   
-
 #### My other mpv scripts
-- [unseen-playlistmaker](https://github.com/donmaiq/unseen-playlistmaker)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[manager+maker combined](https://github.com/donmaiq/unseen-playlistmaker/blob/master/unseen%2Bplaylistmanager.lua)
-- [nextfile](https://github.com/donmaiq/mpv-nextfile)
-- [Filenavigator](https://github.com/donmaiq/mpv-filenavigator)
+- [collection of scripts](https://github.com/donmaiq/mpv-scripts)
