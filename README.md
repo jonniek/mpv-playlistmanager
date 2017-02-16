@@ -12,9 +12,9 @@ You can modify behaviour of the scripts in the settings variable in the lua file
 ## Keybinds
 #### Static keybindings
 - __sortplaylist__(CTRL+p)  
-  - Sorts the current playlist alphabetically. Stops currently playing file and starts playlist from start of new playlist. Option to run at mpv start automatically in settings.
+  - Sorts the current playlist alphabenumerically(file1-file100 in correct order). Stops currently playing file and starts playlist from start of new playlist. Option to run at mpv start automatically in settings.
 - __shuffleplaylist__(CTRL+P)  
-  - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist. No option to run at start, use --shuffle instead.
+  - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesnt shuffle current file. No option to run at start, use --shuffle instead.
 - __loadfiles__(P)
   - Attempts to load all files after the currently playing file to the playlist from the currently playing files directory
   - Ex. Open 5th file from a 12file directory, press P, the remaining 7 are loaded to playlist
