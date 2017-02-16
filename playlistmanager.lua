@@ -334,6 +334,7 @@ function sortplaylist()
 			mp.commandv("loadfile", file, first and "replace" or "append")
 			first = false
 		end
+		cursor = 0
 	end
 end
 
