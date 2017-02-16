@@ -310,26 +310,31 @@ function save_playlist()
     end
 end
 
+
+function alphanumsort(o)
+  local function padnum(d) local dec, n = string.match(d, "(%.?)0*(.+)")
+    return #dec > 0 and ("%.12f"):format(d) or ("%s%03d%s"):format(dec, #n, n) end
+  table.sort(o, function(a,b)
+    return tostring(a):gsub("%.?%d+",padnum)..("%3d"):format(#b)
+         < tostring(b):gsub("%.?%d+",padnum)..("%3d"):format(#a) end)
+  return o
+end
+
 function sortplaylist()
-    local length = tonumber(mp.get_property('playlist/count'))
-    if length > 1 then
-        local playlist = {}
-        for i=0,length,1
-        do
-            playlist[i+1] = mp.get_property('playlist/'..i..'/filename')
-        end
-        table.sort(playlist)
-        local first = true
-        for index,file in pairs(playlist) do
-            if first then 
-                mp.commandv("loadfile", file, "replace")
-                first=false
-            else
-                mp.commandv("loadfile", file, "append") 
-            end
-        end
-    end
-    cursor=0
+	local length = mp.get_property_number('playlist-count')
+	if length > 1 then
+		local playlist = {}
+		for i=0,length,1
+		do
+			playlist[i+1] = mp.get_property('playlist/'..i..'/filename')
+		end
+		alphanumsort(playlist)
+		local first = true
+		for index,file in pairs(playlist) do
+			mp.commandv("loadfile", file, first and "replace" or "append")
+			first = false
+		end
+	end
 end
 
 math.randomseed(os.time())
