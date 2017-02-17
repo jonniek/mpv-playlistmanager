@@ -7,12 +7,12 @@ The reason for the remake is to make the playlist prettier, more convienient and
 ![alt text](https://r.kyaa.sg/gzzvmd.gif "demo gif")
 
 ## Settings
-You can modify behaviour of the scripts in the settings variable in the lua file or a `playlistmanager.conf`lua-setting file. Some of the settings are rather complex so it's better to edit them in the lua.
+You can modify behaviour of the scripts in the settings variable in the lua file or a `playlistmanager.conf`lua-setting file. Some of the settings are rather complex so it's better to edit them in the lua. Saveplaylist will require you to set the path in settings variable.
 
 ## Keybinds
 #### Static keybindings
 - __sortplaylist__(CTRL+p)  
-  - Sorts the current playlist alphabenumerically(file1-file100 in correct order, wip since some naming conventions fail). Stops currently playing file and starts playlist from start of new playlist. Option to run at mpv start automatically in settings.  
+  - Sorts the current playlist alphanumerically(file1-file100 in correct order, wip since some naming conventions still fail). Stops currently playing file and starts playlist from start of new playlist. Option to run at mpv start automatically in settings.  
 - __shuffleplaylist__(CTRL+P)  
   - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesnt shuffle current file.  
 - __loadfiles__(P)
