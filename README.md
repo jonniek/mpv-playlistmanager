@@ -12,17 +12,15 @@ You can modify behaviour of the scripts in the settings variable in the lua file
 ## Keybinds
 #### Static keybindings
 - __sortplaylist__(CTRL+p)  
-  - Sorts the current playlist alphabenumerically(file1-file100 in correct order). Stops currently playing file and starts playlist from start of new playlist. Option to run at mpv start automatically in settings.
+  - Sorts the current playlist alphabenumerically(file1-file100 in correct order, wip since some naming conventions fail). Stops currently playing file and starts playlist from start of new playlist. Option to run at mpv start automatically in settings.  
 - __shuffleplaylist__(CTRL+P)  
-  - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesnt shuffle current file. No option to run at start, use --shuffle instead.
+  - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesnt shuffle current file.  
 - __loadfiles__(P)
-  - Attempts to load all files after the currently playing file to the playlist from the currently playing files directory
-  - Ex. Open 5th file from a 12file directory, press P, the remaining 7 are loaded to playlist
-  - change boolean in settings for linux/windows
+  - Attempts to load all files from the currently playing files directory to the playlist keeping the order. Much like [autoload](https://github.com/mpv-player/mpv/blob/master/TOOLS/lua/autoload.lua) 
 - __saveplaylist__(p)
   - Saves the current playlist to m3u file, change filepath in settings to a path in your system
 - __showplaylist__(SHIFT+ENTER)
-  - Displays the playlist and loads the dynamic keybinds for navigating  
+  - Displays the current playlist and loads the dynamic keybinds for navigating  
   
 #### Dynamic keybindings
 - __moveup__(UP)
@@ -37,7 +35,7 @@ You can modify behaviour of the scripts in the settings variable in the lua file
   - Selects or unselects the file under the cursor
   - When moving the cursor the selected file will follow, allowing reordering of the playlist
 
-Dynamic keybinds will only work when playlist is visible. There is a setting to change them to static ones. The reason for the dynamic keybinds is that many people and scripts want to use arrow keys so overriding them only when using the playlist is more convienient. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`
+Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. The reason for the dynamic keybinds is that many people and scripts want to use arrow keys so overriding them only when using the playlist is more convienient. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`
   
 #### My other mpv scripts
 - [collection of scripts](https://github.com/donmaiq/mpv-scripts)
