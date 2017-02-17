@@ -10,7 +10,7 @@ local settings = {
 
   --filetypes to search from directory, {''} for all, {'mkv','mp4'} for specific
   loadfiles_filetypes = {'mkv', 'avi', 'mp4', 'ogv', 'webm', 'rmvb', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp',
-'mp3', 'wav', 'ogv', 'flac', 'm4a', 'wma',},
+'mp3', 'wav', 'ogv', 'flac', 'm4a', 'wma', 'jpg', 'gif', 'png', 'jpeg', 'webp'},
 
   --sort playlist on mpv start
   sortplaylist_on_start = false,
@@ -96,10 +96,6 @@ end
 function on_loaded()
   filename = mp.get_property("filename")
   path = utils.join_path(mp.get_property('working-directory'), mp.get_property('path'))
-  --hack the windows path because utils use / only
-  if not settings.linux_over_windows then
-    path = path:gsub("/", "\\")
-  end
   directory = utils.split_path(path)
   pos = mp.get_property_number('playlist-pos', 0)
   plen = mp.get_property_number('playlist-count', 0)
