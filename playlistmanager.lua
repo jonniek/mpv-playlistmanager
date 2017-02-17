@@ -1,79 +1,79 @@
 local settings = {
+  --linux=true, windows=false, nil=auto
+  linux_over_windows = nil,
 
-    --linux(true)/windows(false) toggle
-    linux_over_windows = true,
+  --path where you want to save playlists, notice trailing \ or /. Do not use shortcuts like ~ or $HOME
+  playlist_savepath = "/home/anon/Documents/",
 
-    --path where you want to save playlists, notice trailing \ or /. Do not use shortcuts like ~ or $HOME
-    playlist_savepath = "/home/anon/Documents/",
+  --osd when navigating in seconds
+  osd_duration_seconds = 5,
 
-    --osd when navigating in seconds
-    osd_duration_seconds = 5,
+  --filetypes to search from directory, {''} for all, {'mkv','mp4'} for specific
+  loadfiles_filetypes = {'mkv', 'avi', 'mp4', 'ogv', 'webm', 'rmvb', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp',
+'mp3', 'wav', 'ogv', 'flac', 'm4a', 'wma',},
 
-    --filetypes to search from directory, {''} for all, {'mkv','mp4'} for specific
-    loadfiles_filetypes = {'mkv','mp4','webm','jpg','gif','png','mp3'},
+  --sort playlist on mpv start
+  sortplaylist_on_start = false,
 
-    --sort playlist on mpv start
-    sortplaylist_on_start = false,
+--amount of entries to show before slicing. Optimal value depends on font/video size etc.
+  showamount = 13,
 
-	--amount of entries to show before slicing. Optimal value depends on font/video size etc.
-    showamount = 13,
-
-    --replaces matches on filenames based on extension, put as false to not replace anything
-    --replaces executed in index order, if order doesn't matter many rules can be placed inside one index
-    --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
-    filename_replace = {
-        [1] = {
-            ['ext'] = { ['all']=true },   --apply rule to all files
-            ['rules'] = {
-                [1] = { ['^.*/'] = '' },  --strip paths from file, all before and last / removed
-                [2] = { ['_'] = ' ' },    --change underscore to space
-            },
-        },
-        [2] = {
-            ['ext'] = { ['mkv']=true, ['mp4']=true },   --apply rule to mkv and mp4 only
-            ['rules'] = {
-                [1] = { ['^(.+)%..+$']='%1' },          --remove extension
-                [2] = { ['%s*[%[%(].-[%]%)]%s*']='' },  --remove brackets, their content and surrounding white space
-                [3] = { ['(%w)%.(%w)']='%1 %2' },       --change dots between alphanumeric chars to spaces
-            },
-        },
+  --replaces matches on filenames based on extension, put as false to not replace anything
+  --replaces executed in index order, if order doesn't matter many rules can be placed inside one index
+  --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
+  filename_replace = {
+    [1] = {
+      ['ext'] = { ['all']=true },   --apply rule to all files
+      ['rules'] = {
+        [1] = { ['^.*/'] = '' },  --strip paths from file, all before and last / removed
+        [2] = { ['_'] = ' ' },    --change underscore to space
+      },
     },
+    [2] = {
+      ['ext'] = { ['mkv']=true, ['mp4']=true },   --apply rule to mkv and mp4 only
+      ['rules'] = {
+        [1] = { ['^(.+)%..+$']='%1' },          --remove extension
+        [2] = { ['%s*[%[%(].-[%]%)]%s*']='' },  --remove brackets, their content and surrounding white space
+        [3] = { ['(%w)%.(%w)']='%1 %2' },       --change dots between alphanumeric chars to spaces
+      },
+    },
+  },
 
-    --set title of window with stripped name, prefix and suffix("" for empty suffix)
-    set_title_stripped = true,
-    title_prefix = "",
-    title_suffix = " - mpv",
+  --set title of window with stripped name, prefix and suffix("" for empty suffix)
+  set_title_stripped = true,
+  title_prefix = "",
+  title_suffix = " - mpv",
 
-    --slice long filenames, and how many chars to show
-    slice_longfilenames = {false, 70},
+  --slice long filenames, and how many chars to show
+  slice_longfilenames = {false, 70},
 
-    --show playlist every time a new file is loaded
-    --will try to override any osd-playing-msg conf, may cause flickering if a osd-playing-msg exists.
-    --2 shows playlist, 1 shows current file(filename strip above applied), 0 shows nothing
-    show_playlist_on_fileload = 1,
-    
-    --show playlist when selecting file within manager (ENTER)
-    --will interfere with above setting if it is not 0
-    show_playlist_on_select = false,
+  --show playlist every time a new file is loaded
+  --will try to override any osd-playing-msg conf, may cause flickering if a osd-playing-msg exists.
+  --2 shows playlist, 1 shows current file(filename strip above applied), 0 shows nothing
+  show_playlist_on_fileload = 1,
+  
+  --show playlist when selecting file within manager (ENTER)
+  --will interfere with above setting if it is not 0
+  show_playlist_on_select = false,
 
-    --sync cursor when file is loaded from outside reasons(file-ending, playlist-next shortcut etc.)
-    --has the sideeffect of moving cursor if file happens to change when navigating
-    --good side is cursor always following current file when going back and forth files with playlist-next/prev
-    --2 is true, always follow on load 
-    --1 is sticky, follow if cursor is close
-    --0 is false, never follow
-    sync_cursor_on_load = 2,
+  --sync cursor when file is loaded from outside reasons(file-ending, playlist-next shortcut etc.)
+  --has the sideeffect of moving cursor if file happens to change when navigating
+  --good side is cursor always following current file when going back and forth files with playlist-next/prev
+  --2 is true, always follow on load 
+  --1 is sticky, follow if cursor is close
+  --0 is false, never follow
+  sync_cursor_on_load = 2,
 
-    --keybindings force override only while playlist is visible
-    --allowing you to use common overlapping keybinds
-    dynamic_binds = true,
+  --keybindings force override only while playlist is visible
+  --allowing you to use common overlapping keybinds
+  dynamic_binds = false,
 
-    --playlist display signs, {"prefix", "suffix"}
-    playing_str = {"->", ""},
-    cursor_str = {">", "<"},
-    cursor_str_selected = {">>", "<<"},
-    --top and bottom if playlist entries are sliced off from display
-    sliced_str = {"...", "..."},
+  --playlist display signs, {"prefix", "suffix"}
+  playing_str = {"->", ""},
+  cursor_str = {">", "<"},
+  cursor_str_selected = {">>", "<<"},
+  --top and bottom if playlist entries are sliced off from display
+  sliced_str = {"...", "..."},
 
 }
 require 'mp.options'
@@ -83,9 +83,23 @@ read_options(settings, "playlistmanager")
 local utils = require 'mp.utils'
 local msg = require 'mp.msg'
 
+--check os
+if settings.linux_over_windows==nil then
+  local o = {}
+  if mp.get_property_native('options/vo-mmcss-profile', o) ~= o then
+    settings.linux_over_windows = false
+  else
+    settings.linux_over_windows = true
+  end
+end
+
 function on_loaded()
   filename = mp.get_property("filename")
   path = utils.join_path(mp.get_property('working-directory'), mp.get_property('path'))
+  --hack the windows path because utils use / only
+  if not settings.linux_over_windows then
+    path = path:gsub("/", "\\")
+  end
   directory = utils.split_path(path)
   pos = mp.get_property_number('playlist-pos', 0)
   plen = mp.get_property_number('playlist-count', 0)
@@ -281,6 +295,7 @@ end
 --For exaple, Folder has 12 files, you open the 5th file and run this, the remaining 7 are added behind the 5th file and prior 4 files before it
 --to change what extensions are accepted change settings.loadfiles_filetypes
 function playlist()
+  if not path or not plen then return end
   local popen, err = io.popen(create_searchquery(directory, settings.loadfiles_filetypes, settings.linux_over_windows))
   if popen then
     local cur = false
@@ -313,7 +328,8 @@ end
 
 --saves the current playlist into a m3u file
 function save_playlist()
-  local length = mp.get_property_number('playlist-count', 1)
+  local length = mp.get_property_number('playlist-count', 0)
+  if length<1 then return end
   local savepath = utils.join_path(settings.playlist_savepath, os.time().."-size_"..length.."-playlist.m3u")
   local file, err = io.open(savepath, "w")
   if not file then
