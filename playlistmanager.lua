@@ -66,7 +66,7 @@ local settings = {
 
   --keybindings force override only while playlist is visible
   --allowing you to use common overlapping keybinds
-  dynamic_binds = false,
+  dynamic_binds = true,
 
   --playlist display signs, {"prefix", "suffix"}
   playing_str = {"->", ""},
