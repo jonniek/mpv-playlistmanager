@@ -137,7 +137,7 @@ function create_searchquery(path, extensions, unix)
   if unix then
     return 'cd "'..escapepath(path, '"')..'";ls -1vp'..query..'2>/dev/null'
   else
-    return 'dir /b'..query
+    return 'dir /b'..query:gsub("/", "\\")
   end
 end
 
@@ -233,7 +233,7 @@ end
 function removefile()
   if not plen then return end
   tag = nil
-  if cursor==pos then mp.command("script-message unseenplaylist mark true") end
+  if cursor==pos then mp.command("script-message unseenplaylist mark true \"playlistmanager avoid conflict when removing file\"") end
   mp.commandv("playlist-remove", cursor)
   if cursor==plen-1 then cursor = cursor - 1 end
   showplaylist()
@@ -317,7 +317,7 @@ function playlist()
     if c2 > 0 or c>0 then mp.osd_message("Added "..c.." files before and "..c2.." files after current file") end
     cursor = mp.get_property_number('playlist-pos', 1)
   else
-    msg.error("Could not scan for files: "..err or "")
+    msg.error("Could not scan for files: "..(err or ""))
   end
   plen = mp.get_property_number('playlist-count', 0)
 end
