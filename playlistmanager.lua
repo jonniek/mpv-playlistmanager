@@ -48,15 +48,11 @@ local settings = {
   slice_longfilenames = {false, 70},
 
   --show playlist every time a new file is loaded
-  --will try to override any osd-playing-msg conf, may cause flickering if a osd-playing-msg exists.
+  --NOTE: using osd-playing-message will interfere with this setting, if you prefer it use 0 here
   --2 shows playlist, 1 shows current file(filename strip above applied), 0 shows nothing
   --instead of using this you can also call script-message playlistmanager show playlist/filename
   --ex. KEY playlist-next ; script-message playlistmanager show playlist
   show_playlist_on_fileload = 0,
-  
-  --show playlist when selecting file within manager (ENTER)
-  --will interfere with above setting if it is not 0
-  show_playlist_on_select = false,
 
   --sync cursor when file is loaded from outside reasons(file-ending, playlist-next shortcut etc.)
   --has the sideeffect of moving cursor if file happens to change when navigating
@@ -102,7 +98,7 @@ function on_loaded()
 
   strippedname = stripfilename(mp.get_property('media-title'))
   if settings.show_playlist_on_fileload == 2 then
-    showplaylist(true)
+    showplaylist()
   elseif settings.show_playlist_on_fileload == 1 then
     mp.commandv('show-text', strippedname)
   end
@@ -165,11 +161,7 @@ function stripfilename(pathfile)
 end
 
 cursor = 0
-function showplaylist(delay, duration)
-  if delay then
-    mp.add_timeout(0.2, showplaylist)
-    return
-  end
+function showplaylist(duration)
   --update playlist length and position
   refresh_globals()
   --do not display playlist with 0 files
@@ -284,11 +276,8 @@ function jumptofile()
     end
     mp.commandv("playlist-next", "weak")
   end
-  if settings.show_playlist_on_select then
-    showplaylist(true)
-  else
-    remove_keybinds()
-  end
+  if settings.show_playlist_on_fileload == 0 then mp.osd_message("") end
+  remove_keybinds()
 end
 
 --Creates a playlist of all files in directory, will keep the order and position
@@ -415,7 +404,7 @@ end
 
 --script message handler
 function handlemessage(msg, value, value2)
-  if msg == "show" and value == "playlist" then showplaylist(false, value2) ; return end
+  if msg == "show" and value == "playlist" then showplaylist(value2) ; return end
   if msg == "show" and value == "filename" and strippedname and value2 then mp.commandv('show-text', strippedname, tonumber(value2)*1000 ) ; return end
   if msg == "show" and value == "filename" and strippedname then mp.commandv('show-text', strippedname ) ; return end
   if msg == "sort" then sortplaylist() ; return end
