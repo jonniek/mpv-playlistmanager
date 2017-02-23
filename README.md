@@ -35,7 +35,26 @@ You can modify behaviour of the scripts in the settings variable in the lua file
   - Selects or unselects the file under the cursor
   - When moving the cursor the selected file will follow, allowing reordering of the playlist
 
-Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. The reason for the dynamic keybinds is that many people and scripts want to use arrow keys so overriding them only when using the playlist is more convienient. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`
+Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. The reason for the dynamic keybinds is that many people and scripts want to use arrow keys so overriding them only when using the playlist is more convienient. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`  
+  
+  
+There is alsoa few script messages you can send to control the script:  
+`KEY script-message playlistmanager command value value2`  
+  
+List of commands, values and their effects:  
+  
+Command | Value | Value2 | Effect
+--- | --- | --- | ---
+show | playlist / filename | - / seconds | shows playlist / stripped filename for default or set seconds
+sort | - | - | Sorts the playlist
+shuffle | - | - | Shuffles the playlist
+loadfiles | - | - | Loads files from directory
+save | - | - | Saves the playlist
+    
+    
+examples:  
+`RIGHT playlist-next ; script-message playlistmanager show playlist 3` Shows the playlist for 3 seconds after playlist-next  
+`KEY show-text "Shuffled playlist" ; script-message playlistmanager shuffle` Text message on shuffle  
   
 #### My other mpv scripts
 - [collection of scripts](https://github.com/donmaiq/mpv-scripts)
