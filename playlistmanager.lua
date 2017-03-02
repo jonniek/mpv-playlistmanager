@@ -25,8 +25,7 @@ local settings = {
     [1] = {
       ['ext'] = { ['all']=true },   --apply rule to all files
       ['rules'] = {
-        [1] = { ['^.*/'] = '' },  --strip paths from file, all before and last / removed
-        [2] = { ['_'] = ' ' },    --change underscore to space
+        [1] = { ['_'] = ' ' },  --change underscore to space
       },
     },
     [2] = {
@@ -171,7 +170,8 @@ function showplaylist(duration)
   local playlist = {}
   for i=0,plen-1,1
   do
-    playlist[i] = stripfilename(mp.get_property('playlist/'..i..'/filename'))
+    local l_path, l_file = utils.split_path(mp.get_property('playlist/'..i..'/filename'))
+    playlist[i] = stripfilename(l_file)
   end
   output = "Playing: "..strippedname.."\n\n"
   output = output.."Playlist - "..(cursor+1).." / "..plen.."\n"
