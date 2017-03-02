@@ -327,8 +327,12 @@ function save_playlist()
   else
     local i=0
     local pwd = mp.get_property("working-directory")
+    local filename = mp.get_property('playlist/'..i..'/filename')
+    local fullpath = filename
+    if not filename:match("^%a%a+:%/%/") then
+      fullpath = utils.join_path(pwd, filename)
+    end
     while i < length do
-      local fullpath = utils.join_path(pwd, mp.get_property('playlist/'..i..'/filename'))
       file:write(fullpath, "\n")
       i=i+1
     end
