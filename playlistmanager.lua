@@ -63,9 +63,18 @@ local settings = {
   dynamic_binds = true,
 
   --playlist display signs, {"prefix", "suffix"}
-  playing_str = {"->", ""},
-  cursor_str = {">", "<"},
-  cursor_str_selected = {">>", "<<"},
+  --currently playing file 
+  playing_str = {"▶ - ", ""},
+  --cursor is ontop of playing file
+  playing_and_cursor_str = {"▶ > ", ""},
+  --cursor file prefix and suffix
+  cursor_str = {"● - ", ""},
+  --non cursor file prefix and suffix
+  non_cursor_str = {"○ - ", ""},
+  --when you select a file
+  cursor_str_selected = {"● = ", ""},
+  --when currently playing file is selected
+  playing_str_selected = {"▶ = ", ""},
   --top and bottom if playlist entries are sliced off from display
   playlist_sliced_str = {"...", "..."},
 
@@ -190,15 +199,24 @@ function showplaylist(duration)
   if b > 0 and not showall then output=output..settings.playlist_sliced_str[1].."\n" end
   for a=b,b+settings.showamount-1,1 do
     if a == plen then break end
-    if a == pos then output = output..settings.playing_str[1] end
-    if a == cursor then
+    if a == pos then
+      if a == cursor then
+        if tag then 
+          output = output..settings.playing_str_selected[1]..playlist[a]..settings.playing_str_selected[2].."\n"
+        else
+          output = output..settings.playing_and_cursor_str[1]..playlist[a]..settings.playing_and_cursor_str[2].."\n"
+        end
+      else
+        output = output..settings.playing_str[1]..playlist[a]..settings.playing_str[2].."\n"
+      end
+    elseif a == cursor then
       if tag then
         output = output..settings.cursor_str_selected[1]..playlist[a]..settings.cursor_str_selected[2].."\n"
       else
         output = output..settings.cursor_str[1]..playlist[a]..settings.cursor_str[2].."\n"
       end
     else
-      output = output..playlist[a].."\n"
+      output = output..settings.non_cursor_str[1]..playlist[a]..settings.non_cursor_str[2].."\n"
     end
     if a == pos then output = output..settings.playing_str[2] end
     if a == b+settings.showamount-1 and not showall and not showrest then
