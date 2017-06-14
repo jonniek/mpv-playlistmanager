@@ -77,6 +77,8 @@ local settings = {
   playing_str_selected = {"▶ = ", ""},
   --top and bottom if playlist entries are sliced off from display
   playlist_sliced_str = {"...", "..."},
+  --show file playlistnumber before filename
+  prefix_filenumber = {true, " - "},
 
 }
 require 'mp.options'
@@ -199,25 +201,39 @@ function showplaylist(duration)
   if b > 0 and not showall then output=output..settings.playlist_sliced_str[1].."\n" end
   for a=b,b+settings.showamount-1,1 do
     if a == plen then break end
+    local prefix = ""
+    local suffix = ""
     if a == pos then
       if a == cursor then
-        if tag then 
-          output = output..settings.playing_str_selected[1]..playlist[a]..settings.playing_str_selected[2].."\n"
+        if tag then
+          prefix = settings.playing_str_selected[1]
+          suffix = settings.playing_str_selected[2]
         else
-          output = output..settings.playing_and_cursor_str[1]..playlist[a]..settings.playing_and_cursor_str[2].."\n"
+          prefix = settings.playing_and_cursor_str[1]
+          suffix = settings.playing_and_cursor_str[2]
         end
       else
-        output = output..settings.playing_str[1]..playlist[a]..settings.playing_str[2].."\n"
+        prefix = settings.playing_str[1]
+        suffix = settings.playing_str[2]
       end
     elseif a == cursor then
       if tag then
-        output = output..settings.cursor_str_selected[1]..playlist[a]..settings.cursor_str_selected[2].."\n"
+        prefix = settings.cursor_str_selected[1]
+        suffix = settings.cursor_str_selected[2]
       else
-        output = output..settings.cursor_str[1]..playlist[a]..settings.cursor_str[2].."\n"
+        prefix = settings.cursor_str[1]
+        suffix = settings.cursor_str[2]
       end
     else
-      output = output..settings.non_cursor_str[1]..playlist[a]..settings.non_cursor_str[2].."\n"
+      prefix = settings.non_cursor_str[1]
+      suffix = settings.non_cursor_str[2]
     end
+    local prefix_num = ""
+    if settings.prefix_filenumber[1] then
+      local base = tostring(plen):len()
+      prefix_num = string.format("%0"..base.."d%s", a, settings.prefix_filenumber[2])
+    end
+    output = output..prefix..prefix_num..playlist[a]..suffix.."\n"
     if a == pos then output = output..settings.playing_str[2] end
     if a == b+settings.showamount-1 and not showall and not showrest then
       output=output..settings.playlist_sliced_str[2]
