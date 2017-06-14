@@ -77,8 +77,8 @@ local settings = {
   playing_str_selected = {"▶ = ", ""},
   --top and bottom if playlist entries are sliced off from display
   playlist_sliced_str = {"...", "..."},
-  --show file playlistnumber before filename
-  prefix_filenumber = {true, " - "},
+  --show file playlistnumber before filename, second value is suffix after number
+  prefix_filenumber = {false, " - "},
 
 }
 require 'mp.options'
