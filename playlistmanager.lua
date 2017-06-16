@@ -21,6 +21,9 @@ local settings = {
   --replaces matches on filenames based on extension, put as false to not replace anything
   --replaces executed in index order, if order doesn't matter many rules can be placed inside one index
   --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
+  filename_replace = false,
+  --if you want to replace filenames you can remove above variable and uncomment the below one by removing --[[ and ]]--
+  --[[
   filename_replace = {
     [1] = {
       ['ext'] = { ['all']=true },   --apply rule to all files
@@ -37,6 +40,7 @@ local settings = {
       },
     },
   },
+  ]]--
 
   --set title of window with stripped name, prefix and suffix("" for empty suffix)
   set_title_stripped = true,
