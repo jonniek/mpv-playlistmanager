@@ -1,13 +1,15 @@
 # Mpv-Playlistmanager - REMADE  
 Mpv lua script to create and manage playlists.
   
-This is a remake of my earlier script that can be found in this repo in the [old folder](https://github.com/donmaiq/Mpv-Playlistmanager/tree/master/old).  
-The reason for the remake is to make the playlist prettier, more convienient and more intuitive to use. Now the cursor is completely separate from the currently playing file making navigation easier.
-  
-![alt text](https://i.imgur.com/2ev2jCJ.jpg "preview image")
+![alt text](https://i.imgur.com/2ev2jCJ.jpg "preview image")  
+Default visual cues:  
+▶ - playing file  
+● - selected file(for removing, playing and moving)  
+● = lifted file(file is being moved)  
+○ - rest of the files  
 
 ## Settings
-You can modify behaviour of the scripts in the settings variable in the lua file or a `playlistmanager.conf`lua-setting file. Some of the settings are rather complex so it's better to edit them in the lua. Saveplaylist will require you to set the path in settings variable.
+You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf`lua-setting file. Some of the settings are rather complex so it's better to edit them in the lua. Saveplaylist will require you to set the path in settings variable to a path in your system(on windows escape every backslash with a backslash).
 
 ## Keybinds
 #### Static keybindings
