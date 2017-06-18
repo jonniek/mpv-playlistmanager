@@ -3,9 +3,10 @@ Mpv lua script to create and manage playlists.
 
 This script allows you to see and interact with your playlist in an intuitive way. The key features are removing, reordering and playing files. Additional features include parsing filenames and creating/saving/shuffling/sorting playlists.
 
-![alt text](https://i.imgur.com/2ev2jCJ.jpg "preview image")  
+![preview gif](https://giant.gfycat.com/GreatDelayedAlligator.gif)  
 Default visual cues:  
-▶ - playing file  
+▷ - playing file  
+▶ - playing and selected file  
 ● - selected file(for removing, playing and moving)  
 ● = lifted file(file is being moved)  
 ○ - rest of the files  
