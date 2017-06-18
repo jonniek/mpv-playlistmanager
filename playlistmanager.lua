@@ -188,7 +188,7 @@ function showplaylist(duration)
     local l_path, l_file = utils.split_path(mp.get_property('playlist/'..i..'/filename'))
     playlist[i] = stripfilename(l_file)
   end
-  output = "Playing: "..strippedname.."\n\n"
+  output = "Playing: "..(strippedname or "undefined").."\n\n"
   output = output.."Playlist - "..(cursor+1).." / "..plen.."\n"
   local b = cursor - math.floor(settings.showamount/2)
   local showall = false
@@ -345,8 +345,13 @@ function playlist()
         end
       end
     end
-    popen:close()
-    if c2 > 0 or c>0 then mp.osd_message("Added "..c.." files before and "..c2.." files after current file") end
+    popen:close()    
+    if c2 > 0 or c>0 then 
+      mp.osd_message("Added "..c.." files before and "..c2.." files after current file")
+      mp.add_timeout(2, showplaylist)
+    else
+      mp.osd_message("No additional files found")
+    end
     cursor = mp.get_property_number('playlist-pos', 1)
   else
     msg.error("Could not scan for files: "..(err or ""))
