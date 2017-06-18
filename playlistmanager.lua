@@ -68,9 +68,9 @@ local settings = {
 
   --playlist display signs, {"prefix", "suffix"}
   --currently playing file 
-  playing_str = {"▶ - ", ""},
+  playing_str = {"▷ - ", ""},
   --cursor is ontop of playing file
-  playing_and_cursor_str = {"▶ > ", ""},
+  playing_and_cursor_str = {"▶ - ", ""},
   --cursor file prefix and suffix
   cursor_str = {"● - ", ""},
   --non cursor file prefix and suffix
