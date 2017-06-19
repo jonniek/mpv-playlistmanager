@@ -369,13 +369,13 @@ function save_playlist()
     msg.error("Error in creating playlist file, check permissions and paths: "..(err or ""))
   else
     local i=0
-    local pwd = mp.get_property("working-directory")
-    local filename = mp.get_property('playlist/'..i..'/filename')
-    local fullpath = filename
-    if not filename:match("^%a%a+:%/%/") then
-      fullpath = utils.join_path(pwd, filename)
-    end
     while i < length do
+    	local pwd = mp.get_property("working-directory")
+	    local filename = mp.get_property('playlist/'..i..'/filename')
+	    local fullpath = filename
+	    if not filename:match("^%a%a+:%/%/") then
+	      fullpath = utils.join_path(pwd, filename)
+	    end
       file:write(fullpath, "\n")
       i=i+1
     end
