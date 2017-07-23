@@ -43,7 +43,7 @@ local settings = {
   ]]--
 
   --set title of window with stripped name, prefix and suffix("" for empty suffix)
-  set_title_stripped = true,
+  set_title_stripped = false,
   title_prefix = "",
   title_suffix = " - mpv",
 
@@ -52,7 +52,7 @@ local settings = {
 
   --show playlist every time a new file is loaded
   --NOTE: using osd-playing-message will interfere with this setting, if you prefer it use 0 here
-  --2 shows playlist, 1 shows current file(filename strip above applied), 0 shows nothing
+  --2 shows playlist, 1 shows current file(filename strip applied), 0 shows nothing
   --instead of using this you can also call script-message playlistmanager show playlist/filename
   --ex. KEY playlist-next ; script-message playlistmanager show playlist
   show_playlist_on_fileload = 0,
