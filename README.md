@@ -12,7 +12,7 @@ Default visual cues:
 ○ - rest of the files  
 
 ## Settings
-You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf`lua-setting file. Some of the settings are rather complex so it's better to edit them in the lua. Saveplaylist will require you to set the path in settings variable to a path in your system(on windows escape every backslash with a backslash).
+You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf`lua-setting file. There is a playlistmanager.conf file in this repo with the default values of the script. Saveplaylist will require you to set the path in settings variable to a path in your system.
 
 ## Keybinds
 #### Static keybindings

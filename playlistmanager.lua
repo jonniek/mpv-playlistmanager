@@ -1,54 +1,52 @@
 local settings = {
+
+  -- #### FUNCTIONALITY SETTINGS
+
+  --replaces matches on filenames based on extension, put as false to not replace anything
+  --replaces executed in order, if order doesn't matter many rules can be placed inside one rule object
+  --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
+  --uses json and parses it into a lua table
+  
+  filename_replace = ""
+  --[[] remove one [ from this line the whole line above if you want to use the sample json below
+
+  --Sample replace: replaces underscore to space on all files
+  --for mp4 and webm; remove extension, remove brackets and surrounding whitespace, change dot between alphanumeric to space
+  filename_replace = [[
+    [
+      {
+        "ext": { "all": true},
+        "rules": [
+          { "_" : " " }
+        ]
+      },{
+        "ext": { "mp4": true, "mkv": true },
+        "rules": [
+          { "^(.+)%..+$": "%1" },
+          { "%s*[%[%(].-[%]%)]%s*": "" },
+          { "(%w)%.(%w)": "%1 %2" }
+        ]
+      }
+    ]
+  ]],
+
+  --filetypes to search from directory, use empty string to search any
+  loadfiles_filetypes = [[
+    [
+      "mkv", "avi", "mp4", "ogv", "webm", "rmvb", "flv", "wmv",
+      "mpeg", "mpg", "m4v", "3gp","mp3", "wav", "ogv", "flac",
+      "m4a", "wma", "jpg", "gif", "png", "jpeg", "webp"
+    ]
+  ]],
+
   --linux=true, windows=false, nil=auto
-  linux_over_windows = nil,
+  linux_over_windows = true,
 
   --path where you want to save playlists, notice trailing \ or /. Do not use shortcuts like ~ or $HOME
   playlist_savepath = "/home/anon/Documents/",
 
-  --osd when navigating in seconds
-  osd_duration_seconds = 5,
-
-  --filetypes to search from directory, {''} for all, {'mkv','mp4'} for specific
-  loadfiles_filetypes = {'mkv', 'avi', 'mp4', 'ogv', 'webm', 'rmvb', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp',
-'mp3', 'wav', 'ogv', 'flac', 'm4a', 'wma', 'jpg', 'gif', 'png', 'jpeg', 'webp'},
-
   --sort playlist on mpv start
   sortplaylist_on_start = false,
-
-  --amount of entries to show before slicing. Optimal value depends on font/video size etc.
-  showamount = 13,
-
-  --replaces matches on filenames based on extension, put as false to not replace anything
-  --replaces executed in index order, if order doesn't matter many rules can be placed inside one index
-  --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
-  filename_replace = false,
-  --if you want to replace filenames you can remove above variable and uncomment the below one by removing --[[ and ]]--
-  --[[
-  filename_replace = {
-    [1] = {
-      ['ext'] = { ['all']=true },   --apply rule to all files
-      ['rules'] = {
-        [1] = { ['_'] = ' ' },  --change underscore to space
-      },
-    },
-    [2] = {
-      ['ext'] = { ['mkv']=true, ['mp4']=true },   --apply rule to mkv and mp4 only
-      ['rules'] = {
-        [1] = { ['^(.+)%..+$']='%1' },          --remove extension
-        [2] = { ['%s*[%[%(].-[%]%)]%s*']='' },  --remove brackets, their content and surrounding white space
-        [3] = { ['(%w)%.(%w)']='%1 %2' },       --change dots between alphanumeric chars to spaces
-      },
-    },
-  },
-  ]]--
-
-  --set title of window with stripped name, prefix and suffix("" for empty suffix)
-  set_title_stripped = false,
-  title_prefix = "",
-  title_suffix = " - mpv",
-
-  --slice long filenames, and how many chars to show
-  slice_longfilenames = {false, 70},
 
   --show playlist every time a new file is loaded
   --NOTE: using osd-playing-message will interfere with this setting, if you prefer it use 0 here
@@ -66,41 +64,84 @@ local settings = {
   --allowing you to use common overlapping keybinds
   dynamic_binds = true,
 
-  --playlist display signs, {"prefix", "suffix"}
+
+
+  --####  VISUAL SETTINGS
+
+  --osd when navigating in seconds
+  osd_duration_seconds = 5,
+
+  --amount of entries to show before slicing. Optimal value depends on font/video size etc.
+  showamount = 13,
+
+  --set title of window with stripped name
+  set_title_stripped = false,
+  title_prefix = "",
+  title_suffix = " - mpv",
+
+  --slice long filenames, and how many chars to show
+  slice_longfilenames = false,
+  slice_longfilenames_amount = 70,
+
+  --show playing file in the first line -> Playing: file.mkv
+  show_playing_header = true,
+
+  --show cursor position/length meta -> Playlist - 3/6
+  show_playlist_meta = true,
+
+  --playlist display signs, prefix is before filename, and suffix after
   --currently playing file 
-  playing_str = {"▷ - ", ""},
+  playing_str_prefix = "▷ - ",
+  playing_str_suffix = "",
+
   --cursor is ontop of playing file
-  playing_and_cursor_str = {"▶ - ", ""},
+  playing_and_cursor_str_prefix = "▶ - ",
+  playing_and_cursor_str_suffix = "",
+
   --cursor file prefix and suffix
-  cursor_str = {"● - ", ""},
+  cursor_str_prefix = "● - ",
+  cursor_str_suffix ="",
+
   --non cursor file prefix and suffix
-  non_cursor_str = {"○ - ", ""},
+  non_cursor_str_prefix = "○ - ",
+  non_cursor_str_suffix = "",
+
   --when you select a file
-  cursor_str_selected = {"● = ", ""},
+  cursor_str_selected_prefix = "● = ",
+  cursor_str_selected_suffix = "",
+
   --when currently playing file is selected
-  playing_str_selected = {"▶ = ", ""},
+  playing_str_selected_prefix = "▶ = ",
+  playing_str_selected_suffix = "",
+
   --top and bottom if playlist entries are sliced off from display
-  playlist_sliced_str = {"...", "..."},
-  --show file playlistnumber before filename, second value is suffix after number
-  prefix_filenumber = {false, " - "},
+  playlist_sliced_prefix = "...",
+  playlist_sliced_suffix = "...",
+
+  --show file playlistnumber before filename ex 01 - ▷ - file.mkv
+  show_prefix_filenumber = false,
+  --show playlistnumber before other prefixes
+  show_prefix_filenumber_first = true,
+  --prefix and suffix will be before and after the raw playlistnumber
+  prefix_filenumber_prefix = '',
+  prefix_filenumber_suffix = ' - '
 
 }
 require 'mp.options'
 read_options(settings, "playlistmanager")
 
-
 local utils = require 'mp.utils'
 local msg = require 'mp.msg'
 
---check os
-if settings.linux_over_windows==nil then
-  local o = {}
-  if mp.get_property_native('options/vo-mmcss-profile', o) ~= o then
-    settings.linux_over_windows = false
-  else
-    settings.linux_over_windows = true
-  end
+--parse filename parsing json
+if(settings.filename_replace~="") then
+  settings.filename_replace = utils.parse_json(settings.filename_replace)
+else
+  settings.filename_replace = false
 end
+
+--parse loadfiles json
+settings.loadfiles_filetypes = utils.parse_json(settings.loadfiles_filetypes)
 
 function on_loaded()
   filename = mp.get_property("filename")
@@ -168,8 +209,8 @@ function stripfilename(pathfile)
       end
     end
   end
-  if settings.slice_longfilenames[1] and tmp:len()>settings.slice_longfilenames[2]+5 then
-    tmp = tmp:sub(1, settings.slice_longfilenames[2]).." ..."
+  if settings.slice_longfilenames and tmp:len()>settings.slice_longfilenames_amount+5 then
+    tmp = tmp:sub(1, settings.slice_longfilenames_amount).." ..."
   end
   return tmp
 end
@@ -188,8 +229,8 @@ function showplaylist(duration)
     local l_path, l_file = utils.split_path(mp.get_property('playlist/'..i..'/filename'))
     playlist[i] = stripfilename(l_file)
   end
-  output = "Playing: "..(strippedname or "undefined").."\n\n"
-  output = output.."Playlist - "..(cursor+1).." / "..plen.."\n"
+  output = settings.show_playing_header and "Playing: "..(strippedname or "undefined").."\n\n" or ""
+  output = settings.show_playlist_meta and output.."Playlist - "..(cursor+1).." / "..plen.."\n" or output
   local b = cursor - math.floor(settings.showamount/2)
   local showall = false
   local showrest = false
@@ -202,7 +243,7 @@ function showplaylist(duration)
     b=plen-settings.showamount
     showrest=true
   end
-  if b > 0 and not showall then output=output..settings.playlist_sliced_str[1].."\n" end
+  if b > 0 and not showall then output=output..settings.playlist_sliced_prefix.."\n" end
   for a=b,b+settings.showamount-1,1 do
     if a == plen then break end
     local prefix = ""
@@ -210,37 +251,37 @@ function showplaylist(duration)
     if a == pos then
       if a == cursor then
         if tag then
-          prefix = settings.playing_str_selected[1]
-          suffix = settings.playing_str_selected[2]
+          prefix = settings.playing_str_selected_prefix
+          suffix = settings.playing_str_selected_suffix
         else
-          prefix = settings.playing_and_cursor_str[1]
-          suffix = settings.playing_and_cursor_str[2]
+          prefix = settings.playing_and_cursor_str_prefix
+          suffix = settings.playing_and_cursor_str_suffix
         end
       else
-        prefix = settings.playing_str[1]
-        suffix = settings.playing_str[2]
+        prefix = settings.playing_str_prefix
+        suffix = settings.playing_str_suffix
       end
     elseif a == cursor then
       if tag then
-        prefix = settings.cursor_str_selected[1]
-        suffix = settings.cursor_str_selected[2]
+        prefix = settings.cursor_str_selected_prefix
+        suffix = settings.cursor_str_selected_suffix
       else
-        prefix = settings.cursor_str[1]
-        suffix = settings.cursor_str[2]
+        prefix = settings.cursor_str_prefix
+        suffix = settings.cursor_str_suffix
       end
     else
-      prefix = settings.non_cursor_str[1]
-      suffix = settings.non_cursor_str[2]
+      prefix = settings.non_cursor_str_prefix
+      suffix = settings.non_cursor_str_suffix
     end
     local prefix_num = ""
-    if settings.prefix_filenumber[1] then
+    if settings.show_prefix_filenumber then
       local base = tostring(plen):len()
-      prefix_num = string.format("%0"..base.."d%s", a, settings.prefix_filenumber[2])
+      prefix_num = string.format("%s%0"..base.."d%s", settings.prefix_filenumber_prefix, a, settings.prefix_filenumber_suffix)
     end
-    output = output..prefix..prefix_num..playlist[a]..suffix.."\n"
-    if a == pos then output = output..settings.playing_str[2] end
+    local fullprefix = settings.show_prefix_filenumber_first and prefix_num..prefix or prefix..prefix_num
+    output = output..fullprefix..playlist[a]..suffix.."\n"
     if a == b+settings.showamount-1 and not showall and not showrest then
-      output=output..settings.playlist_sliced_str[2]
+      output=output..settings.playlist_sliced_suffix
     end
   end
   mp.osd_message(output, (tonumber(duration) or settings.osd_duration_seconds))
@@ -370,12 +411,12 @@ function save_playlist()
   else
     local i=0
     while i < length do
-    	local pwd = mp.get_property("working-directory")
-	    local filename = mp.get_property('playlist/'..i..'/filename')
-	    local fullpath = filename
-	    if not filename:match("^%a%a+:%/%/") then
-	      fullpath = utils.join_path(pwd, filename)
-	    end
+      local pwd = mp.get_property("working-directory")
+      local filename = mp.get_property('playlist/'..i..'/filename')
+      local fullpath = filename
+      if not filename:match("^%a%a+:%/%/") then
+        fullpath = utils.join_path(pwd, filename)
+      end
       file:write(fullpath, "\n")
       i=i+1
     end
