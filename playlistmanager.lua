@@ -39,7 +39,7 @@ local settings = {
     ]
   ]],
 
-  --linux=true, windows=false, nil=auto
+  --linux=true, windows=false
   linux_over_windows = true,
 
   --path where you want to save playlists, notice trailing \ or /. Do not use shortcuts like ~ or $HOME
