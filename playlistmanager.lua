@@ -151,8 +151,15 @@ settings.loadfiles_filetypes = utils.parse_json(settings.loadfiles_filetypes)
 
 function on_loaded()
   filename = mp.get_property("filename")
-  path = utils.join_path(mp.get_property('working-directory'), mp.get_property('path'))
-  directory = utils.split_path(path)
+  path = mp.get_property('path')
+  --if not a url then join path with working directory
+  if not path:match("^%a%a+:%/%/") then
+    path = utils.join_path(mp.get_property('working-directory'), path)
+    directory = utils.split_path(path)
+  else
+    directory = nil
+  end
+  
   refresh_globals()
 
   if settings.sync_cursor_on_load then cursor=pos end
@@ -382,9 +389,9 @@ end
 --to change what extensions are accepted change settings.loadfiles_filetypes
 function playlist(force_dir)
   refresh_globals()
+  if not directory and plen > 0 then return end
   remove_keybinds()
   local hasfile = true
-  if (not path or not directory) and plen > 0 then return end
   if plen == 0 then
     hasfile = false
     dir = mp.get_property('working-directory')
