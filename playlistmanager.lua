@@ -213,7 +213,7 @@ function create_searchquery(path, extensions, unix)
     end
   end
   if unix then
-    return 'cd "'..escapepath(path, '"')..'";ls -1vp'..query..'2>/dev/null'
+    return 'cd "'..escapepath(path, '"')..'";ls -1p'..query..'2>/dev/null'
   else
     return 'dir /b'..query:gsub("/", "\\")
   end
