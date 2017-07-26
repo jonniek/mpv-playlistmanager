@@ -164,6 +164,18 @@ function on_loaded()
     mp.commandv('show-text', strippedname)
   end
   if settings.set_title_stripped then mp.set_property("title", settings.title_prefix..strippedname..settings.title_suffix) end
+
+  --if we promised to load files on launch do it
+  if promised_load then
+    promised_load = false
+    playlist()
+  end
+
+  if promised_sort then
+    promised_sort = false
+    sortplaylist()
+  end
+  
 end
 
 function on_closed()
@@ -508,17 +520,19 @@ if not settings.dynamic_binds then
   add_keybinds()
 end
 
+promised_load = false
 if settings.loadfiles_on_start then
   local c = mp.get_property_number('playlist-count', 0)
   if c == 1 then
-    mp.add_timeout(0.5, playlist)
+    promised_load = true
   elseif c == 0 then
     playlist()
   end
 end
 
+promised_sort = false
 if settings.sortplaylist_on_start then
-  mp.add_timeout(0.03, sortplaylist)
+  promised_sort = true
 end
 
 --script message handler
