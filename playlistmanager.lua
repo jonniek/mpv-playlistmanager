@@ -7,9 +7,9 @@ local settings = {
   --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
   --uses json and parses it into a lua table
   
-  filename_replace = ""
-  --[[] remove one [ from this line the whole line above if you want to use the sample json below
+  filename_replace = "",
 
+--[=====[ START OF SAMPLE REPLACE, to use remove start and end line.
   --Sample replace: replaces underscore to space on all files
   --for mp4 and webm; remove extension, remove brackets and surrounding whitespace, change dot between alphanumeric to space
   filename_replace = [[
@@ -29,8 +29,10 @@ local settings = {
       }
     ]
   ]],
+--END OF SAMPLE REPLACE ]=====]
 
-  --filetypes to search from directory, use empty string to search any
+  --json array of filetypes to search from directory
+  --use empty string in array to search any(not recommended)
   loadfiles_filetypes = [[
     [
       "mkv", "avi", "mp4", "ogv", "webm", "rmvb", "flv", "wmv",
@@ -39,14 +41,18 @@ local settings = {
     ]
   ]],
 
-  --linux=true, windows=false
+  --loadfiles at startup if there is 0 or 1 items in playlist, if 0 uses worḱing dir for files
+  loadfiles_on_start = false,
+
+  --sort playlist on mpv start
+  sortplaylist_on_start = false,
+
+  --linux=true, windows=false, nil=auto
   linux_over_windows = true,
 
   --path where you want to save playlists, notice trailing \ or /. Do not use shortcuts like ~ or $HOME
   playlist_savepath = "/home/anon/Documents/",
 
-  --sort playlist on mpv start
-  sortplaylist_on_start = false,
 
   --show playlist every time a new file is loaded
   --NOTE: using osd-playing-message will interfere with this setting, if you prefer it use 0 here
@@ -362,22 +368,39 @@ end
 --Creates a playlist of all files in directory, will keep the order and position
 --For exaple, Folder has 12 files, you open the 5th file and run this, the remaining 7 are added behind the 5th file and prior 4 files before it
 --to change what extensions are accepted change settings.loadfiles_filetypes
-function playlist()
+function playlist(force_dir)
   refresh_globals()
-  if not path or not directory or plen == 0 then return end
-  local popen, err = io.popen(create_searchquery(directory, settings.loadfiles_filetypes, settings.linux_over_windows))
+  remove_keybinds()
+  local hasfile = true
+  if (not path or not directory) and plen > 0 then return end
+  if plen == 0 then
+    hasfile = false
+    dir = mp.get_property('working-directory')
+  else
+    dir = directory
+  end
+  if force_dir then dir = force_dir end
+
+  local query = create_searchquery(dir, settings.loadfiles_filetypes, settings.linux_over_windows)
+  local popen, err = io.popen(query)
   if popen then
     local cur = false
     local c, c2 = 0,0
     local filename = mp.get_property("filename")
     for file in popen:lines() do
       if file:sub(-1) ~= "/" then
+        local appendstr = "append"
+        if not hasfile then
+          cur = true
+          appendstr = "append-play"
+          hasfile = true
+        end
         if cur == true then
-          mp.commandv("loadfile", directory..file, "append")
+          mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
           msg.info("Appended to playlist: " .. file)
           c2 = c2 + 1
         elseif file ~= filename then
-            mp.commandv("loadfile", directory..file, "append")
+            mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
             msg.info("Prepended to playlist: " .. file)
             mp.commandv("playlist-move", mp.get_property_number("playlist-count", 1)-1,  c)
             c = c + 1
@@ -387,9 +410,8 @@ function playlist()
       end
     end
     popen:close()    
-    if c2 > 0 or c>0 then 
-      mp.osd_message("Added "..c.." files before and "..c2.." files after current file")
-      mp.add_timeout(2, showplaylist)
+    if c2 > 0 or c>0 then
+      mp.osd_message("Added "..c + c2.." files to playlist")
     else
       mp.osd_message("No additional files found")
     end
@@ -461,10 +483,6 @@ function shuffleplaylist()
   end
 end
 
-if settings.sortplaylist_on_start then
-  mp.add_timeout(0.03, sortplaylist)
-end
-
 function add_keybinds()
   mp.add_forced_key_binding('UP', 'moveup', moveup, "repeatable")
   mp.add_forced_key_binding('DOWN', 'movedown', movedown, "repeatable")
@@ -490,6 +508,19 @@ if not settings.dynamic_binds then
   add_keybinds()
 end
 
+if settings.loadfiles_on_start then
+  local c = mp.get_property_number('playlist-count', 0)
+  if c == 1 then
+    mp.add_timeout(0.5, playlist)
+  elseif c == 0 then
+    playlist()
+  end
+end
+
+if settings.sortplaylist_on_start then
+  mp.add_timeout(0.03, sortplaylist)
+end
+
 --script message handler
 function handlemessage(msg, value, value2)
   if msg == "show" and value == "playlist" then showplaylist(value2) ; return end
@@ -497,17 +528,17 @@ function handlemessage(msg, value, value2)
   if msg == "show" and value == "filename" and strippedname then mp.commandv('show-text', strippedname ) ; return end
   if msg == "sort" then sortplaylist() ; return end
   if msg == "shuffle" then shuffleplaylist() ; return end
-  if msg == "loadfiles" then playlist() ; return end
+  if msg == "loadfiles" then playlist(value) ; return end
   if msg == "save" then save_playlist() ; return end
 end
 
 mp.register_script_message("playlistmanager", handlemessage)
 
-mp.add_key_binding('CTRL+p', 'sortplaylist', sortplaylist)
-mp.add_key_binding('CTRL+P', 'shuffleplaylist', shuffleplaylist)
-mp.add_key_binding('P', 'loadfiles', playlist)
-mp.add_key_binding('p', 'saveplaylist', save_playlist)
-mp.add_key_binding('SHIFT+ENTER', 'showplaylist', showplaylist)
+mp.add_key_binding("CTRL+p", "sortplaylist", sortplaylist)
+mp.add_key_binding("CTRL+P", "shuffleplaylist", shuffleplaylist)
+mp.add_key_binding("P", "loadfiles", playlist)
+mp.add_key_binding("p", "saveplaylist", save_playlist)
+mp.add_key_binding("SHIFT+ENTER", "showplaylist", showplaylist)
 
-mp.register_event('file-loaded', on_loaded)
-mp.register_event('end-file', on_closed)
+mp.register_event("file-loaded", on_loaded)
+mp.register_event("end-file", on_closed)

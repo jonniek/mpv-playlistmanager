@@ -12,7 +12,7 @@ Default visual cues:
 ○ - rest of the files  
 
 ## Settings
-You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf`lua-setting file. There is a playlistmanager.conf file in this repo with the default values of the script. Saveplaylist will require you to set the path in settings variable to a path in your system.
+You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf`lua-setting file. There is a playlistmanager.conf file in this repo with the default values of the script. You can also pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`. Saveplaylist will require you to set the path in settings variable to a path in your system.
 
 ## Keybinds
 #### Static keybindings
@@ -21,7 +21,7 @@ You can modify behaviour of the script in the settings variable in the lua file 
 - __shuffleplaylist__(CTRL+P)  
   - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesnt shuffle current file.  
 - __loadfiles__(P)
-  - Attempts to load all files from the currently playing files directory to the playlist keeping the order. Much like [autoload](https://github.com/mpv-player/mpv/blob/master/TOOLS/lua/autoload.lua) 
+  - Attempts to load all files from the currently playing files directory to the playlist keeping the order. Option to run at startup(see settings above) if 0 or 1 files are opened, with 0 opens files from working directory. On startup with no file requires `--idle=yes or --idle=once`.  
 - __saveplaylist__(p)
   - Saves the current playlist to m3u file, change filepath in settings to a path in your system
 - __showplaylist__(SHIFT+ENTER)
@@ -53,7 +53,7 @@ Command | Value | Value2 | Effect
 show | playlist / filename | - / seconds | shows playlist / stripped filename for default or set seconds
 sort | - | - | Sorts the playlist
 shuffle | - | - | Shuffles the playlist
-loadfiles | - | - | Loads files from directory
+loadfiles | path | - | Loads files from playing files dir, or specified path
 save | - | - | Saves the playlist
     
     
