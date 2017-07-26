@@ -206,10 +206,10 @@ function create_searchquery(path, extensions, unix)
   local query = ' '
   for i in pairs(extensions) do
     if unix then
-      if extensions[i] ~= "" then extensions[i] = "*"..extensions[i] end
+      if extensions[i] ~= "" then extensions[i] = "*."..extensions[i] end
       query = query..extensions[i]..' '
     else
-      query = query..'"'..path..'*'..extensions[i]..'" '
+      query = query..'"'..path..'*.'..extensions[i]..'" '
     end
   end
   if unix then
