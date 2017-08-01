@@ -5,6 +5,7 @@ local settings = {
   --replaces matches on filenames based on extension, put as false to not replace anything
   --replaces executed in order, if order doesn't matter many rules can be placed inside one rule object
   --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
+  --'all' will match any extension or protocol if it has one
   --uses json and parses it into a lua table
   
   filename_replace = "",
@@ -12,6 +13,7 @@ local settings = {
 --[=====[ START OF SAMPLE REPLACE, to use remove start and end line.
   --Sample replace: replaces underscore to space on all files
   --for mp4 and webm; remove extension, remove brackets and surrounding whitespace, change dot between alphanumeric to space
+  --for http and https remove protocol and possible www. from beginning
   filename_replace = [[
     [
       {
@@ -25,6 +27,11 @@ local settings = {
           { "^(.+)%..+$": "%1" },
           { "%s*[%[%(].-[%]%)]%s*": "" },
           { "(%w)%.(%w)": "%1 %2" }
+        ]
+      },{
+        "protocol": { "http": true, "https": true },
+        "rules": [
+          { "^%a+://w*%.": "" }
         ]
       }
     ]
@@ -220,11 +227,13 @@ end
 
 function stripfilename(pathfile)
   local ext = pathfile:match("^.+%.(.+)$")
+  local protocol = pathfile:match("^(%a%a+)://")
   if not ext then ext = "" end
   local tmp = pathfile
   if settings.filename_replace then
     for k,v in ipairs(settings.filename_replace) do
-      if v['ext'][ext] or v['ext']['all'] then
+      if ( v['ext'] and (v['ext'][ext] or (ext and not protocol and v['ext']['all'])) )
+      or ( v['protocol'] and (v['protocol'][protocol] or (protocol and not ext and v['protocol']['all'])) ) then
         for ruleindex, indexrules in ipairs(v['rules']) do
           for rule, override in pairs(indexrules) do
             tmp = tmp:gsub(rule, override)
@@ -245,8 +254,11 @@ function get_name_from_index(i)
   if title then
     return title
   end
-  _, the_name = utils.split_path(mp.get_property('playlist/'..i..'/filename'))
-  return stripfilename(the_name)
+  local n = mp.get_property('playlist/'..i..'/filename')
+  if string.sub(n, 1, 1) == '/' then
+    _, n = utils.split_path(n)
+  end
+  return stripfilename(n)
 end
 
 function get_fixes_by_index(i)
