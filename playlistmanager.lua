@@ -71,7 +71,6 @@ local settings = {
   dynamic_binds = true,
 
 
-
   --####  VISUAL SETTINGS
 
   --osd when navigating in seconds
@@ -240,6 +239,55 @@ function stripfilename(pathfile)
   return tmp
 end
 
+function get_name_from_index(i)
+  local _, the_name = nil
+  local title = mp.get_property('playlist/'..i..'/title')
+  if title then
+    return title
+  end
+  _, the_name = utils.split_path(mp.get_property('playlist/'..i..'/filename'))
+  return stripfilename(the_name)
+end
+
+function get_fixes_by_index(i)
+  local prefix = ""
+  local suffix = ""
+  if i == pos then
+    if i == cursor then
+      if tag then
+        prefix = settings.playing_str_selected_prefix
+        suffix = settings.playing_str_selected_suffix
+      else
+        prefix = settings.playing_and_cursor_str_prefix
+        suffix = settings.playing_and_cursor_str_suffix
+      end
+    else
+      prefix = settings.playing_str_prefix
+      suffix = settings.playing_str_suffix
+    end
+  elseif i == cursor then
+    if tag then
+      prefix = settings.cursor_str_selected_prefix
+      suffix = settings.cursor_str_selected_suffix
+    else
+      prefix = settings.cursor_str_prefix
+      suffix = settings.cursor_str_suffix
+    end
+  else
+    prefix = settings.non_cursor_str_prefix
+    suffix = settings.non_cursor_str_suffix
+  end
+
+  local prefix_num = ""
+  if settings.show_prefix_filenumber then
+    local base = tostring(plen):len()
+    prefix_num = string.format("%s%0"..base.."d%s", settings.prefix_filenumber_prefix, i, settings.prefix_filenumber_suffix)
+  end
+  local fullprefix = settings.show_prefix_filenumber_first and prefix_num..prefix or prefix..prefix_num
+
+  return fullprefix, suffix
+end
+
 cursor = 0
 function showplaylist(duration)
   --update playlist length and position
@@ -248,64 +296,28 @@ function showplaylist(duration)
   if plen == 0 then return end
   add_keybinds()
   if cursor>plen then cursor=0 end
-  local playlist = {}
-  for i=0,plen-1,1
-  do
-    local l_path, l_file = utils.split_path(mp.get_property('playlist/'..i..'/filename'))
-    playlist[i] = stripfilename(l_file)
-  end
+
   output = settings.show_playing_header and "Playing: "..(strippedname or "undefined").."\n\n" or ""
   output = settings.show_playlist_meta and output.."Playlist - "..(cursor+1).." / "..plen.."\n" or output
-  local b = cursor - math.floor(settings.showamount/2)
+  local start = cursor - math.floor(settings.showamount/2)
   local showall = false
   local showrest = false
-  if b<0 then b=0 end
+  if start<0 then start=0 end
   if plen <= settings.showamount then
-    b=0
+    start=0
     showall=true
   end
-  if b > math.max(plen-settings.showamount-1, 0) then 
-    b=plen-settings.showamount
+  if start > math.max(plen-settings.showamount-1, 0) then 
+    start=plen-settings.showamount
     showrest=true
   end
-  if b > 0 and not showall then output=output..settings.playlist_sliced_prefix.."\n" end
-  for a=b,b+settings.showamount-1,1 do
-    if a == plen then break end
-    local prefix = ""
-    local suffix = ""
-    if a == pos then
-      if a == cursor then
-        if tag then
-          prefix = settings.playing_str_selected_prefix
-          suffix = settings.playing_str_selected_suffix
-        else
-          prefix = settings.playing_and_cursor_str_prefix
-          suffix = settings.playing_and_cursor_str_suffix
-        end
-      else
-        prefix = settings.playing_str_prefix
-        suffix = settings.playing_str_suffix
-      end
-    elseif a == cursor then
-      if tag then
-        prefix = settings.cursor_str_selected_prefix
-        suffix = settings.cursor_str_selected_suffix
-      else
-        prefix = settings.cursor_str_prefix
-        suffix = settings.cursor_str_suffix
-      end
-    else
-      prefix = settings.non_cursor_str_prefix
-      suffix = settings.non_cursor_str_suffix
-    end
-    local prefix_num = ""
-    if settings.show_prefix_filenumber then
-      local base = tostring(plen):len()
-      prefix_num = string.format("%s%0"..base.."d%s", settings.prefix_filenumber_prefix, a, settings.prefix_filenumber_suffix)
-    end
-    local fullprefix = settings.show_prefix_filenumber_first and prefix_num..prefix or prefix..prefix_num
-    output = output..fullprefix..playlist[a]..suffix.."\n"
-    if a == b+settings.showamount-1 and not showall and not showrest then
+  if start > 0 and not showall then output=output..settings.playlist_sliced_prefix.."\n" end
+  for index=start,start+settings.showamount-1,1 do
+    if index == plen then break end
+
+    local prefix, suffix = get_fixes_by_index(index)
+    output = output..prefix..get_name_from_index(index)..suffix.."\n"
+    if index == start+settings.showamount-1 and not showall and not showrest then
       output=output..settings.playlist_sliced_suffix
     end
   end
@@ -386,7 +398,6 @@ end
 
 --Creates a playlist of all files in directory, will keep the order and position
 --For exaple, Folder has 12 files, you open the 5th file and run this, the remaining 7 are added behind the 5th file and prior 4 files before it
---to change what extensions are accepted change settings.loadfiles_filetypes
 function playlist(force_dir)
   refresh_globals()
   if not directory and plen > 0 then return end
