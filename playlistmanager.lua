@@ -293,7 +293,7 @@ function get_fixes_by_index(i)
   local prefix_num = ""
   if settings.show_prefix_filenumber then
     local base = tostring(plen):len()
-    prefix_num = string.format("%s%0"..base.."d%s", settings.prefix_filenumber_prefix, i, settings.prefix_filenumber_suffix)
+    prefix_num = string.format("%s%0"..base.."d%s", settings.prefix_filenumber_prefix, i+1, settings.prefix_filenumber_suffix)
   end
   local fullprefix = settings.show_prefix_filenumber_first and prefix_num..prefix or prefix..prefix_num
 
