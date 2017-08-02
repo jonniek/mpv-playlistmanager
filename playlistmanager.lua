@@ -251,6 +251,10 @@ end
 function get_name_from_index(i)
   local _, the_name = nil
   local title = mp.get_property('playlist/'..i..'/title')
+  local mtitle = mp.get_property('media-title')
+  if i == pos and mp.get_property('filename') ~= mtitle then 
+    title = mtitle
+  end
   if title then
     return title
   end
