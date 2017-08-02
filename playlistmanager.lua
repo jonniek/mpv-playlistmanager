@@ -255,7 +255,7 @@ function get_name_from_index(i)
     return title
   end
   local n = mp.get_property('playlist/'..i..'/filename')
-  if string.sub(n, 1, 1) == '/' then
+  if string.sub(n, 1, 1) == '/'  or n:match("^%a:[/\\]") then
     _, n = utils.split_path(n)
   end
   return stripfilename(n)
