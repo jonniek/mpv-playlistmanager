@@ -51,8 +51,8 @@ List of commands, values and their effects:
 Command | Value | Value2 | Effect
 --- | --- | --- | ---
 show | playlist / filename | - / seconds | shows playlist / stripped filename for default or set seconds
-sort | - | - | Sorts the playlist
-shuffle | startover | - | Shuffles the playlist, any value will start playlist from start on shuffle
+sort | startover | - | Sorts the playlist, any value will start playlist from start on sort
+shuffle | - | - | Shuffles the playlist
 loadfiles | path | - | Loads files from playing files dir, or specified path
 save | - | - | Saves the playlist
     
