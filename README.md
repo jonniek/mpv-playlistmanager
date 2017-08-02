@@ -17,7 +17,7 @@ You can modify behaviour of the script in the settings variable in the lua file 
 ## Keybinds
 #### Static keybindings
 - __sortplaylist__(CTRL+p)  
-  - Sorts the current playlist alphanumerically(file1-file100 in correct order, wip since some naming conventions still fail). Stops currently playing file and starts playlist from start of new playlist. Option to run at mpv start automatically in settings.  
+  - Sorts the current playlist with stripped values(no paths, media titles if available and usercreated strips applied). Option to use alphanumerical(nonpadded numbers in order). To start playlist from start you can use a script message `KEY script-message sortplaylist startover`.
 - __shuffleplaylist__(CTRL+P)  
   - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesnt shuffle current file.  
 - __loadfiles__(P)
@@ -52,7 +52,7 @@ Command | Value | Value2 | Effect
 --- | --- | --- | ---
 show | playlist / filename | - / seconds | shows playlist / stripped filename for default or set seconds
 sort | - | - | Sorts the playlist
-shuffle | - | - | Shuffles the playlist
+shuffle | startover | - | Shuffles the playlist, any value will start playlist from start on shuffle
 loadfiles | path | - | Loads files from playing files dir, or specified path
 save | - | - | Saves the playlist
     

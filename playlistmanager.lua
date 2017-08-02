@@ -54,7 +54,13 @@ local settings = {
   --sort playlist on mpv start
   sortplaylist_on_start = false,
 
-  --linux=true, windows=false, nil=auto
+  --sort playlist when files are added to playlist
+  sortplaylist_on_file_add = true,
+
+  --use alphanumerical sort
+  alphanumsort = true,
+
+  --linux=true, windows=false
   linux_over_windows = true,
 
   --path where you want to save playlists, notice trailing \ or /. Do not use shortcuts like ~ or $HOME
@@ -155,6 +161,14 @@ end
 --parse loadfiles json
 settings.loadfiles_filetypes = utils.parse_json(settings.loadfiles_filetypes)
 
+--global variables
+strippedname = nil
+path = nil
+directory = nil
+filename = nil
+pos=0
+plen=0
+
 function on_loaded()
   filename = mp.get_property("filename")
   path = mp.get_property('path')
@@ -186,7 +200,13 @@ function on_loaded()
 
   if promised_sort then
     promised_sort = false
-    sortplaylist()
+    sortplaylist(true)
+  end
+
+  if promised_sort_watch then
+    promised_sort_watch = false
+    mp.msg.info("Added files will automatically sorted")
+    mp.observe_property('playlist-count', "number", autosort)
   end
   
 end
@@ -249,6 +269,8 @@ function stripfilename(pathfile)
 end
 
 function get_name_from_index(i)
+  refresh_globals()
+  if i > plen - 1 then mp.msg.error("no index in playlist", i); return nil end
   local _, the_name = nil
   local title = mp.get_property('playlist/'..i..'/title')
   local mtitle = mp.get_property('media-title')
@@ -259,7 +281,7 @@ function get_name_from_index(i)
     return title
   end
   local n = mp.get_property('playlist/'..i..'/filename')
-  if string.sub(n, 1, 1) == '/'  or n:match("^%a:[/\\]") then
+  if string.sub(n, 1, 1) == '/' or n:match("^%a:[/\\]") then
     _, n = utils.split_path(n)
   end
   return stripfilename(n)
@@ -493,30 +515,50 @@ function save_playlist()
   end
 end
 
-function alphanumsort(o)
-  local function padnum(d) local dec, n = string.match(d, "(%.?)0*(.+)")
-    return #dec > 0 and ("%.12f"):format(d) or ("%s%03d%s"):format(dec, #n, n) end
-    table.sort(o, function(a,b)
-    return tostring(a):lower():gsub("%.?%d+",padnum)..("%3d"):format(#b)
-         < tostring(b):lower():gsub("%.?%d+",padnum)..("%3d"):format(#a) end)
-  return o
+function alphanumsort(a, b)
+  local function padnum(d)
+    local dec, n = string.match(d, "(%.?)0*(.+)")
+    return #dec > 0 and ("%.12f"):format(d) or ("%s%03d%s"):format(dec, #n, n)
+  end
+  return tostring(a):lower():gsub("%.?%d+",padnum)..("%3d"):format(#b)
+       < tostring(b):lower():gsub("%.?%d+",padnum)..("%3d"):format(#a)
 end
 
-function sortplaylist()
+function dosort(a,b)
+  if settings.alphanumsort then
+    return alphanumsort(a,b)
+  else
+    return a < b
+  end
+end
+
+function sortplaylist(startover)
   local length = mp.get_property_number('playlist-count', 0)
   if length < 2 then return end
-  local playlist = {}
-  for i=0,length,1
-  do
-    playlist[i+1] = mp.get_property('playlist/'..i..'/filename')
+  --use insertion sort on playlist to make it easy to order files with playlist-move
+  for outer=1, length-1, 1 do
+    local outerfile = get_name_from_index(outer)
+    local inner = outer - 1
+    while inner >= 0 and dosort(outerfile, get_name_from_index(inner)) do
+      inner = inner - 1
+    end
+    inner = inner + 1
+    if outer ~= inner then
+      mp.commandv('playlist-move', outer, inner)
+    end
   end
-  alphanumsort(playlist)
-  local first = true
-  for index,file in pairs(playlist) do
-    mp.commandv("loadfile", file, first and "replace" or "append")
-    first = false
+  cursor = mp.get_property_number('playlist-pos', 0)
+  if startover then
+    mp.set_property('playlist-pos', 0)
   end
-  cursor = 0
+end
+
+function autosort(name, param)
+  if param == 0 then return end
+  if plen < param then
+    refresh_globals()
+    sortplaylist()
+  end
 end
 
 function shuffleplaylist()
@@ -564,6 +606,11 @@ if settings.loadfiles_on_start then
   end
 end
 
+promised_sort_watch = false
+if settings.sortplaylist_on_file_add then
+  promised_sort_watch = true
+end
+
 promised_sort = false
 if settings.sortplaylist_on_start then
   promised_sort = true
@@ -574,7 +621,7 @@ function handlemessage(msg, value, value2)
   if msg == "show" and value == "playlist" then showplaylist(value2) ; return end
   if msg == "show" and value == "filename" and strippedname and value2 then mp.commandv('show-text', strippedname, tonumber(value2)*1000 ) ; return end
   if msg == "show" and value == "filename" and strippedname then mp.commandv('show-text', strippedname ) ; return end
-  if msg == "sort" then sortplaylist() ; return end
+  if msg == "sort" then sortplaylist(value) ; return end
   if msg == "shuffle" then shuffleplaylist() ; return end
   if msg == "loadfiles" then playlist(value) ; return end
   if msg == "save" then save_playlist() ; return end
