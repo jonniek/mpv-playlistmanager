@@ -166,8 +166,11 @@ strippedname = nil
 path = nil
 directory = nil
 filename = nil
-pos=0
-plen=0
+pos = 0
+plen = 0
+cursor = 0
+--array for saved media titles for later
+url_map = {}
 
 function on_loaded()
   filename = mp.get_property("filename")
@@ -245,12 +248,13 @@ function create_searchquery(path, extensions, unix)
   end
 end
 
-function stripfilename(pathfile)
+--strip a filename based on its extension or protocol according to rules in settings
+function stripfilename(pathfile, media_title)
   local ext = pathfile:match("^.+%.(.+)$")
   local protocol = pathfile:match("^(%a%a+)://")
   if not ext then ext = "" end
   local tmp = pathfile
-  if settings.filename_replace then
+  if settings.filename_replace and not media_title then
     for k,v in ipairs(settings.filename_replace) do
       if ( v['ext'] and (v['ext'][ext] or (ext and not protocol and v['ext']['all'])) )
       or ( v['protocol'] and (v['protocol'][protocol] or (protocol and not ext and v['protocol']['all'])) ) then
@@ -268,25 +272,38 @@ function stripfilename(pathfile)
   return tmp
 end
 
+--gets a nicename of playlist entry at 0-based position i
 function get_name_from_index(i)
   refresh_globals()
-  if i > plen - 1 then mp.msg.error("no index in playlist", i); return nil end
-  local _, the_name = nil
+  if plen <= i then mp.msg.error("no index in playlist", i, "length", plen); return nil end
+  local _, name = nil
   local title = mp.get_property('playlist/'..i..'/title')
-  local mtitle = mp.get_property('media-title')
-  if i == pos and mp.get_property('filename') ~= mtitle then 
-    title = mtitle
+  local name = mp.get_property('playlist/'..i..'/filename')
+
+  --check if file has a media title stored or as property
+  if not title then
+    local mtitle = mp.get_property('media-title')
+    if i == pos and mp.get_property('filename') ~= mtitle then
+      if not url_map[name] then
+        url_map[name] = mtitle
+      end
+      title = mtitle
+    elseif url_map[name] then
+      title = url_map[name]
+    end
   end
-  if title then
-    return title
+
+  --if we have media title use a more conservative strip
+  if title then return stripfilename(title, true) end
+
+  --remove paths if they exist, keeping protocols for stripping
+  if string.sub(name, 1, 1) == '/' or name:match("^%a:[/\\]") then
+    _, name = utils.split_path(name)
   end
-  local n = mp.get_property('playlist/'..i..'/filename')
-  if string.sub(n, 1, 1) == '/' or n:match("^%a:[/\\]") then
-    _, n = utils.split_path(n)
-  end
-  return stripfilename(n)
+  return stripfilename(name)
 end
 
+--gets prefixes and suffixes for playlist 0-based index
 function get_fixes_by_index(i)
   local prefix = ""
   local suffix = ""
@@ -326,7 +343,6 @@ function get_fixes_by_index(i)
   return fullprefix, suffix
 end
 
-cursor = 0
 function showplaylist(duration)
   --update playlist length and position
   refresh_globals()
