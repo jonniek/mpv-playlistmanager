@@ -54,7 +54,7 @@ local settings = {
   sortplaylist_on_start = false,
 
   --sort playlist when files are added to playlist
-  sortplaylist_on_file_add = true,
+  sortplaylist_on_file_add = false,
 
   --use alphanumerical sort
   alphanumsort = true,
@@ -91,12 +91,14 @@ local settings = {
   playlist_display_timeout = 10,
 
   --amount of entries to show before slicing. Optimal value depends on font/video size etc.
-  showamount = 25,
+  showamount = 16,
 
-  --font-size for playlist
-  font_size = 10,
-  --font family for playlist, empty for osd font
-  font_family = "",
+  --inside curly brackets, \\keyvalue is one field
+  --example {\\fnUbuntu\\fs10\\b0\\bord1} equals: font=Ubuntu, size=10, bold=no, border=1
+  --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
+  --undeclared tags will use default osd settings
+  --these styles will be used for the whole playlist. More specific styling will need to be hacked in
+  style_ass_tags = "{\\fs10}",
   --paddings for top left corner
   text_padding_x = 10,
   text_padding_y = 30,
@@ -372,10 +374,7 @@ function draw_playlist()
   local ass = assdraw.ass_new()
   ass:new_event()
   ass:pos(settings.text_padding_x, settings.text_padding_y)
-  if settings.font_family then
-    ass:append("{\\fn" .. settings.font_family .."}")
-  end
-  ass:append("{\\fs"..tostring(settings.font_size).."}")
+  ass:append(settings.style_ass_tags)
 
   if settings.show_playing_header then
     ass:append("Playing: "..(strippedname or "undefined").."\\N\\N")
