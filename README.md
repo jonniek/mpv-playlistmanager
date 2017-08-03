@@ -59,7 +59,7 @@ save | - | - | Saves the playlist
     
     
 examples:  
-`RIGHT playlist-next ; script-message playlistmanager show playlist 3` Shows the playlist for 3 seconds after playlist-next  
+`RIGHT playlist-next ; script-message playlistmanager show playlist 3` Shows the playlist playlist-next  
 `KEY show-text "Shuffled playlist" ; script-message playlistmanager shuffle` Text message on shuffle  
   
 #### My other mpv scripts
