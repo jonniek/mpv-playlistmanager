@@ -182,6 +182,7 @@ local plen = 0
 local cursor = 0
 --table for saved media titles for later
 local url_table = {}
+local sort_watching = false
 
 function on_loaded()
   filename = mp.get_property("filename")
@@ -195,7 +196,6 @@ function on_loaded()
   end
   
   refresh_globals()
-
   if settings.sync_cursor_on_load then
     cursor=pos
     --refresh playlist if cursor moved
@@ -212,23 +212,29 @@ function on_loaded()
     mp.set_property("title", settings.title_prefix..strippedname..settings.title_suffix)
   end
 
+  local didload = false
   --if we promised to load files on launch do it
   if promised_load then
     promised_load = false
-    mp.msg.info("Loading files from playing files directory")
-    playlist()
+    --make sure that only one file was loaded(playlists open initially as one file)
+    if plen == 1 then
+      didload = true --save reference for sorting
+      mp.msg.info("Loading files from playing files directory")
+      playlist()
+    end
   end
 
   --if we promised to sort files on launch do it
   if promised_sort then
     promised_sort = false
     mp.msg.info("Your playlist is sorted before starting playback")
-    sortplaylist(true)
+    if didload then sortplaylist() else sortplaylist(true) end
   end
 
   --if we promised to listen and sort on playlist size increase do it
   if promised_sort_watch then
     promised_sort_watch = false
+    sort_watching = true
     mp.msg.info("Added files will be automatically sorted")
     mp.observe_property('playlist-count', "number", autosort)
   end
@@ -548,6 +554,10 @@ function playlist(force_dir)
   else
     msg.error("Could not scan for files: "..(err or ""))
   end
+  if sort_watching then
+    mp.msg.info("Ignoring directory structure and using playlist sort")
+    sortplaylist()
+  end
   refresh_globals()
   if playlist_visible then showplaylist() end
 end
@@ -619,6 +629,7 @@ end
 function autosort(name, param)
   if param == 0 then return end
   if plen < param then
+    mp.msg.info("Playlistmanager autosorting playlist")
     refresh_globals()
     sortplaylist()
   end
