@@ -43,7 +43,7 @@ You can modify behaviour of the script in the settings variable in the lua file 
 Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. The reason for the dynamic keybinds is that many people and scripts want to use arrow keys so overriding them only when using the playlist is more convienient. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`  
   
   
-There is alsoa few script messages you can send to control the script:  
+There is also a few script messages you can send to control the script:  
 `KEY script-message playlistmanager command value value2`  
   
 List of commands, values and their effects:  
@@ -54,7 +54,7 @@ show | playlist | - / toggle | shows or toggles playlist
 show | filename | - / seconds | shows stripped filename for default or set seconds
 sort | startover | - | Sorts the playlist, any value will start playlist from start on sort
 shuffle | - | - | Shuffles the playlist
-loadfiles | path | - | Loads files from playing files dir, or specified path
+loadfiles | - / path | - | Loads files from playing files dir(default), or specified path
 save | - | - | Saves the playlist
     
     

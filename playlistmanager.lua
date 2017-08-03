@@ -87,7 +87,7 @@ local settings = {
 
   --####  VISUAL SETTINGS
 
-  --osd timeout on inactivity, with high value open_toggles this is good to be true
+  --osd timeout on inactivity, with high value on this open_toggles is good to be true
   playlist_display_timeout = 10,
 
   --amount of entries to show before slicing. Optimal value depends on font/video size etc.
