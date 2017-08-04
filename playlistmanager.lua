@@ -98,7 +98,7 @@ local settings = {
 
   --font size scales by window, if false requires larger font and padding sizes
   scale_playlist_by_window=true,
-  --inside curly brackets, \\keyvalue is one field
+  --inside curly brackets, \keyvalue is one field, extra \ for escape in lua
   --example {\\fnUbuntu\\fs10\\b0\\bord1} equals: font=Ubuntu, size=10, bold=no, border=1
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
   --undeclared tags will use default osd settings
@@ -117,11 +117,12 @@ local settings = {
   slice_longfilenames = false,
   slice_longfilenames_amount = 70,
 
-  --show playing file in the first line -> Playing: file.mkv
-  show_playing_header = true,
-
-  --show cursor position/length meta -> Playlist - 3/6
-  show_playlist_meta = true,
+  --Playlist header for info you want. One newline will be added after, additional ones with \\N
+  --%mediatitle or %filename = title or name of playing file
+  --%pos = position of playing file
+  --%cursor = position of navigation
+  --%plen = playlist lenght
+  playlist_header = "Playing: %filename\\N\\NPlaylist - %cursor/%plen",
 
   --playlist display signs, prefix is before filename, and suffix after
   --currently playing file 
@@ -376,17 +377,23 @@ function get_fixes_by_index(i)
   return fullprefix, suffix
 end
 
+function parse_string_props(string)
+  return string:gsub("%%pos", mp.get_property_number("playlist-pos",0)+1)
+               :gsub("%%plen", mp.get_property("playlist-count"))
+               :gsub("%%mediatitle", stripfilename(mp.get_property("media-title"), true))
+               :gsub("%%filename", stripfilename(mp.get_property("filename")))
+               :gsub("%%cursor", cursor+1)
+end
+
 function draw_playlist()
+  refresh_globals()
   local ass = assdraw.ass_new()
   ass:new_event()
   ass:pos(settings.text_padding_x, settings.text_padding_y)
   ass:append(settings.style_ass_tags)
 
-  if settings.show_playing_header then
-    ass:append("Playing: "..(stripfilename(mp.get_property('media-title')) or "undefined").."\\N\\N")
-  end
-  if settings.show_playlist_meta then
-    ass:append("Playlist - "..(cursor+1).." / "..plen.."\\N")
+  if settings.playlist_header ~= "" then
+    ass:append(parse_string_props(settings.playlist_header).."\\N")
   end
   local start = cursor - math.floor(settings.showamount/2)
   local showall = false
