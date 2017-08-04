@@ -96,6 +96,8 @@ local settings = {
   --amount of entries to show before slicing. Optimal value depends on font/video size etc.
   showamount = 16,
 
+  --font size scales by window, if false requires larger font and padding sizes
+  scale_playlist_by_window=true,
   --inside curly brackets, \\keyvalue is one field
   --example {\\fnUbuntu\\fs10\\b0\\bord1} equals: font=Ubuntu, size=10, bold=no, border=1
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
@@ -225,7 +227,7 @@ function on_loaded()
     --make sure that only one file was loaded(playlists open initially as one file)
     if plen == 1 then
       didload = true --save reference for sorting
-      mp.msg.info("Loading files from playing files directory")
+      msg.info("Loading files from playing files directory")
       playlist()
     end
   end
@@ -233,7 +235,7 @@ function on_loaded()
   --if we promised to sort files on launch do it
   if promised_sort then
     promised_sort = false
-    mp.msg.info("Your playlist is sorted before starting playback")
+    msg.info("Your playlist is sorted before starting playback")
     if didload then sortplaylist() else sortplaylist(true) end
   end
 
@@ -241,7 +243,7 @@ function on_loaded()
   if promised_sort_watch then
     promised_sort_watch = false
     sort_watching = true
-    mp.msg.info("Added files will be automatically sorted")
+    msg.info("Added files will be automatically sorted")
     mp.observe_property('playlist-count', "number", autosort)
   end
 end
@@ -306,7 +308,7 @@ end
 --gets a nicename of playlist entry at 0-based position i
 function get_name_from_index(i, notitle)
   refresh_globals()
-  if plen <= i then mp.msg.error("no index in playlist", i, "length", plen); return nil end
+  if plen <= i then msg.error("no index in playlist", i, "length", plen); return nil end
   local _, name = nil
   local title = mp.get_property('playlist/'..i..'/title')
   local name = mp.get_property('playlist/'..i..'/filename')
@@ -408,7 +410,9 @@ function draw_playlist()
       ass:append(settings.playlist_sliced_suffix)
     end
   end
-  mp.set_osd_ass(0, 0, ass.text)
+  local w, h = mp.get_osd_size()
+  if settings.scale_playlist_by_window then w,h = 0, 0 end
+  mp.set_osd_ass(w, h, ass.text)
 end
 
 function toggle_playlist()
@@ -558,7 +562,7 @@ function playlist(force_dir)
     msg.error("Could not scan for files: "..(err or ""))
   end
   if sort_watching then
-    mp.msg.info("Ignoring directory structure and using playlist sort")
+    msg.info("Ignoring directory structure and using playlist sort")
     sortplaylist()
   end
   refresh_globals()
@@ -632,7 +636,7 @@ end
 function autosort(name, param)
   if param == 0 then return end
   if plen < param then
-    mp.msg.info("Playlistmanager autosorting playlist")
+    msg.info("Playlistmanager autosorting playlist")
     refresh_globals()
     sortplaylist()
   end
