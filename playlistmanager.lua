@@ -117,12 +117,13 @@ local settings = {
   slice_longfilenames = false,
   slice_longfilenames_amount = 70,
 
-  --Playlist header for info you want. One newline will be added after, additional ones with \\N
+  --Playlist header for info you want. One newline will be added after
   --%mediatitle or %filename = title or name of playing file
   --%pos = position of playing file
   --%cursor = position of navigation
   --%plen = playlist lenght
-  playlist_header = "Playing: %mediatitle\\N\\NPlaylist - %cursor/%plen",
+  --%N = newline
+  playlist_header = "Playing: %mediatitle%N%NPlaylist - %cursor/%plen",
 
   --playlist display signs, prefix is before filename, and suffix after
   --currently playing file 
@@ -378,11 +379,12 @@ function get_fixes_by_index(i)
 end
 
 function parse_string_props(string)
-  return string:gsub("%%pos", mp.get_property_number("playlist-pos",0)+1)
+  return string:gsub("%%N", "\\N")
+               :gsub("%%pos", mp.get_property_number("playlist-pos",0)+1)
                :gsub("%%plen", mp.get_property("playlist-count"))
+               :gsub("%%cursor", cursor+1)
                :gsub("%%mediatitle", stripfilename(mp.get_property("media-title"), true))
                :gsub("%%filename", stripfilename(mp.get_property("filename")))
-               :gsub("%%cursor", cursor+1)
 end
 
 function draw_playlist()
