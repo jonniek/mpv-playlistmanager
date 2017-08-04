@@ -122,7 +122,7 @@ local settings = {
   --%pos = position of playing file
   --%cursor = position of navigation
   --%plen = playlist lenght
-  playlist_header = "Playing: %filename\\N\\NPlaylist - %cursor/%plen",
+  playlist_header = "Playing: %mediatitle\\N\\NPlaylist - %cursor/%plen",
 
   --playlist display signs, prefix is before filename, and suffix after
   --currently playing file 
