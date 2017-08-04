@@ -87,6 +87,9 @@ local settings = {
 
   --####  VISUAL SETTINGS
 
+  --prefer to display titles over filenames, sorting will still use filename to stay pure
+  prefer_titles = true,
+
   --osd timeout on inactivity, with high value on this open_toggles is good to be true
   playlist_display_timeout = 10,
 
@@ -182,8 +185,9 @@ local filename = nil
 local pos = 0
 local plen = 0
 local cursor = 0
---table for saved media titles for later
+--table for saved media titles for later if we prefer them
 local url_table = {}
+--state for if we sort on playlist size change
 local sort_watching = false
 
 function on_loaded()
@@ -300,7 +304,7 @@ function stripfilename(pathfile, media_title)
 end
 
 --gets a nicename of playlist entry at 0-based position i
-function get_name_from_index(i)
+function get_name_from_index(i, notitle)
   refresh_globals()
   if plen <= i then mp.msg.error("no index in playlist", i, "length", plen); return nil end
   local _, name = nil
@@ -308,7 +312,7 @@ function get_name_from_index(i)
   local name = mp.get_property('playlist/'..i..'/filename')
 
   --check if file has a media title stored or as property
-  if not title then
+  if not title and settings.prefer_titles then
     local mtitle = mp.get_property('media-title')
     if i == pos and mp.get_property('filename') ~= mtitle then
       if not url_table[name] then
@@ -321,7 +325,7 @@ function get_name_from_index(i)
   end
 
   --if we have media title use a more conservative strip
-  if title then return stripfilename(title, true) end
+  if title and not notitle and settings.prefer_titles then return stripfilename(title, true) end
 
   --remove paths if they exist, keeping protocols for stripping
   if string.sub(name, 1, 1) == '/' or name:match("^%a:[/\\]") then
@@ -377,7 +381,7 @@ function draw_playlist()
   ass:append(settings.style_ass_tags)
 
   if settings.show_playing_header then
-    ass:append("Playing: "..(strippedname or "undefined").."\\N\\N")
+    ass:append("Playing: "..(stripfilename(mp.get_property('media-title')) or "undefined").."\\N\\N")
   end
   if settings.show_playlist_meta then
     ass:append("Playlist - "..(cursor+1).." / "..plen.."\\N")
@@ -608,9 +612,9 @@ function sortplaylist(startover)
   if length < 2 then return end
   --use insertion sort on playlist to make it easy to order files with playlist-move
   for outer=1, length-1, 1 do
-    local outerfile = get_name_from_index(outer)
+    local outerfile = get_name_from_index(outer, true)
     local inner = outer - 1
-    while inner >= 0 and dosort(outerfile, get_name_from_index(inner)) do
+    while inner >= 0 and dosort(outerfile, get_name_from_index(inner, true)) do
       inner = inner - 1
     end
     inner = inner + 1

@@ -17,11 +17,11 @@ You can modify behaviour of the script in the settings variable in the lua file 
 ## Keybinds
 #### Static keybindings
 - __sortplaylist__(CTRL+p)  
-  - Sorts the current playlist with stripped values(no paths, media titles if available and usercreated strips applied). To start playlist from start you can use a script message `KEY script-message sortplaylist startover`. Settings involving sort include alphanumeric sort(nonpadded numbers in order), sort on mpv start and sort on file added to playlist.  
+  - Sorts the current playlist with stripped values from filename(not media title, no paths, usercreated strips applied). To start playlist from start you can use a script message `KEY script-message sortplaylist startover`. Settings involving sort include alphanumeric sort(nonpadded numbers in order, case insensitivity), sort on mpv start and sort on file added to playlist.  
 - __shuffleplaylist__(CTRL+P)  
   - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesnt shuffle current file.  
 - __loadfiles__(P)
-  - Attempts to load all files from the currently playing files directory to the playlist keeping the order. Option to run at startup(see settings above) if 0 or 1 files are opened, with 0 opens files from working directory. On startup with no file requires `--idle=yes or --idle=once`.  
+  - Attempts to load all files from the currently playing files directory to the playlist keeping the order. Option to run at startup if 0 or 1 files are opened, with 0 opens files from working directory. On startup with no file requires `--idle=yes or --idle=once`.  
 - __saveplaylist__(p)
   - Saves the current playlist to m3u file, change filepath in settings to a path in your system
 - __showplaylist__(SHIFT+ENTER)
@@ -40,7 +40,7 @@ You can modify behaviour of the script in the settings variable in the lua file 
   - Selects or unselects the file under the cursor
   - When moving the cursor the selected file will follow, allowing reordering of the playlist
 
-Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. The reason for the dynamic keybinds is that many people and scripts want to use arrow keys so overriding them only when using the playlist is more convienient. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`  
+Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`  
   
   
 There is also a few script messages you can send to control the script:  
@@ -59,7 +59,7 @@ save | - | - | Saves the playlist
     
     
 examples:  
-`RIGHT playlist-next ; script-message playlistmanager show playlist 3` Shows the playlist for 3 seconds after playlist-next  
+`RIGHT playlist-next ; script-message playlistmanager show playlist` Shows the playlist after playlist-next  
 `KEY show-text "Shuffled playlist" ; script-message playlistmanager shuffle` Text message on shuffle  
   
 #### My other mpv scripts
