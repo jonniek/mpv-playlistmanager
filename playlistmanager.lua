@@ -2,7 +2,7 @@ local settings = {
 
   -- #### FUNCTIONALITY SETTINGS
 
-  --replaces matches on filenames based on extension, put as false to not replace anything
+  --replaces matches on filenames based on extension, put as empty sting to not replace anything
   --replaces executed in order, if order doesn't matter many rules can be placed inside one rule object
   --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
   --'all' will match any extension or protocol if it has one
@@ -31,7 +31,7 @@ local settings = {
       },{
         "protocol": { "http": true, "https": true },
         "rules": [
-          { "^%a+://w*%.": "" }
+          { "^%a+://w*%.?": "" }
         ]
       }
     ]
@@ -62,7 +62,7 @@ local settings = {
   --linux=true, windows=false
   linux_over_windows = true,
 
-  --path where you want to save playlists, notice trailing \ or /. Do not use shortcuts like ~ or $HOME
+  --path where you want to save playlists. Do not use shortcuts like ~ or $HOME
   playlist_savepath = "/home/anon/Documents/",
 
 
@@ -81,14 +81,14 @@ local settings = {
   --allowing you to use common overlapping keybinds
   dynamic_binds = true,
 
-  --playlist open key will toggle visibility instead of refresh, best used with long duration
+  --playlist open key will toggle visibility instead of refresh, best used with long timeout
   open_toggles = true,
 
 
   --####  VISUAL SETTINGS
 
   --prefer to display titles over filenames, sorting will still use filename to stay pure
-  prefer_titles = true,
+  prefer_titles = false,
 
   --osd timeout on inactivity, with high value on this open_toggles is good to be true
   playlist_display_timeout = 10,
@@ -98,12 +98,12 @@ local settings = {
 
   --font size scales by window, if false requires larger font and padding sizes
   scale_playlist_by_window=true,
-  --inside curly brackets, \keyvalue is one field, extra \ for escape in lua
+  --playlist ass style overrides inside curly brackets, \keyvalue is one field, extra \ for escape in lua
   --example {\\fnUbuntu\\fs10\\b0\\bord1} equals: font=Ubuntu, size=10, bold=no, border=1
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
   --undeclared tags will use default osd settings
   --these styles will be used for the whole playlist. More specific styling will need to be hacked in
-  style_ass_tags = "{}",
+  style_ass_tags = "",
   --paddings for top left corner
   text_padding_x = 10,
   text_padding_y = 30,
