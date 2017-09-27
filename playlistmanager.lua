@@ -84,6 +84,9 @@ local settings = {
   --playlist open key will toggle visibility instead of refresh, best used with long timeout
   open_toggles = true,
 
+  --allow the playlist cursor to loop from end to start and vice versa
+  loop_cursor = true,
+
 
   --####  VISUAL SETTINGS
 
@@ -475,7 +478,7 @@ function moveup()
   if cursor~=0 then
     if tag then mp.commandv("playlist-move", cursor,cursor-1) end
     cursor = cursor-1
-  else
+  elseif settings.loop_cursor then
     if tag then mp.commandv("playlist-move", cursor,plen) end
     cursor = plen-1
   end
@@ -488,7 +491,7 @@ function movedown()
   if cursor ~= plen-1 then
     if tag then mp.commandv("playlist-move", cursor,cursor+2) end
     cursor = cursor + 1
-  else
+  elseif settings.loop_cursor then
     if tag then mp.commandv("playlist-move", cursor,0) end
     cursor = 0
   end
