@@ -2,18 +2,18 @@ local settings = {
 
   -- #### FUNCTIONALITY SETTINGS
 
-  --replaces matches on filenames based on extension, put as empty sting to not replace anything
-  --replaces executed in order, if order doesn't matter many rules can be placed inside one rule object
+  --replaces matches on filenames based on extension, put as empty string to not replace anything
+  --replace rules are executed in provided order
+  --replace rule key is the pattern and value is the replace value
   --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
   --'all' will match any extension or protocol if it has one
-  --uses json and parses it into a lua table
+  --uses json and parses it into a lua table to be able to support .conf file
   
   filename_replace = "",
 
---[=====[ START OF SAMPLE REPLACE, to use remove start and end line.
+--[=====[ START OF SAMPLE REPLACE, to use remove start and end line
   --Sample replace: replaces underscore to space on all files
   --for mp4 and webm; remove extension, remove brackets and surrounding whitespace, change dot between alphanumeric to space
-  --for http and https remove protocol and possible www. from beginning
   filename_replace = [[
     [
       {
@@ -107,7 +107,7 @@ local settings = {
   --undeclared tags will use default osd settings
   --these styles will be used for the whole playlist. More specific styling will need to be hacked in
   style_ass_tags = "",
-  --paddings for top left corner
+  --paddings from top left corner
   text_padding_x = 10,
   text_padding_y = 30,
 
@@ -120,11 +120,11 @@ local settings = {
   slice_longfilenames = false,
   slice_longfilenames_amount = 70,
 
-  --Playlist header for info you want. One newline will be added after
+  --Playlist header for info you want
   --%mediatitle or %filename = title or name of playing file
   --%pos = position of playing file
   --%cursor = position of navigation
-  --%plen = playlist lenght
+  --%plen = playlist length
   --%N = newline
   playlist_header = "Playing: %mediatitle%N%NPlaylist - %cursor/%plen",
 
@@ -502,14 +502,8 @@ function jumptofile()
   refresh_globals()
   if plen == 0 then return end
   tag = nil
-  if cursor < pos then
-    for x=1,math.abs(cursor-pos),1 do
-      mp.commandv("playlist-prev", "weak")
-    end
-  elseif cursor>pos then
-    for x=1,math.abs(cursor-pos),1 do
-      mp.commandv("playlist-next", "weak")
-    end
+  if cursor ~= pos then
+    mp.set_property("playlist-pos", cursor)
   else
     if cursor~=plen-1 then
       cursor = cursor + 1
