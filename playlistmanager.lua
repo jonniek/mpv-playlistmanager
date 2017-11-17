@@ -276,7 +276,7 @@ function create_searchquery(path, extensions, unix)
     if unix then
       query = query.."*."..extensions[i]..' '
     else
-      query = query..'"'..path..'*.'..extensions[i]..'" '
+      query = query..'"'..utils.join_path(path, '*.'..extensions[i])..'" '
     end
   end
   if unix then
