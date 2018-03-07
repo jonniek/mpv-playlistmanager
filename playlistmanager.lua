@@ -94,7 +94,7 @@ local settings = {
   prefer_titles = false,
 
   --osd timeout on inactivity, with high value on this open_toggles is good to be true
-  playlist_display_timeout = 10,
+  playlist_display_timeout = 5,
 
   --amount of entries to show before slicing. Optimal value depends on font/video size etc.
   showamount = 16,
@@ -430,7 +430,6 @@ end
 function toggle_playlist()
   if settings.open_toggles then
     if playlist_visible then
-      keybindstimer:kill()
       remove_keybinds()
       return
     end
@@ -510,7 +509,7 @@ function jumptofile()
     end
     mp.commandv("playlist-next", "weak")
   end
-  if not settings.show_playlist_on_fileload == 2 then
+  if settings.show_playlist_on_fileload ~= 2 then
     remove_keybinds()
   end
 end
@@ -668,6 +667,7 @@ function add_keybinds()
 end
 
 function remove_keybinds()
+  keybindstimer:kill()
   mp.set_osd_ass(0, 0, "")
   playlist_visible = false
   if settings.dynamic_binds then
