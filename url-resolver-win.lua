@@ -46,6 +46,6 @@ mp.add_periodic_timer(1, function()
   end
 end)
 
-mp.register_event('end-file', function()
+mp.register_event('shutdown', function()
   os.remove(tmpfile)
 end)
