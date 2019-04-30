@@ -14,6 +14,12 @@ Default visual cues:
 ## Settings
 You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file. The configuration file should be placed in `lua-settings` directory, not in `scripts`. There is a playlistmanager.conf file in this repo with the default values of the script. You can also pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`. Playlist saving feature will require you to set the `playlist_savepath` setting to a path in your system.
 
+#### Title resolver plugin
+If you want playlistmanager to fetch and display display titles
+instead of urls on playlist items you need to set `prefer_titles=true` in
+settings and also use `url-resolver-win.lua` script(windows only).
+I'm working on a linux version(see issues).
+
 ## Keybinds
 #### Static keybindings
 - __sortplaylist__(CTRL+p)  
@@ -56,11 +62,13 @@ sort | startover | - | Sorts the playlist, any value will start playlist from st
 shuffle | - | - | Shuffles the playlist
 loadfiles | - / path | - | Loads files from playing files dir(default), or specified path
 save | - | - | Saves the playlist
+addurl | url | title | Binds a title to an url(used by url-resolver)
     
     
 examples:  
 `RIGHT playlist-next ; script-message playlistmanager show playlist` Shows the playlist after playlist-next  
 `KEY show-text "Shuffled playlist" ; script-message playlistmanager shuffle` Text message on shuffle  
   
+
 #### My other mpv scripts
 - [collection of scripts](https://github.com/donmaiq/mpv-scripts)

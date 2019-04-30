@@ -727,6 +727,12 @@ function handlemessage(msg, value, value2)
   if msg == "shuffle" then shuffleplaylist() ; return end
   if msg == "loadfiles" then playlist(value) ; return end
   if msg == "save" then save_playlist() ; return end
+  if msg == "addurl" then
+    url_table[value] = value2
+    refresh_globals()
+    if playlist_visible then showplaylist() end
+    return
+  end
 end
 
 mp.register_script_message("playlistmanager", handlemessage)
