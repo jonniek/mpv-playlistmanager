@@ -15,10 +15,11 @@ Default visual cues:
 You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file. The configuration file should be placed in `lua-settings` directory, not in `scripts`. There is a playlistmanager.conf file in this repo with the default values of the script. You can also pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`. Playlist saving feature will require you to set the `playlist_savepath` setting to a path in your system.
 
 #### Title resolver plugin
-If you want playlistmanager to fetch and display display titles
-instead of urls on playlist items you need to set `prefer_titles=true` in
-settings and also use `url-resolver-win.lua` script(windows only).
-I'm working on a linux version(see issues).
+If you want playlistmanager to fetch and display titles
+of all playlist urls(mpv defaults to current file only) you will
+need to set `prefer_titles=true` in settings and also
+use `url-resolver-win.lua` script(windows only).
+I'm working on a linux version(see issues for a temporary solution).
 
 ## Keybinds
 #### Static keybindings
