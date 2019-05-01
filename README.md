@@ -12,7 +12,8 @@ Default visual cues:
 ○ - rest of the files  
 
 ## Settings
-You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file. The configuration file should be placed in `lua-settings` directory, not in `scripts`. There is a playlistmanager.conf file in this repo with the default values of the script. You can also pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`. Playlist saving feature will require you to set the `playlist_savepath` setting to a path in your system.
+You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file. The configuration file should be placed in `script-opts` directory, not in `scripts`. Note: the conf file will override any
+changed setting in the lua file. There is a playlistmanager.conf file in this repo with the default values of the script. You can also pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`. Playlist saving feature will require you to set the `playlist_savepath` setting to a path in your system.
 
 #### Title resolver plugin
 If you want playlistmanager to fetch and display titles
