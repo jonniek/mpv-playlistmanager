@@ -1,6 +1,7 @@
-local tmpfile = 'C:\\Windows\\Temp\\resolvedtitles.txt'
--- youtube-dl command, make sure to add the directory to path
+-- youtube-dl command, if it's not in PATH env use an absolute path
 local youtubedl = 'youtube-dl.exe'
+-- temporary file to store titles in
+local tmpfile = os.getenv("USERPROFILE") .. '\\AppData\\Local\\Temp\\resolvedurls.txt'
 
 local utils = require("mp.utils")
 local processed_urls = {}
@@ -23,7 +24,7 @@ mp.observe_property('playlist-count', "number", function()
             }
       
             $title = (]]..youtubedl..[[ --get-title ]]..filename..[[)
-            Add-Content ']]..tmpfile..[[' "]]..filename..[[ $title"
+            Add-Content "]]..tmpfile..[[" "]]..filename..[[ $title"
         }]]
       }
       utils.subprocess_detached({args=args})
