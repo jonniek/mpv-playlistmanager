@@ -735,6 +735,10 @@ function handlemessage(msg, value, value2)
   end
 end
 
+mp.observe_property('playlist-count', "number", function()
+  if playlist_visible then showplaylist() end
+end)
+
 mp.register_script_message("playlistmanager", handlemessage)
 
 mp.add_key_binding("CTRL+p", "sortplaylist", sortplaylist)
