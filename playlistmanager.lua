@@ -91,7 +91,7 @@ local settings = {
   --####  VISUAL SETTINGS
 
   --prefer to display titles over filenames, sorting will still use filename to stay pure
-  prefer_titles = false,
+  prefer_titles = true,
 
   --osd timeout on inactivity, with high value on this open_toggles is good to be true
   playlist_display_timeout = 5,
@@ -194,6 +194,8 @@ local plen = 0
 local cursor = 0
 --table for saved media titles for later if we prefer them
 local url_table = {}
+-- table for urls that we have request to be resolved to titles
+local requested_urls = {}
 --state for if we sort on playlist size change
 local sort_watching = false
 
@@ -706,6 +708,29 @@ if settings.sortplaylist_on_start then
   promised_sort = true
 end
 
+mp.observe_property('playlist-count', "number", function()
+  if playlist_visible then showplaylist() end
+
+  -- code to resolve url titles
+  local length = mp.get_property_number('playlist-count', 0)
+  if length < 2 then return end
+  local i=0
+  -- loop all items in playlist because we can't predict how it has changed
+  while i < length do
+    local filename = mp.get_property('playlist/'..i..'/filename')
+    local title = mp.get_property('playlist/'..i..'/title')
+    if filename:match('^https?://')
+      and not title
+      and not url_table[filename]
+      and not requested_urls[filename]
+    then
+      requested_urls[filename] = true
+      mp.commandv('script-message', 'resolveurltitle', filename)
+    end
+    i=i+1
+  end
+end)
+
 --script message handler
 function handlemessage(msg, value, value2)
   if msg == "show" and value == "playlist" then
@@ -734,10 +759,6 @@ function handlemessage(msg, value, value2)
     return
   end
 end
-
-mp.observe_property('playlist-count', "number", function()
-  if playlist_visible then showplaylist() end
-end)
 
 mp.register_script_message("playlistmanager", handlemessage)
 
