@@ -106,7 +106,7 @@ local settings = {
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
   --undeclared tags will use default osd settings
   --these styles will be used for the whole playlist. More specific styling will need to be hacked in
-  style_ass_tags = "",
+  style_ass_tags = "{}",
   --paddings from top left corner
   text_padding_x = 10,
   text_padding_y = 30,
@@ -120,50 +120,24 @@ local settings = {
   slice_longfilenames = false,
   slice_longfilenames_amount = 70,
 
-  --Playlist header for info you want
+  --Playlist header template
   --%mediatitle or %filename = title or name of playing file
   --%pos = position of playing file
   --%cursor = position of navigation
   --%plen = playlist length
   --%N = newline
-  playlist_header = "Playing: %mediatitle%N%NPlaylist - %cursor/%plen",
+  playlist_header = "[%cursor/%plen]",
 
-  --playlist display signs, prefix is before filename, and suffix after
-  --currently playing file 
-  playing_str_prefix = "▷ - ",
-  playing_str_suffix = "",
-
-  --cursor is ontop of playing file
-  playing_and_cursor_str_prefix = "▶ - ",
-  playing_and_cursor_str_suffix = "",
-
-  --cursor file prefix and suffix
-  cursor_str_prefix = "● - ",
-  cursor_str_suffix ="",
-
-  --non cursor file prefix and suffix
-  non_cursor_str_prefix = "○ - ",
-  non_cursor_str_suffix = "",
-
-  --when you select a file
-  cursor_str_selected_prefix = "● = ",
-  cursor_str_selected_suffix = "",
-
-  --when currently playing file is selected
-  playing_str_selected_prefix = "▶ = ",
-  playing_str_selected_suffix = "",
-
-  --top and bottom if playlist entries are sliced off from display
-  playlist_sliced_prefix = "...",
-  playlist_sliced_suffix = "...",
-
-  --show file playlistnumber before filename ex 01 - ▷ - file.mkv
-  show_prefix_filenumber = false,
-  --show playlistnumber before other prefixes
-  show_prefix_filenumber_first = true,
-  --prefix and suffix will be before and after the raw playlistnumber
-  prefix_filenumber_prefix = '',
-  prefix_filenumber_suffix = ' - '
+  --Playlist file templates
+  --%pos = position of playing file with preciding zeros
+  --%name = title or name of playing file
+  --%N = newline
+  normal_file = "○ %name",
+  hovered_file = "● %name",
+  selected_file = "➔ %name",
+  playing_file = "▷ %name",
+  playing_hovered_file = "▶ %name",
+  playing_selected_file = "➤ %name"
 
 }
 local opts = require("mp.options")
@@ -343,47 +317,7 @@ function get_name_from_index(i, notitle)
   return stripfilename(name)
 end
 
---gets prefixes and suffixes for playlist 0-based index
-function get_fixes_by_index(i)
-  local prefix = ""
-  local suffix = ""
-  if i == pos then
-    if i == cursor then
-      if tag then
-        prefix = settings.playing_str_selected_prefix
-        suffix = settings.playing_str_selected_suffix
-      else
-        prefix = settings.playing_and_cursor_str_prefix
-        suffix = settings.playing_and_cursor_str_suffix
-      end
-    else
-      prefix = settings.playing_str_prefix
-      suffix = settings.playing_str_suffix
-    end
-  elseif i == cursor then
-    if tag then
-      prefix = settings.cursor_str_selected_prefix
-      suffix = settings.cursor_str_selected_suffix
-    else
-      prefix = settings.cursor_str_prefix
-      suffix = settings.cursor_str_suffix
-    end
-  else
-    prefix = settings.non_cursor_str_prefix
-    suffix = settings.non_cursor_str_suffix
-  end
-
-  local prefix_num = ""
-  if settings.show_prefix_filenumber then
-    local base = tostring(plen):len()
-    prefix_num = string.format("%s%0"..base.."d%s", settings.prefix_filenumber_prefix, i+1, settings.prefix_filenumber_suffix)
-  end
-  local fullprefix = settings.show_prefix_filenumber_first and prefix_num..prefix or prefix..prefix_num
-
-  return fullprefix, suffix
-end
-
-function parse_string_props(string)
+function parse_header(string)
   return string:gsub("%%N", "\\N")
                :gsub("%%pos", mp.get_property_number("playlist-pos",0)+1)
                :gsub("%%plen", mp.get_property("playlist-count"))
@@ -391,6 +325,36 @@ function parse_string_props(string)
                :gsub("%%mediatitle", stripfilename(mp.get_property("media-title"), true))
                :gsub("%%filename", stripfilename(mp.get_property("filename")))
 end
+
+function parse_filename(string, name, index)
+  local base = tostring(plen):len()
+  return string:gsub("%%N", "\\N")
+               :gsub("%%pos", string.format("%0"..base.."d", index+1))
+               :gsub("%%name", stripfilename(name))
+end
+
+function parse_filename_by_index(index)
+  local template = settings.normal_file
+  if index == pos then
+    if index == cursor then
+      if tag then
+        template = settings.playing_selected_file
+      else
+        template = settings.playing_hovered_file
+      end
+    else
+      template = settings.playing_file
+    end
+  elseif index == cursor then
+    if tag then
+      template = settings.selected_file
+    else
+      template = settings.hovered_file
+    end
+  end
+  return parse_filename(template, get_name_from_index(index), index)
+end
+
 
 function draw_playlist()
   refresh_globals()
@@ -400,7 +364,7 @@ function draw_playlist()
   ass:append(settings.style_ass_tags)
 
   if settings.playlist_header ~= "" then
-    ass:append(parse_string_props(settings.playlist_header).."\\N")
+    ass:append(parse_header(settings.playlist_header).."\\N")
   end
   local start = cursor - math.floor(settings.showamount/2)
   local showall = false
@@ -418,8 +382,7 @@ function draw_playlist()
   for index=start,start+settings.showamount-1,1 do
     if index == plen then break end
 
-    local prefix, suffix = get_fixes_by_index(index)
-    ass:append(prefix..get_name_from_index(index)..suffix.."\\N")
+    ass:append(parse_filename_by_index(index).."\\N")
     if index == start+settings.showamount-1 and not showall and not showrest then
       ass:append(settings.playlist_sliced_suffix)
     end
