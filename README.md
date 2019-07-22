@@ -20,11 +20,11 @@ changed setting in the lua file. There is a playlistmanager.conf file in this re
 #### Url title resolving
 If you want playlistmanager to fetch and display titles
 of all playlist urls(mpv defaults to current file only) you will
-need to use `prefer_titles=true`(defaults to true) and also use
+need to use `prefer_titles=true`(defaults is true) and also use
 `titleresolver.lua` script found in this repository. The script
-doesn't support all characters on windows, so alternatively you
-can use `titleresolver-WINDOWS.lua` that uses powershell. Title
-resolving requires youtube-dl to be in available in PATH.
+requires `youtube-dl` to be in PATH to work. It doesn't support
+unicode characters in windows because windows is trash. Feel
+free to implement that yourself(see issue).
 
 ## Keybinds
 #### Static keybindings
