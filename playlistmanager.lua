@@ -137,7 +137,12 @@ local settings = {
   selected_file = "➔ %name",
   playing_file = "▷ %name",
   playing_hovered_file = "▶ %name",
-  playing_selected_file = "➤ %name"
+  playing_selected_file = "➤ %name",
+
+
+  -- what to show when playlist is truncated
+  playlist_sliced_prefix = "...",
+  playlist_sliced_suffix = "..."
 
 }
 local opts = require("mp.options")
