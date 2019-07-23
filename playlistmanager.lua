@@ -678,7 +678,6 @@ end
 
 mp.observe_property('playlist-count', "number", function()
   if playlist_visible then showplaylist() end
-
   -- code to resolve url titles
   local length = mp.get_property_number('playlist-count', 0)
   if length < 2 then return end
@@ -687,7 +686,9 @@ mp.observe_property('playlist-count', "number", function()
   while i < length do
     local filename = mp.get_property('playlist/'..i..'/filename')
     local title = mp.get_property('playlist/'..i..'/title')
-    if filename:match('^https?://')
+    if i ~= pos
+      and filename
+      and filename:match('^https?://')
       and not title
       and not url_table[filename]
       and not requested_urls[filename]
