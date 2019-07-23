@@ -22,9 +22,7 @@ If you want playlistmanager to fetch and display titles
 of all playlist urls(mpv defaults to current file only) you will
 need to use `prefer_titles=true`(defaults is true) and also use
 `titleresolver.lua` script found in this repository. The script
-requires `youtube-dl` to be in PATH to work. It doesn't support
-unicode characters in windows because windows is trash. Feel
-free to implement that yourself(see issue).
+requires `youtube-dl` to be in PATH to work.
 
 ## Keybinds
 #### Static keybindings
