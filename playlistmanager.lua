@@ -129,8 +129,8 @@ local settings = {
   playlist_header = "[%cursor/%plen]",
 
   --Playlist file templates
-  --%pos = position of playing file with preciding zeros
-  --%name = title or name of playing file
+  --%pos = position of file with leading zeros
+  --%name = title or name of file
   --%N = newline
   normal_file = "○ %name",
   hovered_file = "● %name",
@@ -561,6 +561,8 @@ function save_playlist()
       if not filename:match("^%a%a+:%/%/") then
         fullpath = utils.join_path(pwd, filename)
       end
+      local title = mp.get_property('playlist/'..i..'/title')
+      if title then file:write("#EXTINF:, "..title.."\n") end
       file:write(fullpath, "\n")
       i=i+1
     end
