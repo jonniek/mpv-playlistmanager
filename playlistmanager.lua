@@ -562,7 +562,7 @@ function save_playlist()
         fullpath = utils.join_path(pwd, filename)
       end
       local title = mp.get_property('playlist/'..i..'/title')
-      if title then file:write("#EXTINF:, "..title.."\n") end
+      if title then file:write("#EXTINF:,"..title.."\n") end
       file:write(fullpath, "\n")
       i=i+1
     end
