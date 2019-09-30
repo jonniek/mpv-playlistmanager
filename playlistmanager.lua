@@ -90,8 +90,8 @@ local settings = {
 
   --####  VISUAL SETTINGS
 
-  --prefer to display titles over filenames, sorting will still use filename to stay pure
-  prefer_titles = true,
+  --prefer to display titles for following files: "all", "url", "none". Sorting still uses filename.
+  prefer_titles = "url",
 
   --osd timeout on inactivity, with high value on this open_toggles is good to be true
   playlist_display_timeout = 5,
@@ -105,7 +105,7 @@ local settings = {
   --example {\\fnUbuntu\\fs10\\b0\\bord1} equals: font=Ubuntu, size=10, bold=no, border=1
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
   --undeclared tags will use default osd settings
-  --these styles will be used for the whole playlist. More specific styling will need to be hacked in
+  --these styles will be used for the whole playlist
   style_ass_tags = "{}",
   --paddings from top left corner
   text_padding_x = 10,
@@ -132,6 +132,9 @@ local settings = {
   --%pos = position of file with leading zeros
   --%name = title or name of file
   --%N = newline
+  --you can also use the ass tags mentioned above. For example:
+  --  selected_file="{\\c&HFF00FF&}➔ %name"   | to add a color for selected file. However, if you
+  --  use ass tags you need to reset them for every line (see https://github.com/jonniek/mpv-playlistmanager/issues/20)
   normal_file = "○ %name",
   hovered_file = "● %name",
   selected_file = "➔ %name",
@@ -299,8 +302,9 @@ function get_name_from_index(i, notitle)
   local title = mp.get_property('playlist/'..i..'/title')
   local name = mp.get_property('playlist/'..i..'/filename')
 
+  local should_use_title = settings.prefer_titles == 'all' or name:match('^https?://') and settings.prefer_titles == 'url'
   --check if file has a media title stored or as property
-  if not title and settings.prefer_titles then
+  if not title and should_use_title then
     local mtitle = mp.get_property('media-title')
     if i == pos and mp.get_property('filename') ~= mtitle then
       if not url_table[name] then
@@ -313,7 +317,7 @@ function get_name_from_index(i, notitle)
   end
 
   --if we have media title use a more conservative strip
-  if title and not notitle and settings.prefer_titles then return stripfilename(title, true) end
+  if title and not notitle and should_use_title then return stripfilename(title, true) end
 
   --remove paths if they exist, keeping protocols for stripping
   if string.sub(name, 1, 1) == '/' or name:match("^%a:[/\\]") then
@@ -680,6 +684,7 @@ end
 
 mp.observe_property('playlist-count', "number", function()
   if playlist_visible then showplaylist() end
+  if settings.prefer_titles == 'none' then return end
   -- code to resolve url titles
   local length = mp.get_property_number('playlist-count', 0)
   if length < 2 then return end
