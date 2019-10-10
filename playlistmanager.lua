@@ -272,6 +272,7 @@ end
 
 --strip a filename based on its extension or protocol according to rules in settings
 function stripfilename(pathfile, media_title)
+  if pathfile == nil then return '' end
   local ext = pathfile:match("^.+%.(.+)$")
   local protocol = pathfile:match("^(%a%a+)://")
   if not ext then ext = "" end
