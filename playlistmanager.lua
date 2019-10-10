@@ -242,6 +242,7 @@ function on_closed()
   path = nil
   directory = nil
   filename = nil
+  if playlist_visible then showplaylist() end
 end
 
 function refresh_globals()
@@ -345,7 +346,11 @@ end
 
 function parse_filename_by_index(index)
   local template = settings.normal_file
-  if index == pos then
+
+  local is_idle = mp.get_property_native('idle-active')
+  local position = is_idle and -1 or pos
+
+  if index == position then
     if index == cursor then
       if tag then
         template = settings.playing_selected_file
@@ -362,6 +367,7 @@ function parse_filename_by_index(index)
       template = settings.hovered_file
     end
   end
+
   return parse_filename(template, get_name_from_index(index), index)
 end
 
@@ -476,7 +482,8 @@ function jumptofile()
   refresh_globals()
   if plen == 0 then return end
   tag = nil
-  if cursor ~= pos then
+  local is_idle = mp.get_property_native('idle-active')
+  if cursor ~= pos or is_idle then
     mp.set_property("playlist-pos", cursor)
   else
     if cursor~=plen-1 then
