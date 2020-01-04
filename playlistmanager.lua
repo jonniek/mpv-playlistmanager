@@ -199,6 +199,11 @@ function on_loaded()
     if playlist_visible then draw_playlist() end
   end
 
+  local media_title = mp.get_property("media-title")
+  if path:match('^https?://') and not url_table[path] and path ~= media_title then
+    url_table[path] = media_title
+  end
+
   strippedname = stripfilename(mp.get_property('media-title'))
   if settings.show_playlist_on_fileload == 2 then
     showplaylist()
