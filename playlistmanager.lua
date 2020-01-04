@@ -334,19 +334,26 @@ function get_name_from_index(i, notitle)
 end
 
 function parse_header(string)
+  local esc_title = stripfilename(mp.get_property("media-title"), true):gsub("%%", "%%%%")
+  local esc_file = stripfilename(mp.get_property("filename")):gsub("%%", "%%%%")
   return string:gsub("%%N", "\\N")
                :gsub("%%pos", mp.get_property_number("playlist-pos",0)+1)
                :gsub("%%plen", mp.get_property("playlist-count"))
                :gsub("%%cursor", cursor+1)
-               :gsub("%%mediatitle", stripfilename(mp.get_property("media-title"), true))
-               :gsub("%%filename", stripfilename(mp.get_property("filename")))
+               :gsub("%%mediatitle", esc_title)
+               :gsub("%%filename", esc_file)
+               -- undo name escape
+               :gsub("%%%%", "%%")
 end
 
 function parse_filename(string, name, index)
   local base = tostring(plen):len()
+  local esc_name = stripfilename(name):gsub("%%", "%%%%")
   return string:gsub("%%N", "\\N")
                :gsub("%%pos", string.format("%0"..base.."d", index+1))
-               :gsub("%%name", stripfilename(name))
+               :gsub("%%name", esc_name)
+               -- undo name escape
+               :gsub("%%%%", "%%")
 end
 
 function parse_filename_by_index(index)
