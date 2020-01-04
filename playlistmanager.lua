@@ -572,7 +572,9 @@ end
 function save_playlist()
   local length = mp.get_property_number('playlist-count', 0)
   if length == 0 then return end
-  local savepath = utils.join_path(settings.playlist_savepath, os.time().."-size_"..length.."-playlist.m3u")
+  local date = os.date("*t")
+  local datestring = ("%02d-%02d-%02d_%02d-%02d-%02d"):format(date.year, date.month, date.day, date.hour, date.min, date.sec)
+  local savepath = utils.join_path(settings.playlist_savepath, datestring.."_playlist-size_"..length..".m3u")
   local file, err = io.open(savepath, "w")
   if not file then
     msg.error("Error in creating playlist file, check permissions and paths: "..(err or ""))
