@@ -2,6 +2,14 @@ local settings = {
 
   -- #### FUNCTIONALITY SETTINGS
 
+  -- dynamic keybinds, only active when playlist is visible
+  key_moveup = "UP",
+  key_movedown = "DOWN",
+  key_selectfile = "RIGHT",
+  key_unselectfile = "LEFT",
+  key_jumptofile = "ENTER",
+  key_removefile = "BS",
+  
   --replaces matches on filenames based on extension, put as empty string to not replace anything
   --replace rules are executed in provided order
   --replace rule key is the pattern and value is the replace value
@@ -364,7 +372,7 @@ function parse_filename_by_index(index)
 
   if index == position then
     if index == cursor then
-      if tag then
+      if selection then
         template = settings.playing_selected_file
       else
         template = settings.playing_hovered_file
@@ -373,7 +381,7 @@ function parse_filename_by_index(index)
       template = settings.playing_file
     end
   elseif index == cursor then
-    if tag then
+    if selection then
       template = settings.selected_file
     else
       template = settings.hovered_file
@@ -442,22 +450,27 @@ function showplaylist()
   keybindstimer:resume()
 end
 
-tag=nil
-function tagcurrent()
+selection=nil
+function selectfile()
   refresh_globals()
   if plen == 0 then return end
-  if not tag then
-    tag=cursor
+  if not selection then
+    selection=cursor
   else
-    tag=nil
+    selection=nil
   end
+  showplaylist()
+end
+
+function unselectfile()
+  selection=nil
   showplaylist()
 end
 
 function removefile()
   refresh_globals()
   if plen == 0 then return end
-  tag = nil
+  selection = nil
   if cursor==pos then mp.command("script-message unseenplaylist mark true \"playlistmanager avoid conflict when removing file\"") end
   mp.commandv("playlist-remove", cursor)
   if cursor==plen-1 then cursor = cursor - 1 end
@@ -468,10 +481,10 @@ function moveup()
   refresh_globals()
   if plen == 0 then return end
   if cursor~=0 then
-    if tag then mp.commandv("playlist-move", cursor,cursor-1) end
+    if selection then mp.commandv("playlist-move", cursor,cursor-1) end
     cursor = cursor-1
   elseif settings.loop_cursor then
-    if tag then mp.commandv("playlist-move", cursor,plen) end
+    if selection then mp.commandv("playlist-move", cursor,plen) end
     cursor = plen-1
   end
   showplaylist()
@@ -481,10 +494,10 @@ function movedown()
   refresh_globals()
   if plen == 0 then return end
   if cursor ~= plen-1 then
-    if tag then mp.commandv("playlist-move", cursor,cursor+2) end
+    if selection then mp.commandv("playlist-move", cursor,cursor+2) end
     cursor = cursor + 1
   elseif settings.loop_cursor then
-    if tag then mp.commandv("playlist-move", cursor,0) end
+    if selection then mp.commandv("playlist-move", cursor,0) end
     cursor = 0
   end
   showplaylist()
@@ -493,7 +506,7 @@ end
 function jumptofile()
   refresh_globals()
   if plen == 0 then return end
-  tag = nil
+  selection = nil
   local is_idle = mp.get_property_native('idle-active')
   if cursor ~= pos or is_idle then
     mp.set_property("playlist-pos", cursor)
@@ -657,11 +670,12 @@ function shuffleplaylist()
 end
 
 function add_keybinds()
-  mp.add_forced_key_binding('UP', 'moveup', moveup, "repeatable")
-  mp.add_forced_key_binding('DOWN', 'movedown', movedown, "repeatable")
-  mp.add_forced_key_binding('RIGHT', 'tagcurrent', tagcurrent)
-  mp.add_forced_key_binding('ENTER', 'jumptofile', jumptofile)
-  mp.add_forced_key_binding('BS', 'removefile', removefile, "repeatable")
+  mp.add_forced_key_binding(settings.key_moveup, 'moveup', moveup, "repeatable")
+  mp.add_forced_key_binding(settings.key_movedown, 'movedown', movedown, "repeatable")
+  mp.add_forced_key_binding(settings.key_selectfile, 'selectfile', selectfile)
+  mp.add_forced_key_binding(settings.key_unselectfile, 'unselectfile', unselectfile)
+  mp.add_forced_key_binding(settings.key_jumptofile, 'jumptofile', jumptofile)
+  mp.add_forced_key_binding(settings.key_removefile, 'removefile', removefile, "repeatable")
 end
 
 function remove_keybinds()
@@ -671,7 +685,8 @@ function remove_keybinds()
   if settings.dynamic_binds then
     mp.remove_key_binding('moveup')
     mp.remove_key_binding('movedown')
-    mp.remove_key_binding('tagcurrent')
+    mp.remove_key_binding('selectfile')
+    mp.remove_key_binding('unselectfile')
     mp.remove_key_binding('jumptofile')
     mp.remove_key_binding('removefile')
   end

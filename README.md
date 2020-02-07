@@ -46,12 +46,14 @@ requires `youtube-dl` to be in PATH to work.
   - Removes the file currently selected with the cursor from the playlist
 - __jumptofile__(Enter)
   - Opens the file currently selected with the cursor, if cursor on playing file, jump to next file
-- __tagcurrent__(RIGHT)
+- __selectfile__(RIGHT)
   - Selects or unselects the file under the cursor
   - When moving the cursor the selected file will follow, allowing reordering of the playlist
+- __unselectfile__(LEFT)
+  - Unselects the file under the cursor if it was selected
 
-Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`  
-  
+Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`. Dynamic keybindings can be rebound in 
+the settings to avoid overriding other conflicting keybinds.
   
 There is also a few script messages you can send to control the script:  
 `KEY script-message playlistmanager command value value2`  
