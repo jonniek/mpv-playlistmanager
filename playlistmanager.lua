@@ -10,7 +10,7 @@ local settings = {
   key_moveup = "UP",
   key_movedown = "DOWN",
   key_selectfile = "RIGHT LEFT",
-  key_unselectfile = nil,
+  key_unselectfile = "",
   key_playfile = "ENTER",
   key_removefile = "BS",
   key_closeplaylist = "ESC",
@@ -54,9 +54,9 @@ local settings = {
   --json array of filetypes to search from directory
   loadfiles_filetypes = [[
     [
-      "mkv", "avi", "mp4", "ogv", "webm", "rmvb", "flv", "wmv",
-      "mpeg", "mpg", "m4v", "3gp","mp3", "wav", "ogv", "flac",
-      "m4a", "wma", "jpg", "gif", "png", "jpeg", "webp"
+      "jpg", "jpeg", "png", "tif", "tiff", "gif", "webp", "svg", "bmp",
+      "mp3", "wav", "ogm", "flac", "m4a", "wma", "ogg", "opus",
+      "mkv", "avi", "mp4", "ogv", "webm", "rmvb", "flv", "wmv", "mpeg", "mpg", "m4v", "3gp"
     ]
   ]],
 
@@ -72,8 +72,8 @@ local settings = {
   --use alphanumerical sort
   alphanumsort = true,
 
-  --linux=true, windows=false
-  linux_over_windows = true,
+  --"linux | windows | auto"
+  system = "auto",
 
   --path where you want to save playlists. Do not use shortcuts like ~ or $HOME
   playlist_savepath = "/home/anon/Documents/",
@@ -174,6 +174,22 @@ end
 --parse loadfiles json
 settings.loadfiles_filetypes = utils.parse_json(settings.loadfiles_filetypes)
 
+--create loadfiles set
+local filetype_lookup = {}
+for _, ext in ipairs(settings.loadfiles_filetypes) do
+  filetype_lookup[ext] = true
+end
+
+--check os
+if settings.system=="auto" then
+  local o = {}
+  if mp.get_property_native('options/vo-mmcss-profile', o) ~= o then
+    settings.system = "windows"
+  else
+    settings.system = "linux"
+  end
+end
+
 --global variables
 local playlist_visible = false
 local strippedname = nil
@@ -266,23 +282,6 @@ end
 
 function escapepath(dir, escapechar)
   return string.gsub(dir, escapechar, '\\'..escapechar)
-end
-
---create file search query with path to search files, extensions in a table, unix as true(windows false)
-function create_searchquery(path, extensions, unix)
-  local query = ' '
-  for i in pairs(extensions) do
-    if unix then
-      query = query.."*."..extensions[i]..' '
-    else
-      query = query..'"'..utils.join_path(path, '*.'..extensions[i])..'" '
-    end
-  end
-  if unix then
-    return 'cd "'..escapepath(path, '"')..'";ls -1p'..query..'2>/dev/null'
-  else
-    return 'dir /b'..query:gsub("/", "\\")
-  end
 end
 
 --strip a filename based on its extension or protocol according to rules in settings
@@ -522,6 +521,44 @@ function playfile()
   end
 end
 
+function get_files_windows(dir)
+  local args = {
+    'powershell', '-NoProfile', '-Command', [[& {
+          Trap {
+              Write-Error -ErrorRecord $_
+              Exit 1
+          }
+          cd "]]..dir..[["
+
+          $list = (Get-ChildItem -File | Sort-Object { [regex]::Replace($_.Name, '\d+', { $args[0].Value.PadLeft(20) }) }).Name
+          $string = ($list -join "/")
+          $u8list = [System.Text.Encoding]::UTF8.GetBytes($string)
+          [Console]::OpenStandardOutput().Write($u8list, 0, $u8list.Length)
+      }]]
+  }
+  return parse_files(utils.subprocess({ args = args, cancellable = false }))
+end
+
+function get_files_linux(dir)
+  local args = { 'find', dir, '-type', 'f', '-printf', '%f/' }
+  return parse_files(utils.subprocess({ args = args, cancellable = false }))
+end
+
+function parse_files(res)
+  if not res.error and res.status == 0 then
+    local valid_files = {}
+    for line in res.stdout:gmatch("[^%/]+") do
+      local ext = line:match("^.+%.(.+)$")
+      if ext and filetype_lookup[ext:lower()] then
+        table.insert(valid_files, line)
+      end
+    end
+    return valid_files, nil
+  else
+    return nil, res.error
+  end
+end
+
 --Creates a playlist of all files in directory, will keep the order and position
 --For exaple, Folder has 12 files, you open the 5th file and run this, the remaining 7 are added behind the 5th file and prior 4 files before it
 function playlist(force_dir)
@@ -536,35 +573,37 @@ function playlist(force_dir)
   end
   if force_dir then dir = force_dir end
 
-  local query = create_searchquery(dir, settings.loadfiles_filetypes, settings.linux_over_windows)
-  local popen, err = io.popen(query)
-  if popen then
+  local files, error
+  if settings.system == "linux" then
+    files, error = get_files_linux(dir)
+  else
+    files, error = get_files_windows(dir)
+  end
+
+  if files then
     local cur = false
     local c, c2 = 0,0
     local filename = mp.get_property("filename")
-    for file in popen:lines() do
-      if file:sub(-1) ~= "/" then
-        local appendstr = "append"
-        if not hasfile then
-          cur = true
-          appendstr = "append-play"
-          hasfile = true
-        end
-        if cur == true then
+    for _, file in ipairs(files) do
+      local appendstr = "append"
+      if not hasfile then
+        cur = true
+        appendstr = "append-play"
+        hasfile = true
+      end
+      if cur == true then
+        mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
+        msg.info("Appended to playlist: " .. file)
+        c2 = c2 + 1
+      elseif file ~= filename then
           mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
-          msg.info("Appended to playlist: " .. file)
-          c2 = c2 + 1
-        elseif file ~= filename then
-            mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
-            msg.info("Prepended to playlist: " .. file)
-            mp.commandv("playlist-move", mp.get_property_number("playlist-count", 1)-1,  c)
-            c = c + 1
-        else
-          cur = true
-        end
+          msg.info("Prepended to playlist: " .. file)
+          mp.commandv("playlist-move", mp.get_property_number("playlist-count", 1)-1,  c)
+          c = c + 1
+      else
+        cur = true
       end
     end
-    popen:close()    
     if c2 > 0 or c>0 then
       mp.osd_message("Added "..c + c2.." files to playlist")
     else
@@ -572,7 +611,7 @@ function playlist(force_dir)
     end
     cursor = mp.get_property_number('playlist-pos', 1)
   else
-    msg.error("Could not scan for files: "..(err or ""))
+    msg.error("Could not scan for files: "..(error or ""))
   end
   if sort_watching then
     msg.info("Ignoring directory structure and using playlist sort")
