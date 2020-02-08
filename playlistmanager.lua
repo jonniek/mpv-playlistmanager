@@ -2,13 +2,18 @@ local settings = {
 
   -- #### FUNCTIONALITY SETTINGS
 
-  -- dynamic keybinds, only active when playlist is visible
+  --navigation keybindings force override only while playlist is visible
+  --if "no" then you can display the playlist by any of the navigation keys
+  dynamic_binds = true,
+
+  -- to bind multiple keys separate them by a space
   key_moveup = "UP",
   key_movedown = "DOWN",
-  key_selectfile = "RIGHT",
-  key_unselectfile = "LEFT",
-  key_jumptofile = "ENTER",
+  key_selectfile = "RIGHT LEFT",
+  key_unselectfile = nil,
+  key_playfile = "ENTER",
   key_removefile = "BS",
+  key_closeplaylist = "ESC",
   
   --replaces matches on filenames based on extension, put as empty string to not replace anything
   --replace rules are executed in provided order
@@ -84,10 +89,6 @@ local settings = {
   --has the sideeffect of moving cursor if file happens to change when navigating
   --good side is cursor always following current file when going back and forth files with playlist-next/prev
   sync_cursor_on_load = true,
-
-  --keybindings force override only while playlist is visible
-  --allowing you to use common overlapping keybinds
-  dynamic_binds = true,
 
   --playlist open key will toggle visibility instead of refresh, best used with long timeout
   open_toggles = true,
@@ -503,7 +504,7 @@ function movedown()
   showplaylist()
 end
 
-function jumptofile()
+function playfile()
   refresh_globals()
   if plen == 0 then return end
   selection = nil
@@ -669,13 +670,41 @@ function shuffleplaylist()
   if playlist_visible then showplaylist() end
 end
 
+function bind_keys(keys, name, func, opts)
+  print(keys)
+  if not keys then
+    mp.add_forced_key_binding(keys, name, func, opts)
+    return
+  end
+  local i = 1
+  for key in keys:gmatch("[^%s]+") do
+    local prefix = i == 1 and '' or i
+    mp.add_forced_key_binding(key, name..prefix, func, opts)
+    i = i + 1
+  end
+end
+
+function unbind_keys(keys, name)
+  if not keys then
+    mp.remove_key_binding(name)
+    return
+  end
+  local i = 1
+  for key in keys:gmatch("[^%s]+") do
+    local prefix = i == 1 and '' or i
+    mp.remove_key_binding(name..prefix)
+    i = i + 1
+  end
+end
+
 function add_keybinds()
-  mp.add_forced_key_binding(settings.key_moveup, 'moveup', moveup, "repeatable")
-  mp.add_forced_key_binding(settings.key_movedown, 'movedown', movedown, "repeatable")
-  mp.add_forced_key_binding(settings.key_selectfile, 'selectfile', selectfile)
-  mp.add_forced_key_binding(settings.key_unselectfile, 'unselectfile', unselectfile)
-  mp.add_forced_key_binding(settings.key_jumptofile, 'jumptofile', jumptofile)
-  mp.add_forced_key_binding(settings.key_removefile, 'removefile', removefile, "repeatable")
+  bind_keys(settings.key_moveup, 'moveup', moveup, "repeatable")
+  bind_keys(settings.key_movedown, 'movedown', movedown, "repeatable")
+  bind_keys(settings.key_selectfile, 'selectfile', selectfile)
+  bind_keys(settings.key_unselectfile, 'unselectfile', unselectfile)
+  bind_keys(settings.key_playfile, 'playfile', playfile)
+  bind_keys(settings.key_removefile, 'removefile', removefile, "repeatable")
+  bind_keys(settings.key_closeplaylist, 'closeplaylist', remove_keybinds)
 end
 
 function remove_keybinds()
@@ -683,12 +712,13 @@ function remove_keybinds()
   mp.set_osd_ass(0, 0, "")
   playlist_visible = false
   if settings.dynamic_binds then
-    mp.remove_key_binding('moveup')
-    mp.remove_key_binding('movedown')
-    mp.remove_key_binding('selectfile')
-    mp.remove_key_binding('unselectfile')
-    mp.remove_key_binding('jumptofile')
-    mp.remove_key_binding('removefile')
+    unbind_keys(settings.key_moveup, 'moveup')
+    unbind_keys(settings.key_movedown, 'movedown')
+    unbind_keys(settings.key_selectfile, 'selectfile')
+    unbind_keys(settings.key_unselectfile, 'unselectfile')
+    unbind_keys(settings.key_playfile, 'playfile')
+    unbind_keys(settings.key_removefile, 'removefile')
+    unbind_keys(settings.key_closeplaylist, 'closeplaylist')
   end
 end
 

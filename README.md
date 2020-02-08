@@ -20,7 +20,7 @@ changed setting in the lua file. There is a playlistmanager.conf file in this re
 #### Url title resolving
 If you want playlistmanager to fetch and display titles
 of all playlist urls(mpv defaults to current file only) you will
-need to use `prefer_titles=true`(defaults is true) and also use
+need to use `prefer_titles = "url" or "all"`(defaults is "url") and also use
 `titleresolver.lua` script found in this repository. The script
 requires `youtube-dl` to be in PATH to work.
 
@@ -44,16 +44,18 @@ requires `youtube-dl` to be in PATH to work.
   - Moves the cursor down in playlist, if at last entry loops to start of playlist.
 - __removefile__(Backspace)
   - Removes the file currently selected with the cursor from the playlist
-- __jumptofile__(Enter)
-  - Opens the file currently selected with the cursor, if cursor on playing file, jump to next file
-- __selectfile__(RIGHT)
+- __playfile__(Enter)
+  - Opens the file currently selected with the cursor, if cursor on playing file, open the next file
+- __selectfile__(RIGHT or LEFT)
   - Selects or unselects the file under the cursor
   - When moving the cursor the selected file will follow, allowing reordering of the playlist
-- __unselectfile__(LEFT)
+- __unselectfile__(no default bind)
   - Unselects the file under the cursor if it was selected
+- __closeplaylist__(ESC)
+  - closes the playlist if it is open
 
-Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. You can override keybindings by their names above by adding the following in your input.conf `ctrl+J script-binding jumptofile`. Dynamic keybindings can be rebound in 
-the settings to avoid overriding other conflicting keybinds.
+Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. You can override keybindings by their names above by adding the following in your input.conf `SPACE script-binding showplaylist`. However, Dynamic keybindings should be rebound in 
+the settings to avoid overriding other conflicting keybinds and to support multiple keys per bind.
   
 There is also a few script messages you can send to control the script:  
 `KEY script-message playlistmanager command value value2`  
@@ -68,7 +70,7 @@ sort | startover | - | Sorts the playlist, any value will start playlist from st
 shuffle | - | - | Shuffles the playlist
 loadfiles | - / path | - | Loads files from playing files dir(default), or specified path
 save | - | - | Saves the playlist
-addurl | url | title | Binds a title to an url(used by url-resolver)
+addurl | url | title | Binds a title to an url(used by titleresolver)
     
     
 examples:  
