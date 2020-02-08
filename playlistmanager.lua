@@ -671,7 +671,6 @@ function shuffleplaylist()
 end
 
 function bind_keys(keys, name, func, opts)
-  print(keys)
   if not keys then
     mp.add_forced_key_binding(keys, name, func, opts)
     return
