@@ -520,7 +520,6 @@ function playfile()
     remove_keybinds()
   end
 end
-
 function get_files_windows(dir)
   local args = {
     'powershell', '-NoProfile', '-Command', [[& {
@@ -536,18 +535,20 @@ function get_files_windows(dir)
           [Console]::OpenStandardOutput().Write($u8list, 0, $u8list.Length)
       }]]
   }
-  return parse_files(utils.subprocess({ args = args, cancellable = false }))
+  local process = utils.subprocess({ args = args, cancellable = false })
+  return parse_files(process, '%/')
 end
 
 function get_files_linux(dir)
-  local args = { 'find', dir, '-type', 'f', '-printf', '%f/' }
-  return parse_files(utils.subprocess({ args = args, cancellable = false }))
+  local args = { 'ls', '-1pv', dir }
+  local process = utils.subprocess({ args = args, cancellable = false })
+  return parse_files(process, '\n')
 end
 
-function parse_files(res)
+function parse_files(res, delimiter)
   if not res.error and res.status == 0 then
     local valid_files = {}
-    for line in res.stdout:gmatch("[^%/]+") do
+    for line in res.stdout:gmatch("[^"..delimiter.."]+") do
       local ext = line:match("^.+%.(.+)$")
       if ext and filetype_lookup[ext:lower()] then
         table.insert(valid_files, line)
