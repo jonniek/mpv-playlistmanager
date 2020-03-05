@@ -841,6 +841,7 @@ function handlemessage(msg, value, value2)
   end
   if msg == "sort" then sortplaylist(value) ; return end
   if msg == "shuffle" then shuffleplaylist() ; return end
+  if msg == "reverse" then reverseplaylist() ; return end
   if msg == "loadfiles" then playlist(value) ; return end
   if msg == "save" then save_playlist() ; return end
   if msg == "addurl" then

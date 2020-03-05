@@ -70,6 +70,7 @@ show | playlist | - / toggle | shows or toggles playlist
 show | filename | - / seconds | shows stripped filename for default or set seconds
 sort | startover | - | Sorts the playlist, any value will start playlist from start on sort
 shuffle | - | - | Shuffles the playlist
+reverse | - | - | Reverses the playlist
 loadfiles | - / path | - | Loads files from playing files dir(default), or specified path
 save | - | - | Saves the playlist
 addurl | url | title | Binds a title to an url(used by titleresolver)
