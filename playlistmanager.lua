@@ -699,6 +699,15 @@ function autosort(name, param)
   end
 end
 
+function reverseplaylist()
+  local length = mp.get_property_number('playlist-count', 0)
+  if length < 2 then return end
+  for outer=1, length-1, 1 do
+    mp.commandv('playlist-move', outer, 0)
+  end
+  if playlist_visible then showplaylist() end
+end
+
 function shuffleplaylist()
   refresh_globals()
   if plen < 2 then return end
@@ -846,6 +855,7 @@ mp.register_script_message("playlistmanager", handlemessage)
 
 mp.add_key_binding("CTRL+p", "sortplaylist", sortplaylist)
 mp.add_key_binding("CTRL+P", "shuffleplaylist", shuffleplaylist)
+mp.add_key_binding("CTRL+R", "reverseplaylist", reverseplaylist)
 mp.add_key_binding("P", "loadfiles", playlist)
 mp.add_key_binding("p", "saveplaylist", save_playlist)
 mp.add_key_binding("SHIFT+ENTER", "showplaylist", toggle_playlist)

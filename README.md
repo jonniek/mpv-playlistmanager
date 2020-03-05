@@ -29,7 +29,9 @@ requires `youtube-dl` to be in PATH to work.
 - __sortplaylist__(CTRL+p)  
   - Sorts the current playlist with stripped values from filename(not media title, no paths, usercreated strips applied). To start playlist from start you can use a script message `KEY script-message sortplaylist startover`. Settings involving sort include alphanumeric sort(nonpadded numbers in order, case insensitivity), sort on mpv start and sort on file added to playlist.  
 - __shuffleplaylist__(CTRL+P)  
-  - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesnt shuffle current file.  
+  - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesn't shuffle current file.  
+- __reverseplaylist__(CTRL+R)  
+  - Reverses the current playlist. Does not stop playing the current file.  
 - __loadfiles__(P)
   - Attempts to load all files from the currently playing files directory to the playlist keeping the order. Option to run at startup if 0 or 1 files are opened, with 0 opens files from working directory. On startup with no file requires `--idle=yes or --idle=once`.  
 - __saveplaylist__(p)
