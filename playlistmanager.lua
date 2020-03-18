@@ -446,7 +446,11 @@ function showplaylist(duration)
 
   draw_playlist()
   keybindstimer:kill()
-  keybindstimer = mp.add_periodic_timer(duration or settings.playlist_display_timeout, remove_keybinds)
+  if duration then
+    keybindstimer = mp.add_periodic_timer(duration, remove_keybinds)
+  else
+    keybindstimer:resume()
+  end
 end
 
 selection=nil
@@ -755,6 +759,8 @@ function add_keybinds()
 end
 
 function remove_keybinds()
+  keybindstimer:kill()
+  keybindstimer = mp.add_periodic_timer(settings.playlist_display_timeout, remove_keybinds)
   keybindstimer:kill()
   mp.set_osd_ass(0, 0, "")
   playlist_visible = false
