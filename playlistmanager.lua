@@ -438,16 +438,15 @@ function toggle_playlist()
   showplaylist()
 end
 
-function showplaylist()
+function showplaylist(duration)
   refresh_globals()
   if plen == 0 then return end
   playlist_visible = true
   add_keybinds()
 
   draw_playlist()
-
   keybindstimer:kill()
-  keybindstimer:resume()
+  keybindstimer = mp.add_periodic_timer(duration or settings.playlist_display_timeout, remove_keybinds)
 end
 
 selection=nil
@@ -826,7 +825,7 @@ end)
 function handlemessage(msg, value, value2)
   if msg == "show" and value == "playlist" then
     if value2 ~= "toggle" then
-      showplaylist()
+      showplaylist(value2)
       return
     else
       toggle_playlist()

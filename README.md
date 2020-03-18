@@ -66,7 +66,7 @@ List of commands, values and their effects:
   
 Command | Value | Value2 | Effect
 --- | --- | --- | ---
-show | playlist | - / toggle | shows or toggles playlist
+show | playlist | - / duration / toggle | show for default duration, show for given seconds, toggle playlist visibility
 show | filename | - / seconds | shows stripped filename for default or set seconds
 sort | startover | - | Sorts the playlist, any value will start playlist from start on sort
 shuffle | - | - | Shuffles the playlist
