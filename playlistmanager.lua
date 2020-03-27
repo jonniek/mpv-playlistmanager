@@ -530,7 +530,9 @@ function get_files_windows(dir)
               Write-Error -ErrorRecord $_
               Exit 1
           }
-          cd "]]..dir..[["
+          $path = "]]..dir..[["
+          $escapedPath = [WildcardPattern]::Escape($path)
+          cd $escapedPath
 
           $list = (Get-ChildItem -File | Sort-Object { [regex]::Replace($_.Name, '\d+', { $args[0].Value.PadLeft(20) }) }).Name
           $string = ($list -join "/")
