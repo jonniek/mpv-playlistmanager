@@ -506,6 +506,12 @@ function movedown()
   showplaylist()
 end
 
+function Watch_later()
+  if mp.get_property_bool("save-position-on-quit") then
+	  mp.command("write-watch-later-config")
+	end
+end
+
 function playfile()
   refresh_globals()
   if plen == 0 then return end
@@ -517,12 +523,14 @@ function playfile()
     if cursor~=plen-1 then
       cursor = cursor + 1
     end
+    Watch_later()
     mp.commandv("playlist-next", "weak")
   end
   if settings.show_playlist_on_fileload ~= 2 then
     remove_keybinds()
   end
 end
+
 function get_files_windows(dir)
   local args = {
     'powershell', '-NoProfile', '-Command', [[& {
