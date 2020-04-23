@@ -76,7 +76,7 @@ local settings = {
   system = "auto",
 
   --path where you want to save playlists. Do not use shortcuts like ~ or $HOME
-  playlist_savepath = "/home/anon/Documents/",
+  playlist_savepath = mp.find_config_file('playlists'),
 
 
   --show playlist or filename every time a new file is loaded 
@@ -635,8 +635,29 @@ function playlist(force_dir)
   if playlist_visible then showplaylist() end
 end
 
+local function check_playlist_savapath()
+  if settings.playlist_savepath == nil or utils.readdir(settings.playlist_savepath) == nil then
+		
+    local default_playlist_savepath = mp.command_native({"expand-path", "~~home/"}).."/playlists"
+    msg.info("The custom playlist save path is invalid. Use the default path: "..default_playlist_savepath)
+		
+    if mp.find_config_file("playlists") then
+      settings.playlist_savepath=mp.find_config_file("playlists")
+    else
+      msg.info("Default playlist save path does not exist. It will be created automatically.")
+      if os.getenv("windir") then
+        os.execute("mkdir "..default_playlist_savepath:gsub('/', '\\'))
+      else
+        os.execute("mkdir "..default_playlist_savepath)
+      end
+      settings.playlist_savepath = default_playlist_savepath
+    end
+  end
+end
+
 --saves the current playlist into a m3u file
 function save_playlist()
+  check_playlist_savapath()
   local length = mp.get_property_number('playlist-count', 0)
   if length == 0 then return end
   local date = os.date("*t")
