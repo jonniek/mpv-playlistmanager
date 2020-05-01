@@ -15,7 +15,7 @@ It will make sense once you try the script!
 
 ## Settings
 You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file. The configuration file should be placed in `script-opts` directory, not in `scripts`. Note: the conf file will override any
-changed setting in the lua file. There is a playlistmanager.conf file in this repo with the default values of the script. You can also pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`. Playlist saving feature will require you to set the `playlist_savepath` setting to a path in your system.
+changed setting in the lua file. There is a playlistmanager.conf file in this repo with the default values of the script. You can also pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`.
 
 #### Url title resolving
 If you want playlistmanager to fetch and display titles
@@ -35,7 +35,7 @@ requires `youtube-dl` to be in PATH to work.
 - __loadfiles__(P)
   - Attempts to load all files from the currently playing files directory to the playlist keeping the order. Option to run at startup if 0 or 1 files are opened, with 0 opens files from working directory. On startup with no file requires `--idle=yes or --idle=once`.  
 - __saveplaylist__(p)
-  - Saves the current playlist to m3u file, change filepath in settings to a path in your system
+  - Saves the current playlist to m3u file. Saves to `mpv/playlists/` by default.
 - __showplaylist__(SHIFT+ENTER)
   - Displays the current playlist and loads the dynamic keybinds for navigating  
   

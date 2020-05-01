@@ -75,8 +75,8 @@ local settings = {
   --"linux | windows | auto"
   system = "auto",
 
-  --path where you want to save playlists. Do not use shortcuts like ~ or $HOME
-  playlist_savepath = "/home/anon/Documents/",
+  --Use ~ for home directory. Leave as empty to use mpv/playlists
+  playlist_savepath = "",
 
 
   --show playlist or filename every time a new file is loaded 
@@ -635,16 +635,58 @@ function playlist(force_dir)
   if playlist_visible then showplaylist() end
 end
 
+function parse_home(path)
+  if not path:find("^~") then
+    return path
+  end
+  local home_dir = os.getenv("HOME") or os.getenv("USERPROFILE")
+  if not home_dir then
+    local drive = os.getenv("HOMEDRIVE")
+    local path = os.getenv("HOMEPATH")
+    if drive and path then
+      home_dir = utils.join_path(drive, path)
+    else
+      msg.error("Couldn't find home dir.")
+      return nil
+    end
+  end
+  local result = path:gsub("^~", home_dir)
+  return result
+end
+
 --saves the current playlist into a m3u file
 function save_playlist()
   local length = mp.get_property_number('playlist-count', 0)
   if length == 0 then return end
+  
+  --get playlist save path
+  local savepath
+  if settings.playlist_savepath == nil or settings.playlist_savepath == "" then
+    savepath = mp.command_native({"expand-path", "~~home/"}).."/playlists"
+  else 
+    savepath = parse_home(settings.playlist_savepath)
+    if savepath == nil then return end
+  end
+
+  --create savepath if it doesn't exist
+  if utils.readdir(savepath) == nil then
+    local windows_args = {'powershell', '-NoProfile', '-Command', 'mkdir', savepath}
+    local unix_args = { 'mkdir', savepath }
+    local args = settings.system == 'windows' and windows_args or unix_args
+    local res = utils.subprocess({ args = args, cancellable = false })
+    if res.status ~= 0 then
+      msg.error("Failed to create playlist save directory "..savepath..". Error: "..(res.error or "unknown"))
+      return
+    end
+  end
+
   local date = os.date("*t")
   local datestring = ("%02d-%02d-%02d_%02d-%02d-%02d"):format(date.year, date.month, date.day, date.hour, date.min, date.sec)
-  local savepath = utils.join_path(settings.playlist_savepath, datestring.."_playlist-size_"..length..".m3u")
+
+  local savepath = utils.join_path(savepath, datestring.."_playlist-size_"..length..".m3u")
   local file, err = io.open(savepath, "w")
   if not file then
-    msg.error("Error in creating playlist file, check permissions and paths: "..(err or ""))
+    msg.error("Error in creating playlist file, check permissions. Error: "..(err or "unknown"))
   else
     local i=0
     while i < length do
