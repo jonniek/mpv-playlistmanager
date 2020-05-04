@@ -102,6 +102,9 @@ local settings = {
   --prefer to display titles for following files: "all", "url", "none". Sorting still uses filename.
   prefer_titles = "url",
 
+  --call youtube-dl to resolve the titles of urls in the playlist
+  resolve_titles = false,
+
   --osd timeout on inactivity, with high value on this open_toggles is good to be true
   playlist_display_timeout = 5,
 
@@ -856,7 +859,7 @@ end
 
 mp.observe_property('playlist-count', "number", function()
   if playlist_visible then showplaylist() end
-  if settings.prefer_titles == 'none' then return end
+  if settings.prefer_titles == 'none' or not settings.resolve_titles then return end
   -- code to resolve url titles
   local length = mp.get_property_number('playlist-count', 0)
   if length < 2 then return end
@@ -873,7 +876,41 @@ mp.observe_property('playlist-count', "number", function()
       and not requested_urls[filename]
     then
       requested_urls[filename] = true
-      mp.commandv('script-message', 'resolveurltitle', filename)
+      
+      local args = { 'youtube-dl', '--no-playlist', '--flat-playlist', '-sJ', filename }
+      local req = mp.command_native_async(
+        {
+          name = "subprocess",
+          args = args,
+          playback_only = false,
+          capture_stdout = true
+        }, function (success, res)
+            if res.killed_by_us then
+              msg.verbose('Request to resolve url title ' .. filename .. ' timed out')
+              return
+            end
+            if res.status == 0 then
+              local json, err = utils.parse_json(res.stdout)
+              if not err then
+                local is_playlist = json['_type'] and json['_type'] == 'playlist'
+                local title = (is_playlist and '[playlist]: ' or '') .. json['title']
+                msg.verbose(filename .. " resolved to '" .. title .. "'")
+                url_table[filename] = title
+                refresh_globals()
+                if playlist_visible then showplaylist() end
+                return
+              else
+                msg.error("Failed parsing json, reason: "..(err or "unknown"))
+              end
+            else
+              msg.error("Failed to resolve url title "..filename.." Error: "..(res.error or "unknown"))
+            end
+          end)
+
+      mp.add_timeout(5, function()
+        mp.abort_async_command(req)
+      end)
+
     end
     i=i+1
   end
@@ -901,12 +938,6 @@ function handlemessage(msg, value, value2)
   if msg == "reverse" then reverseplaylist() ; return end
   if msg == "loadfiles" then playlist(value) ; return end
   if msg == "save" then save_playlist() ; return end
-  if msg == "addurl" then
-    url_table[value] = value2
-    refresh_globals()
-    if playlist_visible then showplaylist() end
-    return
-  end
 end
 
 mp.register_script_message("playlistmanager", handlemessage)
