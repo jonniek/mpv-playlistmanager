@@ -20,8 +20,8 @@ changed setting in the lua file. There is a playlistmanager.conf file in this re
 #### Url title resolving
 If you want playlistmanager to fetch and display titles
 of all playlist urls(mpv defaults to current file only) you will
-need to use `prefer_titles = "url" or "all"`(defaults is "url") and also use
-`titleresolver.lua` script found in this repository. The script
+need to use `prefer_titles = "url" or "all"`(defaults is "url") and also
+set the option `resolve_titles = yes`. The script
 requires `youtube-dl` to be in PATH to work.
 
 ## Keybinds
@@ -73,7 +73,6 @@ shuffle | - | - | Shuffles the playlist
 reverse | - | - | Reverses the playlist
 loadfiles | - / path | - | Loads files from playing files dir(default), or specified path
 save | - | - | Saves the playlist
-addurl | url | title | Binds a title to an url(used by titleresolver)
     
     
 examples:  
