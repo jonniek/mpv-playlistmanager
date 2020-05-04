@@ -243,15 +243,10 @@ function on_loaded()
   end
 
   local didload = false
-  --if we promised to load files on launch do it
-  if promised_load then
-    promised_load = false
-    --make sure that only one file was loaded(playlists open initially as one file)
-    if plen == 1 then
-      didload = true --save reference for sorting
-      msg.info("Loading files from playing files directory")
-      playlist()
-    end
+  if settings.loadfiles_on_start and plen == 1 then
+    didload = true --save reference for sorting
+    msg.info("Loading files from playing files directory")
+    playlist()
   end
 
   --if we promised to sort files on launch do it
@@ -838,17 +833,8 @@ if not settings.dynamic_binds then
   add_keybinds()
 end
 
-promised_load = false
-if settings.loadfiles_on_start then
-  local c = mp.get_property_number('playlist-count', 0)
-  if c == 1 then
-    promised_load = true
-  elseif c == 0 then
-    local files_loaded = playlist()
-    if files_loaded == 0 then
-      promised_load = true
-    end
-  end
+if settings.loadfiles_on_start and mp.get_property_number('playlist-count', 0) == 0 then
+  playlist()
 end
 
 promised_sort_watch = false
