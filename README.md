@@ -18,11 +18,7 @@ You can modify behaviour of the script in the settings variable in the lua file 
 changed setting in the lua file. There is a playlistmanager.conf file in this repo with the default values of the script. You can also pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`.
 
 #### Url title resolving
-If you want playlistmanager to fetch and display titles
-of all playlist urls(mpv defaults to current file only) you will
-need to use `prefer_titles = "url" or "all"`(defaults is "url") and also
-set the option `resolve_titles = yes`. The script
-requires `youtube-dl` to be in PATH to work.
+If you want playlistmanager to fetch and display titles of all playlist urls(mpv defaults to current file only) you will need to use `resolve_titles = yes`(default is no) setting. Title resolving requires `youtube-dl` to be in PATH to work.
 
 ## Keybinds
 #### Static keybindings
