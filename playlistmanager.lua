@@ -597,9 +597,9 @@ function playlist(force_dir)
     files, error = get_files_windows(dir)
   end
 
+  local c, c2 = 0,0
   if files then
     local cur = false
-    local c, c2 = 0,0
     local filename = mp.get_property("filename")
     for _, file in ipairs(files) do
       local appendstr = "append"
@@ -636,6 +636,7 @@ function playlist(force_dir)
   end
   refresh_globals()
   if playlist_visible then showplaylist() end
+  return c + c2
 end
 
 function parse_home(path)
@@ -843,7 +844,10 @@ if settings.loadfiles_on_start then
   if c == 1 then
     promised_load = true
   elseif c == 0 then
-    playlist()
+    local files_loaded = playlist()
+    if files_loaded == 0 then
+      promised_load = true
+    end
   end
 end
 
