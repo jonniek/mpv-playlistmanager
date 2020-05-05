@@ -161,27 +161,12 @@ local settings = {
 
 }
 local opts = require("mp.options")
-opts.read_options(settings, "playlistmanager")
+opts.read_options(settings, "playlistmanager", function(list) update_opts(list) end)
 
 local utils = require("mp.utils")
 local msg = require("mp.msg")
 local assdraw = require("mp.assdraw")
 
---parse filename json
-if(settings.filename_replace~="") then
-  settings.filename_replace = utils.parse_json(settings.filename_replace)
-else
-  settings.filename_replace = false
-end
-
---parse loadfiles json
-settings.loadfiles_filetypes = utils.parse_json(settings.loadfiles_filetypes)
-
---create loadfiles set
-local filetype_lookup = {}
-for _, ext in ipairs(settings.loadfiles_filetypes) do
-  filetype_lookup[ext] = true
-end
 
 --check os
 if settings.system=="auto" then
@@ -208,6 +193,45 @@ local url_table = {}
 local requested_urls = {}
 --state for if we sort on playlist size change
 local sort_watching = false
+
+local filetype_lookup = {}
+
+function update_opts(changelog)
+  msg.verbose('updating options')
+
+  --parse filename json
+  if changelog.filename_replace then
+    if(settings.filename_replace~="") then
+      settings.filename_replace = utils.parse_json(settings.filename_replace)
+    else
+      settings.filename_replace = false
+    end
+  end
+
+  --parse loadfiles json
+  if changelog.loadfiles_filetypes then
+    settings.loadfiles_filetypes = utils.parse_json(settings.loadfiles_filetypes)
+
+    filetype_lookup = {}
+    --create loadfiles set
+    for _, ext in ipairs(settings.loadfiles_filetypes) do
+      filetype_lookup[ext] = true
+    end
+  end
+
+  if changelog.resolve_titles then
+    resolve_titles()
+  end
+
+  if changelog.playlist_display_timeout then
+    keybindstimer = mp.add_periodic_timer(settings.playlist_display_timeout, remove_keybinds)
+    keybindstimer:kill()
+  end
+
+  if playlist_visible then showplaylist() end
+end
+
+update_opts({filename_replace = true, loadfiles_filetypes = true})
 
 function on_loaded()
   filename = mp.get_property("filename")
@@ -849,8 +873,14 @@ end
 
 mp.observe_property('playlist-count', "number", function()
   if playlist_visible then showplaylist() end
-  if settings.prefer_titles == 'none' or not settings.resolve_titles then return end
-  -- code to resolve url titles
+  if settings.prefer_titles == 'none' then return end
+  -- resolve titles
+  resolve_titles()
+end)
+
+--resolves url titles by calling youtube-dl
+function resolve_titles()
+  if not settings.resolve_titles then return end
   local length = mp.get_property_number('playlist-count', 0)
   if length < 2 then return end
   local i=0
@@ -904,7 +934,7 @@ mp.observe_property('playlist-count', "number", function()
     end
     i=i+1
   end
-end)
+end
 
 --script message handler
 function handlemessage(msg, value, value2)
