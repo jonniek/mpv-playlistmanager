@@ -14,8 +14,10 @@ Default visual cues:
 It will make sense once you try the script!
 
 ## Settings
-You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file. The configuration file should be placed in `script-opts` directory, not in `scripts`. Note: the conf file will override any
-changed setting in the lua file. There is a playlistmanager.conf file in this repo with the default values of the script. You can also pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`.
+You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file in`script-opts` directory. 
+Note: the conf file will override any changed setting in the lua file. There is a playlistmanager.conf file in this repo with the default values of the script. 
+You can pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`. 
+You can also change settings during runtime with a keybind or command like `KEY change-list script-opts append playlistmanager-showamount=10`.
 
 #### Url title resolving
 If you want playlistmanager to fetch and display titles of all playlist urls(mpv defaults to current file only) you will need to use `resolve_titles = yes`(default is no) setting. Title resolving requires `youtube-dl` to be in PATH to work.

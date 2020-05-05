@@ -212,6 +212,7 @@ function update_opts(changelog)
   if changelog.loadfiles_filetypes then
     settings.loadfiles_filetypes = utils.parse_json(settings.loadfiles_filetypes)
 
+    filetype_lookup = {}
     --create loadfiles set
     for _, ext in ipairs(settings.loadfiles_filetypes) do
       filetype_lookup[ext] = true
