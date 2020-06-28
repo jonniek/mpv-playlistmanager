@@ -37,6 +37,8 @@ If you want playlistmanager to fetch and display titles of all playlist urls(mpv
 - __showplaylist__(SHIFT+ENTER)
   - Displays the current playlist and loads the dynamic keybinds for navigating  
   
+  If you want to use the above controls from a "gui" rather than keybinds, then you can check out [mpv-menu](https://github.com/jonniek/mpv-menu) and use the `menu.json` found in this repository.
+
 #### Dynamic keybindings
 - __moveup__(UP)
   - Moves the cursor up in playlist, if at first entry loops to end of playlist.
@@ -79,4 +81,4 @@ examples:
   
 
 #### My other mpv scripts
-- [collection of scripts](https://github.com/donmaiq/mpv-scripts)
+- [collection of scripts](https://github.com/jonniek/mpv-scripts)

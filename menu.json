@@ -1,0 +1,26 @@
+[
+  {
+    "label": "Load files to playlist",
+    "command": ["script-message", "playlistmanager", "loadfiles"]
+  },
+  {
+    "label": "Sort playlist",
+    "command": ["script-message", "playlistmanager", "sort"],
+  },
+  {
+    "label": "Sort playlist and start from first file",
+    "command": ["script-message", "playlistmanager", "sort", "true"],
+  },
+  {
+    "label": "Reverse playlist",
+    "command": ["script-message", "playlistmanager", "reverse"],
+  },
+  {
+    "label": "Shuffle playlist",
+    "command": ["script-message", "playlistmanager", "shuffle"],
+  },
+  {
+    "label": "Save playlist",
+    "command": ["script-message", "playlistmanager", "save"],
+  }
+]
