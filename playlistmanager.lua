@@ -14,14 +14,14 @@ local settings = {
   key_playfile = "ENTER",
   key_removefile = "BS",
   key_closeplaylist = "ESC",
-  
+
   --replaces matches on filenames based on extension, put as empty string to not replace anything
   --replace rules are executed in provided order
   --replace rule key is the pattern and value is the replace value
   --uses :gsub('pattern', 'replace'), read more http://lua-users.org/wiki/StringLibraryTutorial
   --'all' will match any extension or protocol if it has one
   --uses json and parses it into a lua table to be able to support .conf file
-  
+
   filename_replace = "",
 
 --[=====[ START OF SAMPLE REPLACE, to use remove start and end line
@@ -79,7 +79,7 @@ local settings = {
   playlist_savepath = "",
 
 
-  --show playlist or filename every time a new file is loaded 
+  --show playlist or filename every time a new file is loaded
   --2 shows playlist, 1 shows current file(filename strip applied) as osd text, 0 shows nothing
   --instead of using this you can also call script-message playlistmanager show playlist/filename
   --ex. KEY playlist-next ; script-message playlistmanager show playlist
@@ -243,7 +243,7 @@ function on_loaded()
   else
     directory = nil
   end
-  
+
   refresh_globals()
   if settings.sync_cursor_on_load then
     cursor=pos
@@ -432,7 +432,7 @@ function draw_playlist()
     start=0
     showall=true
   end
-  if start > math.max(plen-settings.showamount-1, 0) then 
+  if start > math.max(plen-settings.showamount-1, 0) then
     start=plen-settings.showamount
     showrest=true
   end
@@ -528,10 +528,21 @@ function movedown()
   showplaylist()
 end
 
-function Watch_later()
-  if mp.get_property_bool("save-position-on-quit") then
+function write_watch_later(force_write)
+  if mp.get_property_bool("save-position-on-quit") or force_write then
+    print("WRITING WATHC LATER FIEL")
 	  mp.command("write-watch-later-config")
 	end
+end
+
+function playlist_next(force_write)
+  write_watch_later(force_write)
+  mp.commandv("playlist-next", "weak")
+end
+
+function playlist_prev(force_write)
+  write_watch_later(force_write)
+  mp.commandv("playlist-prev", "weak")
 end
 
 function playfile()
@@ -540,13 +551,13 @@ function playfile()
   selection = nil
   local is_idle = mp.get_property_native('idle-active')
   if cursor ~= pos or is_idle then
-    Watch_later()
+    write_watch_later()
     mp.set_property("playlist-pos", cursor)
   else
     if cursor~=plen-1 then
       cursor = cursor + 1
     end
-    Watch_later()
+    write_watch_later()
     mp.commandv("playlist-next", "weak")
   end
   if settings.show_playlist_on_fileload ~= 2 then
@@ -682,12 +693,12 @@ end
 function save_playlist()
   local length = mp.get_property_number('playlist-count', 0)
   if length == 0 then return end
-  
+
   --get playlist save path
   local savepath
   if settings.playlist_savepath == nil or settings.playlist_savepath == "" then
     savepath = mp.command_native({"expand-path", "~~home/"}).."/playlists"
-  else 
+  else
     savepath = parse_home(settings.playlist_savepath)
     if savepath == nil then return end
   end
@@ -897,7 +908,7 @@ function resolve_titles()
       and not requested_urls[filename]
     then
       requested_urls[filename] = true
-      
+
       local args = { 'youtube-dl', '--no-playlist', '--flat-playlist', '-sJ', filename }
       local req = mp.command_native_async(
         {
@@ -959,6 +970,8 @@ function handlemessage(msg, value, value2)
   if msg == "reverse" then reverseplaylist() ; return end
   if msg == "loadfiles" then playlist(value) ; return end
   if msg == "save" then save_playlist() ; return end
+  if msg == "playlist-next" then playlist_next(true) ; return end
+  if msg == "playlist-prev" then playlist_prev(true) ; return end
 end
 
 mp.register_script_message("playlistmanager", handlemessage)
