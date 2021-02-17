@@ -540,6 +540,7 @@ function playfile()
   selection = nil
   local is_idle = mp.get_property_native('idle-active')
   if cursor ~= pos or is_idle then
+    Watch_later()
     mp.set_property("playlist-pos", cursor)
   else
     if cursor~=plen-1 then
