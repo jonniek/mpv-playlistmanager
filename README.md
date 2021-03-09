@@ -13,6 +13,9 @@ Default visual cues:
 ➤ playing and selected file  
 It will make sense once you try the script!
 
+## Installation
+Copy the `playlistmanager.lua` file to your mpv scripts directory which is usually `~/.config/mpv/scripts/` or `%APPDATA%/mpv/scripts/`. See [https://mpv.io/manual/master/#files](https://mpv.io/manual/master/#files) and [https://mpv.io/manual/master/#script-location](https://mpv.io/manual/master/#script-location) for more detailed information.
+
 ## Settings
 You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file in`script-opts` directory. 
 Note: the conf file will override any changed setting in the lua file. There is a playlistmanager.conf file in this repo with the default values of the script. 
