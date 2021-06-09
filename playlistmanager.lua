@@ -530,9 +530,8 @@ end
 
 function write_watch_later(force_write)
   if mp.get_property_bool("save-position-on-quit") or force_write then
-    print("WRITING WATHC LATER FIEL")
-	  mp.command("write-watch-later-config")
-	end
+    mp.command("write-watch-later-config")
+  end
 end
 
 function playlist_next(force_write)
