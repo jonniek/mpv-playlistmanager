@@ -551,13 +551,13 @@ function playfile()
   selection = nil
   local is_idle = mp.get_property_native('idle-active')
   if cursor ~= pos or is_idle then
-    write_watch_later()
+    write_watch_later(true)
     mp.set_property("playlist-pos", cursor)
   else
     if cursor~=plen-1 then
       cursor = cursor + 1
     end
-    write_watch_later()
+    write_watch_later(true)
     mp.commandv("playlist-next", "weak")
   end
   if settings.show_playlist_on_fileload ~= 2 then
