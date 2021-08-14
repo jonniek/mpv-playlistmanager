@@ -52,6 +52,14 @@ If you want playlistmanager to fetch and display titles of all playlist urls(mpv
   - Moves the cursor up in playlist, if at first entry loops to end of playlist.
 - __movedown__(DOWN)
   - Moves the cursor down in playlist, if at last entry loops to start of playlist.
+- __movepageup__ (Page Up)
+  - Moves the cursor one page up in the playlist, or to the first entry. 
+- __movepagedown__ (Page Down)
+  - Moves the cursor one page down in the playlist, or to the last entry. 
+- __movebegin__ (Home)
+  - Moves the cursor to the first entry in the playlist.
+- __moveend__ (End)
+  - Moves the cursor to the last entry in the playlist.
 - __removefile__(Backspace)
   - Removes the file currently selected with the cursor from the playlist
 - __playfile__(Enter)
