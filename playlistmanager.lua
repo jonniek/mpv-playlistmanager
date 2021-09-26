@@ -9,6 +9,10 @@ local settings = {
   -- to bind multiple keys separate them by a space
   key_moveup = "UP",
   key_movedown = "DOWN",
+  key_movepageup = "PGUP",
+  key_movepagedown = "PGDWN",
+  key_movebegin = "HOME",
+  key_moveend = "END",
   key_selectfile = "RIGHT LEFT",
   key_unselectfile = "",
   key_playfile = "ENTER",
@@ -77,6 +81,9 @@ local settings = {
 
   --Use ~ for home directory. Leave as empty to use mpv/playlists
   playlist_savepath = "",
+
+  --save playlist automatically after current file was unloaded
+  save_playlist_on_file_end = false,
 
 
   --show playlist or filename every time a new file is loaded
@@ -290,6 +297,7 @@ function on_loaded()
 end
 
 function on_closed()
+  if settings.save_playlist_on_file_end then save_playlist() end
   strippedname = nil
   path = nil
   directory = nil
@@ -528,11 +536,48 @@ function movedown()
   showplaylist()
 end
 
+function movepageup()
+  refresh_globals()
+  if plen == 0 or cursor == 0 then return end
+  local prev_cursor = cursor
+  cursor = cursor - settings.showamount
+  if cursor < 0 then cursor = 0 end
+  if selection then mp.commandv("playlist-move", prev_cursor, cursor) end
+  showplaylist()
+end
+
+function movepagedown()
+  refresh_globals()
+  if plen == 0 or cursor == plen-1 then return end
+  local prev_cursor = cursor
+  cursor = cursor + settings.showamount
+  if cursor >= plen then cursor = plen-1 end
+  if selection then mp.commandv("playlist-move", prev_cursor, cursor+1) end
+  showplaylist()
+end
+
+function movebegin()
+  refresh_globals()
+  if plen == 0 or cursor == 0 then return end
+  local prev_cursor = cursor
+  cursor = 0
+  if selection then mp.commandv("playlist-move", prev_cursor, cursor) end
+  showplaylist()
+end
+
+function moveend()
+  refresh_globals()
+  if plen == 0 or cursor == plen-1 then return end
+  local prev_cursor = cursor
+  cursor = plen-1
+  if selection then mp.commandv("playlist-move", prev_cursor, cursor+1) end
+  showplaylist()
+end
+
 function write_watch_later(force_write)
   if mp.get_property_bool("save-position-on-quit") or force_write then
-    print("WRITING WATHC LATER FIEL")
-	  mp.command("write-watch-later-config")
-	end
+    mp.command("write-watch-later-config")
+  end
 end
 
 function playlist_next(force_write)
@@ -838,6 +883,10 @@ end
 function add_keybinds()
   bind_keys(settings.key_moveup, 'moveup', moveup, "repeatable")
   bind_keys(settings.key_movedown, 'movedown', movedown, "repeatable")
+  bind_keys(settings.key_movepageup, 'movepageup', movepageup, "repeatable")
+  bind_keys(settings.key_movepagedown, 'movepagedown', movepagedown, "repeatable")
+  bind_keys(settings.key_movebegin, 'movebegin', movebegin, "repeatable")
+  bind_keys(settings.key_moveend, 'moveend', moveend, "repeatable")
   bind_keys(settings.key_selectfile, 'selectfile', selectfile)
   bind_keys(settings.key_unselectfile, 'unselectfile', unselectfile)
   bind_keys(settings.key_playfile, 'playfile', playfile)
@@ -854,6 +903,10 @@ function remove_keybinds()
   if settings.dynamic_binds then
     unbind_keys(settings.key_moveup, 'moveup')
     unbind_keys(settings.key_movedown, 'movedown')
+    unbind_keys(settings.key_movepageup, 'movepageup')
+    unbind_keys(settings.key_movepagedown, 'movepagedown')
+    unbind_keys(settings.key_movebegin, 'movebegin')
+    unbind_keys(settings.key_moveend, 'moveend')
     unbind_keys(settings.key_selectfile, 'selectfile')
     unbind_keys(settings.key_unselectfile, 'unselectfile')
     unbind_keys(settings.key_playfile, 'playfile')

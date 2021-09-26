@@ -2,6 +2,7 @@
 Mpv lua script to create and manage playlists.
 
 This script allows you to see and interact with your playlist in an intuitive way. The key features are removing, reordering and playing files. Additional features include resolving url titles, parsing filenames according to patterns and creating/saving/shuffling/sorting playlists.
+The script also allows to automatically save the mpv playlist, e.g. for regular backups.
 
 ![](playlistmanager.png)  
 Default visual cues:  
@@ -13,11 +14,18 @@ Default visual cues:
 ➤ playing and selected file  
 It will make sense once you try the script!
 
+## Installation
+Copy the `playlistmanager.lua` file to your mpv scripts directory which is usually `~/.config/mpv/scripts/` or `%APPDATA%/mpv/scripts/`. See [https://mpv.io/manual/master/#files](https://mpv.io/manual/master/#files) and [https://mpv.io/manual/master/#script-location](https://mpv.io/manual/master/#script-location) for more detailed information.
+
 ## Settings
 You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file in`script-opts` directory. 
 Note: the conf file will override any changed setting in the lua file. There is a playlistmanager.conf file in this repo with the default values of the script. 
+
 You can pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`. 
-You can also change settings during runtime with a keybind or command like `KEY change-list script-opts append playlistmanager-showamount=10`.
+
+You can also change settings during runtime with a keybind or command like `KEY change-list script-opts append playlistmanager-showamount=10`. 
+
+If you are using [save-position-on-quit](https://mpv.io/manual/master/#options-save-position-on-quit) then the playlist will write watch later config when switching between files.
 
 #### Url title resolving
 If you want playlistmanager to fetch and display titles of all playlist urls(mpv defaults to current file only) you will need to use `resolve_titles = yes`(default is no) setting. Title resolving requires `youtube-dl` to be in PATH to work.
@@ -44,6 +52,14 @@ If you want playlistmanager to fetch and display titles of all playlist urls(mpv
   - Moves the cursor up in playlist, if at first entry loops to end of playlist.
 - __movedown__(DOWN)
   - Moves the cursor down in playlist, if at last entry loops to start of playlist.
+- __movepageup__ (Page Up)
+  - Moves the cursor one page up in the playlist, or to the first entry. 
+- __movepagedown__ (Page Down)
+  - Moves the cursor one page down in the playlist, or to the last entry. 
+- __movebegin__ (Home)
+  - Moves the cursor to the first entry in the playlist.
+- __moveend__ (End)
+  - Moves the cursor to the last entry in the playlist.
 - __removefile__(Backspace)
   - Removes the file currently selected with the cursor from the playlist
 - __playfile__(Enter)
