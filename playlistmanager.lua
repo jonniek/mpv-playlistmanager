@@ -455,7 +455,7 @@ function draw_playlist()
   end
   local w, h = mp.get_osd_size()
   if settings.scale_playlist_by_window then w,h = 0, 0 end
-  mp.set_osd_ass(0, 0, ass.text)
+  mp.set_osd_ass(w, h, ass.text)
 end
 
 function toggle_playlist()
