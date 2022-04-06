@@ -164,7 +164,12 @@ local settings = {
 
   -- what to show when playlist is truncated
   playlist_sliced_prefix = "...",
-  playlist_sliced_suffix = "..."
+  playlist_sliced_suffix = "...",
+
+  --output visual feedback to OSD for tasks
+  osd_playlist_saved = false,
+  osd_playlist_reversed = false,
+  osd_playlist_shuffled = false
 
 }
 local opts = require("mp.options")
@@ -781,7 +786,9 @@ function save_playlist()
       file:write(fullpath, "\n")
       i=i+1
     end
-    msg.info("Playlist written to: "..savepath)
+    local saved_msg = "Playlist written to: "..savepath
+    if settings.osd_playlist_saved then mp.osd_message(saved_msg) end
+    msg.info(saved_msg)
     file:close()
   end
 end
@@ -840,7 +847,11 @@ function reverseplaylist()
   for outer=1, length-1, 1 do
     mp.commandv('playlist-move', outer, 0)
   end
-  if playlist_visible then showplaylist() end
+  if playlist_visible then
+    showplaylist()
+  elseif settings.osd_playlist_reversed then
+    mp.osd_message("Playlist reversed")
+  end
 end
 
 function shuffleplaylist()
@@ -851,7 +862,11 @@ function shuffleplaylist()
   mp.commandv("playlist-move", pos, math.random(0, plen-1))
   mp.set_property('playlist-pos', 0)
   refresh_globals()
-  if playlist_visible then showplaylist() end
+  if playlist_visible then
+    showplaylist()
+  elseif settings.osd_playlist_shuffled then
+    mp.osd_message("Playlist shuffled")
+  end
 end
 
 function bind_keys(keys, name, func, opts)
