@@ -167,7 +167,10 @@ local settings = {
   playlist_sliced_suffix = "...",
 
   --output visual feedback to OSD for tasks
-  display_osd_feedback = false
+  display_osd_feedback = false,
+
+  -- reset cursor navigation when playlist is not visible
+  reset_cursor_on_close = true
 
 }
 local opts = require("mp.options")
@@ -503,6 +506,10 @@ function unselectfile()
   showplaylist()
 end
 
+function resetcursor()
+  cursor = mp.get_property_number('playlist-pos', 1)
+end
+
 function removefile()
   refresh_globals()
   if plen == 0 then return end
@@ -655,6 +662,16 @@ function parse_files(res, delimiter)
   end
 end
 
+function get_playlist_filenames_set()
+  local filenames = {}
+  for n=0,plen-1,1 do
+    local filename = mp.get_property('playlist/'..n..'/filename')
+    local _, file = utils.split_path(filename)
+    filenames[file] = true
+  end
+  return filenames
+end
+
 --Creates a playlist of all files in directory, will keep the order and position
 --For exaple, Folder has 12 files, you open the 5th file and run this, the remaining 7 are added behind the 5th file and prior 4 files before it
 function playlist(force_dir)
@@ -676,6 +693,7 @@ function playlist(force_dir)
     files, error = get_files_windows(dir)
   end
 
+  local filenames = get_playlist_filenames_set()
   local c, c2 = 0,0
   if files then
     local cur = false
@@ -687,7 +705,9 @@ function playlist(force_dir)
         appendstr = "append-play"
         hasfile = true
       end
-      if cur == true then
+      if filenames[file] then
+        -- continue
+      elseif cur == true then
         mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
         msg.info("Appended to playlist: " .. file)
         c2 = c2 + 1
@@ -913,6 +933,9 @@ function remove_keybinds()
   keybindstimer:kill()
   mp.set_osd_ass(0, 0, "")
   playlist_visible = false
+  if settings.reset_cursor_on_close then
+    resetcursor()
+  end
   if settings.dynamic_binds then
     unbind_keys(settings.key_moveup, 'moveup')
     unbind_keys(settings.key_movedown, 'movedown')
