@@ -167,9 +167,7 @@ local settings = {
   playlist_sliced_suffix = "...",
 
   --output visual feedback to OSD for tasks
-  osd_playlist_saved = false,
-  osd_playlist_reversed = false,
-  osd_playlist_shuffled = false
+  display_osd_feedback = false
 
 }
 local opts = require("mp.options")
@@ -787,7 +785,7 @@ function save_playlist()
       i=i+1
     end
     local saved_msg = "Playlist written to: "..savepath
-    if settings.osd_playlist_saved then mp.osd_message(saved_msg) end
+    if settings.display_osd_feedback then mp.osd_message(saved_msg) end
     msg.info(saved_msg)
     file:close()
   end
@@ -849,7 +847,7 @@ function reverseplaylist()
   end
   if playlist_visible then
     showplaylist()
-  elseif settings.osd_playlist_reversed then
+  elseif settings.display_osd_feedback then
     mp.osd_message("Playlist reversed")
   end
 end
@@ -864,7 +862,7 @@ function shuffleplaylist()
   refresh_globals()
   if playlist_visible then
     showplaylist()
-  elseif settings.osd_playlist_shuffled then
+  elseif settings.display_osd_feedback then
     mp.osd_message("Playlist shuffled")
   end
 end
