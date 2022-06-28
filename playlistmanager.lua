@@ -166,6 +166,9 @@ local settings = {
   playlist_sliced_prefix = "...",
   playlist_sliced_suffix = "...",
 
+  --output visual feedback to OSD for tasks
+  display_osd_feedback = false,
+
   -- reset cursor navigation when playlist is not visible
   reset_cursor_on_close = true
 
@@ -801,7 +804,9 @@ function save_playlist()
       file:write(fullpath, "\n")
       i=i+1
     end
-    msg.info("Playlist written to: "..savepath)
+    local saved_msg = "Playlist written to: "..savepath
+    if settings.display_osd_feedback then mp.osd_message(saved_msg) end
+    msg.info(saved_msg)
     file:close()
   end
 end
@@ -860,7 +865,11 @@ function reverseplaylist()
   for outer=1, length-1, 1 do
     mp.commandv('playlist-move', outer, 0)
   end
-  if playlist_visible then showplaylist() end
+  if playlist_visible then
+    showplaylist()
+  elseif settings.display_osd_feedback then
+    mp.osd_message("Playlist reversed")
+  end
 end
 
 function shuffleplaylist()
@@ -871,7 +880,11 @@ function shuffleplaylist()
   mp.commandv("playlist-move", pos, math.random(0, plen-1))
   mp.set_property('playlist-pos', 0)
   refresh_globals()
-  if playlist_visible then showplaylist() end
+  if playlist_visible then
+    showplaylist()
+  elseif settings.display_osd_feedback then
+    mp.osd_message("Playlist shuffled")
+  end
 end
 
 function bind_keys(keys, name, func, opts)
