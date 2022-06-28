@@ -64,8 +64,10 @@ local settings = {
     ]
   ]],
 
-  --loadfiles at startup if there is 0 or 1 items in playlist, if 0 uses worḱing dir for files
+  --loadfiles at startup if 1 or more items in playlist
   loadfiles_on_start = false,
+  -- loadfiles from working directory on idle startup
+  loadfiles_on_idle_start = false,
 
   --sort playlist on mpv start
   sortplaylist_on_start = false,
@@ -945,7 +947,7 @@ if not settings.dynamic_binds then
   add_keybinds()
 end
 
-if settings.loadfiles_on_start and mp.get_property_number('playlist-count', 0) == 0 then
+if settings.loadfiles_on_idle_start and mp.get_property_number('playlist-count', 0) == 0 then
   playlist()
 end
 
