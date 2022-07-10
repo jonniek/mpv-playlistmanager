@@ -762,7 +762,7 @@ local interactive_save = false
 function activate_playlist_save()
   if interactive_save then
     remove_keybinds()
-    mp.command("script-message playlist-save-interactive \"start interactive filenaming process\"")
+    mp.command("script-message playlistmanager-save-interactive \"start interactive filenaming process\"")
   else
     save_playlist()
   end

@@ -63,6 +63,7 @@ function typer(s)
 end
 
 -- this will be called from playlistmanager
-mp.register_script_message("playlist-save-interactive", activate)
+mp.register_script_message("playlistmanager-save-interactive", activate)
 
+-- this will enable the feature in playlistmanager
 mp.command("script-message playlistmanager enable-interactive-save \"enable interactive filenaming in playlistmanager\"")
