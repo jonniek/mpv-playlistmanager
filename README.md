@@ -33,7 +33,7 @@ If you want playlistmanager to fetch and display titles of all playlist urls(mpv
 ## Keybinds
 #### Static keybindings
 - __sortplaylist__(CTRL+p)  
-  - Sorts the current playlist with stripped values from filename(not media title, no paths, usercreated strips applied). To start playlist from start you can use a script message `KEY script-message sortplaylist startover`. Settings involving sort include alphanumeric sort(nonpadded numbers in order, case insensitivity), sort on mpv start and sort on file added to playlist.  
+  - Sorts the current playlist with stripped values from filename(not media title, no paths, usercreated strips applied). To start playlist from start you can use a script message `KEY script-message sortplaylist startover`. Settings involving sort include alphanumeric sort(nonpadded numbers in order, case insensitivity), sort on mpv start and sort on file added to playlist. Sort algorithm credit [zsugabubus](https://github.com/zsugabubus/dotfiles/blob/master/.config/mpv/scripts/playlist-filtersort.lua)  
 - __shuffleplaylist__(CTRL+P)  
   - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesn't shuffle current file.  
 - __reverseplaylist__(CTRL+R)  
