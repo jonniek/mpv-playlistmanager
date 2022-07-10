@@ -1,7 +1,9 @@
--- reference https://github.com/NurioHin/mpv-bookmarker
+-- This module enables typing a name for playlists when saving them in playlistmanager
+-- This module requires playlistmanager to work
 
 local msg = require("mp.msg")
 
+-- reference https://github.com/NurioHin/mpv-bookmarker
 local controls = {
   ESC = function() deactivate() end,
   ENTER = function() commit() end,
