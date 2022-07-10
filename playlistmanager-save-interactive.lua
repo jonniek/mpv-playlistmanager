@@ -63,5 +63,4 @@ function type(s)
 end
 
 -- this will be called from playlistmanager
--- alternatively you can bind this to a key directly in input.conf "KEY script-message playlist-save-interactive"
 mp.register_script_message("playlist-save-interactive", activate)
