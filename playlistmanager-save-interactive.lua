@@ -3,11 +3,16 @@ local msg = require("mp.msg")
 local controls = {
   ESC = function() deactivate() end,
   ENTER = function() commit() end,
-  BS = function() typer("backspace") end,
-  SPACE = function() typer(" ") end
+  BS = function() type("backspace") end,
+  SPACE = function() type(" ") end
 }
 
-local typerKeys = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","0","!","@","$","%","^","&","*","(",")","-","_","=","+","[","]","{","}","\\","|",";",":","\"",",",".","<",">","/","?","`","~"}
+local keys = {
+  "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
+  "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
+  "1","2","3","4","5","6","7","8","9","0",
+  "!","@","$","%","^","&","*","(",")","-","_","=","+","[","]","{","}","\\","|",";",":","\"",",",".","<",">","/","?","`","~"
+}
 
 local illegal_char_set = {}
 for _, ch in pairs({"<",">",":","\"","/","\\","|","?","*"}) do
@@ -20,13 +25,13 @@ function activate()
   for key, func in pairs(controls) do
     mp.add_forced_key_binding(key, "playlist-save-interactive-key-"..key, func, {repeatable=true})
   end
-  for i, key in ipairs(typerKeys) do
-    mp.add_forced_key_binding(key, "playlist-save-interactive-key-"..key, function() typer(key) end, {repeatable=true})
+  for i, key in ipairs(keys) do
+    mp.add_forced_key_binding(key, "playlist-save-interactive-key-"..key, function() type(key) end, {repeatable=true})
   end
 
   local date = os.date("*t")
   input = ("%02d-%02d-%02d_%02d-%02d-%02d"):format(date.year, date.month, date.day, date.hour, date.min, date.sec)
-  typer("")
+  type("")
 end
 
 function commit()
@@ -39,13 +44,13 @@ function deactivate()
   for key, _ in pairs(controls) do
     mp.remove_key_binding("playlist-save-interactive-key-"..key)
   end
-  for i, key in ipairs(typerKeys) do
+  for i, key in ipairs(keys) do
     mp.remove_key_binding("playlist-save-interactive-key-"..key)
   end
   return input
 end
 
-function typer(s)
+function type(s)
   if s == "backspace" then
     input = input:sub(1, #input - 1)
   elseif illegal_char_set[s] then
