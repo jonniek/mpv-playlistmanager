@@ -173,10 +173,6 @@ local settings = {
 
   -- reset cursor navigation when playlist is not visible
   reset_cursor_on_close = true,
-
-  -- experimental playlist filenaming prompt, requires playlistmanager-save-interactive.lua script
-  interactive_playlist_save = true
-
 }
 local opts = require("mp.options")
 opts.read_options(settings, "playlistmanager", function(list) update_opts(list) end)
@@ -762,8 +758,9 @@ function parse_home(path)
   return result
 end
 
+local interactive_save = false
 function activate_playlist_save()
-  if settings.interactive_playlist_save then
+  if interactive_save then
     remove_keybinds()
     mp.command("script-message playlist-save-interactive \"start interactive filenaming process\"")
   else
@@ -1092,6 +1089,7 @@ function handlemessage(msg, value, value2)
   if msg == "save" then save_playlist(value) ; return end
   if msg == "playlist-next" then playlist_next(true) ; return end
   if msg == "playlist-prev" then playlist_prev(true) ; return end
+  if msg == "enable-interactive-save" then interactive_save = true end
 end
 
 mp.register_script_message("playlistmanager", handlemessage)

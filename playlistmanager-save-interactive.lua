@@ -5,8 +5,8 @@ local msg = require("mp.msg")
 local controls = {
   ESC = function() deactivate() end,
   ENTER = function() commit() end,
-  BS = function() type("backspace") end,
-  SPACE = function() type(" ") end
+  BS = function() typer("backspace") end,
+  SPACE = function() typer(" ") end
 }
 
 local keys = {
@@ -28,12 +28,12 @@ function activate()
     mp.add_forced_key_binding(key, "playlist-save-interactive-key-"..key, func, {repeatable=true})
   end
   for i, key in ipairs(keys) do
-    mp.add_forced_key_binding(key, "playlist-save-interactive-key-"..key, function() type(key) end, {repeatable=true})
+    mp.add_forced_key_binding(key, "playlist-save-interactive-key-"..key, function() typer(key) end, {repeatable=true})
   end
 
   local date = os.date("*t")
   input = ("%02d-%02d-%02d_%02d-%02d-%02d"):format(date.year, date.month, date.day, date.hour, date.min, date.sec)
-  type("")
+  typer("")
 end
 
 function commit()
@@ -51,7 +51,7 @@ function deactivate()
   end
 end
 
-function type(s)
+function typer(s)
   if s == "backspace" then
     input = input:sub(1, #input - 1)
   elseif illegal_char_set[s] then
@@ -64,3 +64,5 @@ end
 
 -- this will be called from playlistmanager
 mp.register_script_message("playlist-save-interactive", activate)
+
+mp.command("script-message playlistmanager enable-interactive-save \"enable interactive filenaming in playlistmanager\"")
