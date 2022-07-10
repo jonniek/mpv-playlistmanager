@@ -1010,10 +1010,6 @@ mp.observe_property('playlist-count', "number", function()
   resolve_titles()
 end)
 
-mp.observe_property('playlist', nil, function()
-  if playlist_visible then showplaylist() end
-end)
-
 --resolves url titles by calling youtube-dl
 function resolve_titles()
   if not settings.resolve_titles then return end
