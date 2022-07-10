@@ -1,3 +1,5 @@
+-- reference https://github.com/NurioHin/mpv-bookmarker
+
 local msg = require("mp.msg")
 
 local controls = {
@@ -47,7 +49,6 @@ function deactivate()
   for i, key in ipairs(keys) do
     mp.remove_key_binding("playlist-save-interactive-key-"..key)
   end
-  return input
 end
 
 function type(s)
