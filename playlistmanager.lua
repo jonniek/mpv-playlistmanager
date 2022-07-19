@@ -68,6 +68,8 @@ local settings = {
   loadfiles_on_start = false,
   -- loadfiles from working directory on idle startup
   loadfiles_on_idle_start = false,
+  --always put loaded files after currently playing file
+  loadfiles_always_append = false,
 
   --sort playlist on mpv start
   sortplaylist_on_start = false,
@@ -708,7 +710,7 @@ function playlist(force_dir)
       end
       if filenames[file] then
         -- continue
-      elseif cur == true then
+      elseif cur == true or settings.loadfiles_always_append then
         mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
         msg.info("Appended to playlist: " .. file)
         c2 = c2 + 1
