@@ -28,7 +28,7 @@ You can also change settings during runtime with a keybind or command like `KEY 
 If you are using [save-position-on-quit](https://mpv.io/manual/master/#options-save-position-on-quit) then the playlist will write watch later config when switching between files.
 
 #### Url title resolving
-If you want playlistmanager to fetch and display titles of all playlist urls(mpv defaults to current file only) you will need to use `resolve_titles = yes`(default is no) setting. Title resolving requires `youtube-dl` to be in PATH to work.
+If you want playlistmanager to fetch and display titles of all playlist urls(mpv defaults to current file only) you will need to use `resolve_titles = yes`(default is no) setting. Title resolving requires `youtube-dl` to be in PATH to work by default, but it's configurable in settings.
 
 ## Keybinds
 #### Static keybindings

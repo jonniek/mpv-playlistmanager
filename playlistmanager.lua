@@ -107,6 +107,9 @@ local settings = {
   --allow the playlist cursor to loop from end to start and vice versa
   loop_cursor = true,
 
+  --youtube-dl executable for title resolving if enabled, probably "youtube-dl" or "yt-dlp", can be absolute path
+  youtube_dl_executable = "youtube-dl",
+
 
   --####  VISUAL SETTINGS
 
@@ -1028,7 +1031,7 @@ function resolve_titles()
     then
       requested_urls[filename] = true
 
-      local args = { 'youtube-dl', '--no-playlist', '--flat-playlist', '-sJ', filename }
+      local args = { settings.youtube_dl_executable, '--no-playlist', '--flat-playlist', '-sJ', filename }
       local req = mp.command_native_async(
         {
           name = "subprocess",
