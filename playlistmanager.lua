@@ -711,19 +711,19 @@ function playlist(force_dir)
         appendstr = "append-play"
         hasfile = true
       end
-      if filenames[file] then
-        -- continue
+      if filename == file then
+        cur = true
+      elseif filenames[file] then
+        -- skip files already in playlist
       elseif cur == true or settings.loadfiles_always_append then
         mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
         msg.info("Appended to playlist: " .. file)
         c2 = c2 + 1
-      elseif file ~= filename then
-          mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
-          msg.info("Prepended to playlist: " .. file)
-          mp.commandv("playlist-move", mp.get_property_number("playlist-count", 1)-1,  c)
-          c = c + 1
       else
-        cur = true
+        mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
+        msg.info("Prepended to playlist: " .. file)
+        mp.commandv("playlist-move", mp.get_property_number("playlist-count", 1)-1,  c)
+        c = c + 1
       end
     end
     if c2 > 0 or c>0 then
