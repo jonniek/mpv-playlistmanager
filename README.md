@@ -74,7 +74,7 @@ The above functions do not have default keybindings. You can edit the settings i
 - __closeplaylist__(ESC)
   - closes the playlist if it is open
 
-Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. You can override keybindings by their names above by adding the following in your input.conf `SPACE script-binding showplaylist`.
+Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones.
   
 There is also a few script messages you can send to control the script:  
 `KEY script-message playlistmanager command value value2`  
