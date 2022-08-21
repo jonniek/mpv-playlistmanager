@@ -6,7 +6,10 @@ local settings = {
   --if "no" then you can display the playlist by any of the navigation keys
   dynamic_binds = true,
 
-  -- to bind multiple keys separate them by a space
+  -- main key
+  key_showplaylist = "SHIFT+ENTER",
+
+  -- dynamic keys - to bind multiple keys separate them by a space
   key_moveup = "UP",
   key_movedown = "DOWN",
   key_movepageup = "PGUP",
@@ -18,6 +21,13 @@ local settings = {
   key_playfile = "ENTER",
   key_removefile = "BS",
   key_closeplaylist = "ESC",
+
+  -- extra functionality keys
+  key_sortplaylist = "",
+  key_shuffleplaylist = "",
+  key_reverseplaylist = "",
+  key_loadfiles = "",
+  key_saveplaylist = "",
 
   --replaces matches on filenames based on extension, put as empty string to not replace anything
   --replace rules are executed in provided order
@@ -1099,12 +1109,12 @@ end
 
 mp.register_script_message("playlistmanager", handlemessage)
 
-mp.add_key_binding("CTRL+p", "sortplaylist", sortplaylist)
-mp.add_key_binding("CTRL+P", "shuffleplaylist", shuffleplaylist)
-mp.add_key_binding("CTRL+R", "reverseplaylist", reverseplaylist)
-mp.add_key_binding("P", "loadfiles", playlist)
-mp.add_key_binding("p", "saveplaylist", activate_playlist_save)
-mp.add_key_binding("SHIFT+ENTER", "showplaylist", toggle_playlist)
-
 mp.register_event("file-loaded", on_loaded)
 mp.register_event("end-file", on_closed)
+
+mp.add_key_binding(settings.key_loadfiles,        "loadfiles",        playlist)
+mp.add_key_binding(settings.key_sortplaylist,     "sortplaylist",     sortplaylist)
+mp.add_key_binding(settings.key_saveplaylist,     "saveplaylist",     activate_playlist_save)
+mp.add_key_binding(settings.key_showplaylist,     "showplaylist",     toggle_playlist)
+mp.add_key_binding(settings.key_shuffleplaylist,  "shuffleplaylist",  shuffleplaylist)
+mp.add_key_binding(settings.key_reverseplaylist,  "reverseplaylist",  reverseplaylist)

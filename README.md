@@ -18,7 +18,7 @@ It will make sense once you try the script!
 Copy the `playlistmanager.lua` file to your mpv scripts directory which is usually `~/.config/mpv/scripts/` or `%APPDATA%/mpv/scripts/`. See [https://mpv.io/manual/master/#files](https://mpv.io/manual/master/#files) and [https://mpv.io/manual/master/#script-location](https://mpv.io/manual/master/#script-location) for more detailed information.
 
 ## Settings
-You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file in`script-opts` directory. 
+You can modify behaviour of the script in the settings variable in the lua file or a `playlistmanager.conf` lua-setting file in `script-opts` directory. 
 Note: the conf file will override any changed setting in the lua file. There is a playlistmanager.conf file in this repo with the default values of the script. 
 
 You can pass settings from the command line on startup such as `mpv --idle=once --script-opts=playlistmanager-loadfiles_on_start=yes`. 
@@ -32,22 +32,24 @@ If you want playlistmanager to fetch and display titles of all playlist urls(mpv
 
 ## Keybinds
 #### Static keybindings
-- __sortplaylist__(CTRL+p)  
-  - Sorts the current playlist with stripped values from filename(not media title, no paths, usercreated strips applied). To start playlist from start you can use a script message `KEY script-message sortplaylist startover`. Settings involving sort include alphanumeric sort(nonpadded numbers in order, case insensitivity), sort on mpv start and sort on file added to playlist. Sort algorithm credit [zsugabubus](https://github.com/zsugabubus/dotfiles/blob/master/.config/mpv/scripts/playlist-filtersort.lua)  
-- __shuffleplaylist__(CTRL+P)  
-  - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesn't shuffle current file.  
-- __reverseplaylist__(CTRL+R)  
-  - Reverses the current playlist. Does not stop playing the current file.  
-- __loadfiles__(P)
-  - Attempts to load all files from the currently playing files directory to the playlist keeping the order. Option to run at startup if 0 or 1 files are opened, with 0 opens files from working directory. On startup with no file requires `--idle=yes or --idle=once`.  
-- __saveplaylist__(p)
-  - Saves the current playlist to m3u file. Saves to `mpv/playlists/` by default. If you want to name playlists manually rather than the automatic naming you can use [playlistmanager-save-interactive.lua](https://github.com/jonniek/mpv-playlistmanager/blob/master/playlistmanager-save-interactive.lua) module. It will prompt for a name when you save the playlist.
 - __showplaylist__(SHIFT+ENTER)
   - Displays the current playlist and loads the dynamic keybinds for navigating  
-  
-  If you want to use the above controls from a "gui" rather than keybinds, then you can check out [mpv-menu](https://github.com/jonniek/mpv-menu) and use the `menu.json` found in this repository.
 
-#### Dynamic keybindings
+#### Functions without default keybindings
+- __sortplaylist__ 
+  - Sorts the current playlist with stripped values from filename(not media title, no paths, usercreated strips applied). To start playlist from start you can use a script message `KEY script-message sortplaylist startover`. Settings involving sort include alphanumeric sort(nonpadded numbers in order, case insensitivity), sort on mpv start and sort on file added to playlist. Sort algorithm credit [zsugabubus](https://github.com/zsugabubus/dotfiles/blob/master/.config/mpv/scripts/playlist-filtersort.lua)  
+- __shuffleplaylist__
+  - Shuffles the current playlist. Stops currently playing file and starts playlist from start of new playlist unlike native shuffle that doesn't shuffle current file.  
+- __reverseplaylist__
+  - Reverses the current playlist. Does not stop playing the current file.  
+- __loadfiles__
+  - Attempts to load all files from the currently playing files directory to the playlist keeping the order. Option to run at startup if 0 or 1 files are opened, with 0 opens files from working directory. On startup with no file requires `--idle=yes or --idle=once`.  
+- __saveplaylist__
+  - Saves the current playlist to m3u file. Saves to `mpv/playlists/` by default. If you want to name playlists manually rather than the automatic naming you can use [playlistmanager-save-interactive.lua](https://github.com/jonniek/mpv-playlistmanager/blob/master/playlistmanager-save-interactive.lua) module. It will prompt for a name when you save the playlist.
+
+The above functions do not have default keybindings. You can edit the settings in lua or conf to add some, or use script messages. If you want to use the above controls from a "gui" rather than keybinds, then you can check out [mpv-menu](https://github.com/jonniek/mpv-menu) and use the `menu.json` found in this repository.
+
+#### Dynamic keybindings for navigating the playlist
 - __moveup__(UP)
   - Moves the cursor up in playlist, if at first entry loops to end of playlist.
 - __movedown__(DOWN)
@@ -72,8 +74,7 @@ If you want playlistmanager to fetch and display titles of all playlist urls(mpv
 - __closeplaylist__(ESC)
   - closes the playlist if it is open
 
-Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. You can override keybindings by their names above by adding the following in your input.conf `SPACE script-binding showplaylist`. However, Dynamic keybindings should be rebound in 
-the settings to avoid overriding other conflicting keybinds and to support multiple keys per bind.
+Dynamic keybinds will only work when playlist is visible. There is a setting toggle to change them to static ones. You can override keybindings by their names above by adding the following in your input.conf `SPACE script-binding showplaylist`.
   
 There is also a few script messages you can send to control the script:  
 `KEY script-message playlistmanager command value value2`  
