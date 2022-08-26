@@ -129,6 +129,9 @@ local settings = {
   --call youtube-dl to resolve the titles of urls in the playlist
   resolve_titles = false,
 
+  -- timeout in seconds for title resolving
+  resolve_title_timeout = 15,
+
   --osd timeout on inactivity, with high value on this open_toggles is good to be true
   playlist_display_timeout = 5,
 
@@ -827,8 +830,10 @@ function save_playlist(filename)
       if not filename:match("^%a%a+:%/%/") then
         fullpath = utils.join_path(pwd, filename)
       end
-      local title = mp.get_property('playlist/'..i..'/title')
-      if title then file:write("#EXTINF:,"..title.."\n") end
+      local title = mp.get_property('playlist/'..i..'/title') or url_table[filename]
+      if title then
+        file:write("#EXTINF:,"..title.."\n")
+      end
       file:write(fullpath, "\n")
       i=i+1
     end
@@ -1071,7 +1076,7 @@ function resolve_titles()
             end
           end)
 
-      mp.add_timeout(5, function()
+      mp.add_timeout(settings.resolve_title_timeout, function()
         mp.abort_async_command(req)
       end)
 
