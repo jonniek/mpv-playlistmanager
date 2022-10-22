@@ -942,20 +942,7 @@ function shuffleplaylist()
 end
 
 function bind_keys(keys, name, func, opts)
-  if not keys then
-    mp.add_key_binding(keys, name, func, opts)
-    return
-  end
-  local i = 1
-  for key in keys:gmatch("[^%s]+") do
-    local prefix = i == 1 and '' or i
-    mp.add_key_binding(key, name..prefix, func, opts)
-    i = i + 1
-  end
-end
-
-function bind_keys_forced(keys, name, func, opts)
-  if not keys then
+  if not keys or keys == '' then
     mp.add_forced_key_binding(keys, name, func, opts)
     return
   end
@@ -981,17 +968,17 @@ function unbind_keys(keys, name)
 end
 
 function add_keybinds()
-  bind_keys_forced(settings.key_moveup, 'moveup', moveup, "repeatable")
-  bind_keys_forced(settings.key_movedown, 'movedown', movedown, "repeatable")
-  bind_keys_forced(settings.key_movepageup, 'movepageup', movepageup, "repeatable")
-  bind_keys_forced(settings.key_movepagedown, 'movepagedown', movepagedown, "repeatable")
-  bind_keys_forced(settings.key_movebegin, 'movebegin', movebegin, "repeatable")
-  bind_keys_forced(settings.key_moveend, 'moveend', moveend, "repeatable")
-  bind_keys_forced(settings.key_selectfile, 'selectfile', selectfile)
-  bind_keys_forced(settings.key_unselectfile, 'unselectfile', unselectfile)
-  bind_keys_forced(settings.key_playfile, 'playfile', playfile)
-  bind_keys_forced(settings.key_removefile, 'removefile', removefile, "repeatable")
-  bind_keys_forced(settings.key_closeplaylist, 'closeplaylist', remove_keybinds)
+  bind_keys(settings.key_moveup, 'moveup', moveup, "repeatable")
+  bind_keys(settings.key_movedown, 'movedown', movedown, "repeatable")
+  bind_keys(settings.key_movepageup, 'movepageup', movepageup, "repeatable")
+  bind_keys(settings.key_movepagedown, 'movepagedown', movepagedown, "repeatable")
+  bind_keys(settings.key_movebegin, 'movebegin', movebegin, "repeatable")
+  bind_keys(settings.key_moveend, 'moveend', moveend, "repeatable")
+  bind_keys(settings.key_selectfile, 'selectfile', selectfile)
+  bind_keys(settings.key_unselectfile, 'unselectfile', unselectfile)
+  bind_keys(settings.key_playfile, 'playfile', playfile)
+  bind_keys(settings.key_removefile, 'removefile', removefile, "repeatable")
+  bind_keys(settings.key_closeplaylist, 'closeplaylist', remove_keybinds)
 end
 
 function remove_keybinds()
@@ -1133,12 +1120,12 @@ end
 
 mp.register_script_message("playlistmanager", handlemessage)
 
-bind_keys(settings.key_sortplaylist, "sortplaylist", sortplaylist)
-bind_keys(settings.key_shuffleplaylist, "shuffleplaylist", shuffleplaylist)
-bind_keys(settings.key_reverseplaylist, "reverseplaylist", reverseplaylist)
-bind_keys(settings.key_loadfiles, "loadfiles", playlist)
-bind_keys(settings.key_saveplaylist, "saveplaylist", activate_playlist_save)
-bind_keys(settings.key_showplaylist, "showplaylist", toggle_playlist)
-
 mp.register_event("file-loaded", on_loaded)
 mp.register_event("end-file", on_closed)
+
+bind_keys(settings.key_loadfiles,        "loadfiles",        playlist)
+bind_keys(settings.key_sortplaylist,     "sortplaylist",     sortplaylist)
+bind_keys(settings.key_saveplaylist,     "saveplaylist",     activate_playlist_save)
+bind_keys(settings.key_showplaylist,     "showplaylist",     toggle_playlist)
+bind_keys(settings.key_shuffleplaylist,  "shuffleplaylist",  shuffleplaylist)
+bind_keys(settings.key_reverseplaylist,  "reverseplaylist",  reverseplaylist)
