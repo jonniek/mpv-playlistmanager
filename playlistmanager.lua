@@ -389,13 +389,17 @@ function get_name_from_index(i, notitle)
   end
 
   --if we have media title use a more conservative strip
-  if title and not notitle and should_use_title then return stripfilename(title, true) end
+  if title and not notitle and should_use_title then
+    -- Escape a string for verbatim display on the OSD
+    -- Ref: https://github.com/mpv-player/mpv/blob/94677723624fb84756e65c8f1377956667244bc9/player/lua/stats.lua#L145
+    return stripfilename(title, true):gsub("\\", '\\\239\187\191'):gsub("{", "\\{"):gsub("^ ", "\\h")
+  end
 
   --remove paths if they exist, keeping protocols for stripping
   if string.sub(name, 1, 1) == '/' or name:match("^%a:[/\\]") then
     _, name = utils.split_path(name)
   end
-  return stripfilename(name)
+  return stripfilename(name):gsub("\\", '\\\239\187\191'):gsub("{", "\\{"):gsub("^ ", "\\h")
 end
 
 function parse_header(string)
