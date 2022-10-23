@@ -48,7 +48,7 @@ If you want playlistmanager to fetch and display titles of all playlist urls(mpv
   - Saves the current playlist to m3u file. Saves to `mpv/playlists/` by default. If you want to name playlists manually rather than the automatic naming you can use [playlistmanager-save-interactive.lua](https://github.com/jonniek/mpv-playlistmanager/blob/master/playlistmanager-save-interactive.lua) module. It will prompt for a name when you save the playlist.
 
 The above functions do not have default keybindings. You can edit the settings in lua or conf to add some. You can also use 
-`input.conf` to bind them like `SPACE script-binding showplaylist`. Script messages can also be used to run them(more about them 
+`input.conf` to bind them like `SPACE script-binding loadfiles`. Script messages can also be used to run them(more about them 
 later). If you want to use the above controls from a "gui" rather than keybinds, then you can check out 
 [mpv-menu](https://github.com/jonniek/mpv-menu) and use the `menu.json` found in this repository.
 
