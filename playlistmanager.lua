@@ -456,9 +456,13 @@ end
 function draw_playlist()
   refresh_globals()
   local ass = assdraw.ass_new()
-  ass:pos(settings.text_padding_x, settings.text_padding_y)
   ass:new_event()
   ass:append(settings.style_ass_tags)
+
+  -- TODO: padding should work even on different osd alignments
+  if mp.get_property("osd-align-x") == "left" and mp.get_property("osd-align-y") == "top" then
+    ass:pos(settings.text_padding_x, settings.text_padding_y)
+  end
 
   if settings.playlist_header ~= "" then
     ass:append(parse_header(settings.playlist_header).."\\N")
