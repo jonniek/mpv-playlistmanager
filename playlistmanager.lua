@@ -1144,5 +1144,5 @@ bind_keys(settings.key_loadfiles, "loadfiles", playlist)
 bind_keys(settings.key_saveplaylist, "saveplaylist", activate_playlist_save)
 bind_keys(settings.key_showplaylist, "showplaylist", toggle_playlist)
 
-mp.register_event("file-loaded", on_loaded)
+mp.register_event("start-file", on_loaded)
 mp.register_event("end-file", on_closed)
