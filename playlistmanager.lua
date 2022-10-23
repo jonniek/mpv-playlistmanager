@@ -942,7 +942,7 @@ function shuffleplaylist()
 end
 
 function bind_keys(keys, name, func, opts)
-  if not keys then
+  if keys == nil or keys == "" then
     mp.add_key_binding(keys, name, func, opts)
     return
   end
@@ -955,7 +955,7 @@ function bind_keys(keys, name, func, opts)
 end
 
 function bind_keys_forced(keys, name, func, opts)
-  if not keys then
+  if keys == nil or keys == "" then
     mp.add_forced_key_binding(keys, name, func, opts)
     return
   end
@@ -968,7 +968,7 @@ function bind_keys_forced(keys, name, func, opts)
 end
 
 function unbind_keys(keys, name)
-  if not keys then
+  if keys == nil or keys == "" then
     mp.remove_key_binding(name)
     return
   end
