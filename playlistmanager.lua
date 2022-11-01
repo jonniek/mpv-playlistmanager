@@ -551,7 +551,11 @@ function removefile()
   if cursor==pos then mp.command("script-message unseenplaylist mark true \"playlistmanager avoid conflict when removing file\"") end
   mp.commandv("playlist-remove", cursor)
   if cursor==plen-1 then cursor = cursor - 1 end
-  showplaylist()
+  if plen == 1 then
+    remove_keybinds()
+  else
+    showplaylist()
+  end
 end
 
 function moveup()
