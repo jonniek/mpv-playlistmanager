@@ -270,17 +270,16 @@ update_opts({filename_replace = true, loadfiles_filetypes = true})
 function on_loaded()
   filename = mp.get_property("filename")
   path = mp.get_property('path')
+  if utils.readdir(path, "dirs") then
+    -- a directory has been loaded, let's not do anything as mpv will expand it into files
+    return
+  end
   --if not a url then join path with working directory
   if not path:match("^%a%a+:%/%/") then
     path = utils.join_path(mp.get_property('working-directory'), path)
     directory = utils.split_path(path)
   else
     directory = nil
-  end
-
-  if directory == filename then
-    -- a directory has been loaded, let's not do anything as mpv will expand it into files
-    return
   end
 
   refresh_globals()
