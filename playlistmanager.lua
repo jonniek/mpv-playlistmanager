@@ -278,6 +278,11 @@ function on_loaded()
     directory = nil
   end
 
+  if directory == filename then
+    -- a directory has been loaded, let's not do anything as mpv will expand it into files
+    return
+  end
+
   refresh_globals()
   if settings.sync_cursor_on_load then
     cursor=pos
