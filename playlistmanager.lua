@@ -40,7 +40,7 @@ local settings = {
 
   filename_replace = "",
 
---[=====[ START OF SAMPLE REPLACE, to use remove start and end line
+--[=====[ START OF SAMPLE REPLACE - Remove this line to use it
   --Sample replace: replaces underscore to space on all files
   --for mp4 and webm; remove extension, remove brackets and surrounding whitespace, change dot between alphanumeric to space
   filename_replace = [[
