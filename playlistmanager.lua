@@ -270,7 +270,8 @@ update_opts({filename_replace = true, loadfiles_filetypes = true})
 function on_loaded()
   filename = mp.get_property("filename")
   path = mp.get_property('path')
-  if filename:match(".m3u$") or utils.readdir(path, "dirs") then
+  local ext = filename:match("%.(.+)$")
+  if not ext or not filetype_lookup[ext:lower()] then
     -- a directory or playlist has been loaded, let's not do anything as mpv will expand it into files
     return
   end
