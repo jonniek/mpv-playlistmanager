@@ -270,11 +270,6 @@ update_opts({filename_replace = true, loadfiles_filetypes = true})
 function on_loaded()
   filename = mp.get_property("filename")
   path = mp.get_property('path')
-  local ext = filename:match("%.(.+)$")
-  if not ext or not filetype_lookup[ext:lower()] then
-    -- a directory or playlist has been loaded, let's not do anything as mpv will expand it into files
-    return
-  end
   --if not a url then join path with working directory
   if not path:match("^%a%a+:%/%/") then
     path = utils.join_path(mp.get_property('working-directory'), path)
@@ -307,9 +302,13 @@ function on_loaded()
 
   local didload = false
   if settings.loadfiles_on_start and plen == 1 then
-    didload = true --save reference for sorting
-    msg.info("Loading files from playing files directory")
-    playlist()
+    local ext = filename:match("%.([^%.]+)$")
+    -- a directory or playlist has been loaded, let's not do anything as mpv will expand it into files
+    if ext and filetype_lookup[ext:lower()] then
+      didload = true --save reference for sorting
+      msg.info("Loading files from playing files directory")
+      playlist()
+    end
   end
 
   --if we promised to sort files on launch do it
@@ -349,7 +348,7 @@ end
 --strip a filename based on its extension or protocol according to rules in settings
 function stripfilename(pathfile, media_title)
   if pathfile == nil then return '' end
-  local ext = pathfile:match("^.+%.(.+)$")
+  local ext = pathfile:match("%.([^%.]+)$")
   local protocol = pathfile:match("^(%a%a+)://")
   if not ext then ext = "" end
   local tmp = pathfile
@@ -689,7 +688,7 @@ function parse_files(res, delimiter)
   if not res.error and res.status == 0 then
     local valid_files = {}
     for line in res.stdout:gmatch("[^"..delimiter.."]+") do
-      local ext = line:match("^.+%.(.+)$")
+      local ext = line:match("%.([^%.]+)$")
       if ext and filetype_lookup[ext:lower()] then
         table.insert(valid_files, line)
       end
