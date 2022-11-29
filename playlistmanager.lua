@@ -497,14 +497,14 @@ function draw_playlist()
   mp.set_osd_ass(w, h, ass.text)
 end
 
-function toggle_playlist()
+function toggle_playlist(show_function)
   if settings.open_toggles then
     if playlist_visible then
       remove_keybinds()
       return
     end
   end
-  showplaylist()
+  show_function()
 end
 
 function showplaylist(duration)
@@ -513,6 +513,19 @@ function showplaylist(duration)
   playlist_visible = true
   add_keybinds()
 
+  draw_playlist()
+  keybindstimer:kill()
+  if duration then
+    keybindstimer = mp.add_periodic_timer(duration, remove_keybinds)
+  else
+    keybindstimer:resume()
+  end
+end
+
+function showplaylist_non_interactive(duration)
+  refresh_globals()
+  if plen == 0 then return end
+  playlist_visible = true
   draw_playlist()
   keybindstimer:kill()
   if duration then
@@ -1123,7 +1136,16 @@ function handlemessage(msg, value, value2)
       showplaylist(value2)
       return
     else
-      toggle_playlist()
+      toggle_playlist(showplaylist)
+      return
+    end
+  end
+  if msg == "show" and value == "playlist-nokeys" then
+    if value2 ~= "toggle" then
+      showplaylist_non_interactive(value2)
+      return
+    else
+      toggle_playlist(showplaylist_non_interactive)
       return
     end
   end
