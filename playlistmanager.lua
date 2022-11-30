@@ -504,7 +504,11 @@ function toggle_playlist(show_function)
       return
     end
   end
-  show_function()
+  if show_function then
+    show_function()
+  else
+    showplaylist()
+  end
 end
 
 function showplaylist(duration)
