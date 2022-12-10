@@ -83,14 +83,8 @@ local settings = {
   --always put loaded files after currently playing file
   loadfiles_always_append = false,
 
-  --sort playlist on mpv start
-  sortplaylist_on_start = false,
-
   --sort playlist when files are added to playlist
   sortplaylist_on_file_add = false,
-
-  --use alphanumerical sort
-  alphanumsort = true,
 
   --"linux | windows | auto"
   system = "auto",
@@ -225,8 +219,6 @@ local cursor = 0
 local url_table = {}
 -- table for urls that we have request to be resolved to titles
 local requested_urls = {}
---state for if we sort on playlist size change
-local sort_watching = false
 
 local filetype_lookup = {}
 
@@ -300,28 +292,18 @@ function on_loaded()
     mp.set_property("title", settings.title_prefix..strippedname..settings.title_suffix)
   end
 
-  local didload = false
   if settings.loadfiles_on_start and plen == 1 then
     local ext = filename:match("%.([^%.]+)$")
     -- a directory or playlist has been loaded, let's not do anything as mpv will expand it into files
     if ext and filetype_lookup[ext:lower()] then
-      didload = true --save reference for sorting
       msg.info("Loading files from playing files directory")
       playlist()
     end
   end
 
-  --if we promised to sort files on launch do it
-  if promised_sort then
-    promised_sort = false
-    msg.info("Your playlist is sorted before starting playback")
-    if didload then sortplaylist() else sortplaylist(true) end
-  end
-
   --if we promised to listen and sort on playlist size increase do it
   if promised_sort_watch then
     promised_sort_watch = false
-    sort_watching = true
     msg.info("Added files will be automatically sorted")
     mp.observe_property('playlist-count', "number", autosort)
   end
@@ -713,6 +695,7 @@ function playlist(force_dir)
   if force_dir then dir = force_dir end
 
   local files = file_filter(utils.readdir(dir, "files"))
+  table.sort(files, alphanumsort)
 
   if files == nil then
     msg.verbose("no files in directory")
@@ -757,10 +740,6 @@ function playlist(force_dir)
     cursor = mp.get_property_number('playlist-pos', 1)
   else
     msg.error("Could not scan for files: "..(error or ""))
-  end
-  if sort_watching then
-    msg.info("Ignoring directory structure and using playlist sort")
-    sortplaylist()
   end
   refresh_globals()
   if playlist_visible then showplaylist() end
@@ -863,14 +842,6 @@ function alphanumsort(a, b)
        < tostring(b):lower():gsub("%.?%d+",padnum)..("%3d"):format(#a)
 end
 
-function dosort(a,b)
-  if settings.alphanumsort then
-    return alphanumsort(a,b)
-  else
-    return a < b
-  end
-end
-
 -- fast sort algo from https://github.com/zsugabubus/dotfiles/blob/master/.config/mpv/scripts/playlist-filtersort.lua
 function sortplaylist(startover)
   local playlist = mp.get_property_native('playlist')
@@ -883,7 +854,7 @@ function sortplaylist(startover)
 	end
 
   table.sort(order, function(a, b)
-    return dosort(playlist[a].string, playlist[b].string)
+    return alphanumsort(playlist[a].string, playlist[b].string)
   end)
 
   for i=1, #playlist do
@@ -1036,11 +1007,6 @@ end
 promised_sort_watch = false
 if settings.sortplaylist_on_file_add then
   promised_sort_watch = true
-end
-
-promised_sort = false
-if settings.sortplaylist_on_start then
-  promised_sort = true
 end
 
 mp.observe_property('playlist-count', "number", function()
