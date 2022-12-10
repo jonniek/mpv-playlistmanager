@@ -316,13 +316,6 @@ function on_loaded()
       playlist()
     end
   end
-
-  --if we promised to listen and sort on playlist size increase do it
-  if promised_sort_watch then
-    promised_sort_watch = false
-    msg.info("Added files will be automatically sorted")
-    mp.observe_property('playlist-count', "number", autosort)
-  end
 end
 
 function on_closed()
@@ -928,15 +921,6 @@ function sortplaylist(startover)
   if playlist_visible then showplaylist() end
 end
 
-function autosort(name, param)
-  if param == 0 then return end
-  if plen < param then
-    msg.info("Playlistmanager autosorting playlist")
-    refresh_globals()
-    sortplaylist()
-  end
-end
-
 function reverseplaylist()
   local length = mp.get_property_number('playlist-count', 0)
   if length < 2 then return end
@@ -1064,12 +1048,13 @@ if settings.loadfiles_on_idle_start and mp.get_property_number('playlist-count',
   playlist()
 end
 
-promised_sort_watch = false
-if settings.sortplaylist_on_file_add then
-  promised_sort_watch = true
-end
-
-mp.observe_property('playlist-count', "number", function()
+mp.observe_property('playlist-count', "number", function(_, plcount)
+  --if we promised to listen and sort on playlist size increase do it
+  if settings.sortplaylist_on_file_add and (plcount > plen) then
+    msg.info("Added files will be automatically sorted")
+    refresh_globals()
+    sortplaylist()
+  end
   if playlist_visible then showplaylist() end
   if settings.prefer_titles == 'none' then return end
   -- resolve titles
