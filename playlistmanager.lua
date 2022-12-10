@@ -38,7 +38,16 @@ local settings = {
   --'all' will match any extension or protocol if it has one
   --uses json and parses it into a lua table to be able to support .conf file
 
-  filename_replace = "",
+  filename_replace = [[
+    [
+      {
+        "protocol": { "all": true },
+        "rules": [
+          { "%%(%x%x)": "hex_to_char" }
+        ]
+      }
+    ]
+  ]],
 
 --[=====[ START OF SAMPLE REPLACE - Remove this line to use it
   --Sample replace: replaces underscore to space on all files
@@ -275,11 +284,15 @@ elseif settings.default_sort == 'size-desc' then
   sort_mode = 5
 end
 
+function is_protocol(path)
+  return type(path) == 'string' and path:match('^%a[%a%d-_]+://') ~= nil
+end
+
 function on_loaded()
   filename = mp.get_property("filename")
   path = mp.get_property('path')
   --if not a url then join path with working directory
-  if not path:match("^%a%a+:%/%/") then
+  if not is_protocol(path) then
     path = utils.join_path(mp.get_property('working-directory'), path)
     directory = utils.split_path(path)
   else
@@ -294,7 +307,7 @@ function on_loaded()
   end
 
   local media_title = mp.get_property("media-title")
-  if path:match('^https?://') and not url_table[path] and path ~= media_title then
+  if is_protocol(path) and not url_table[path] and path ~= media_title then
     url_table[path] = media_title
   end
 
@@ -336,6 +349,21 @@ function escapepath(dir, escapechar)
   return string.gsub(dir, escapechar, '\\'..escapechar)
 end
 
+function replace_lefthand_matches(value, valid_values)
+  if value == nil or valid_values == nil then
+    return false
+  end
+  if valid_values['all'] then
+    return true
+  end
+  return valid_values['all'] or valid_values[value]
+end
+
+local filename_replace_functions = {
+  --decode special characters in url
+  hex_to_char = function(x) return string.char(tonumber(x, 16)) end
+}
+
 --strip a filename based on its extension or protocol according to rules in settings
 function stripfilename(pathfile, media_title)
   if pathfile == nil then return '' end
@@ -345,10 +373,10 @@ function stripfilename(pathfile, media_title)
   local tmp = pathfile
   if settings.filename_replace and not media_title then
     for k,v in ipairs(settings.filename_replace) do
-      if ( v['ext'] and (v['ext'][ext] or (ext and not protocol and v['ext']['all'])) )
-      or ( v['protocol'] and (v['protocol'][protocol] or (protocol and not ext and v['protocol']['all'])) ) then
+      if replace_lefthand_matches(ext, v['ext']) or replace_lefthand_matches(protocol, v['protocol']) then
         for ruleindex, indexrules in ipairs(v['rules']) do
           for rule, override in pairs(indexrules) do
+            override = filename_replace_functions[override] or override
             tmp = tmp:gsub(rule, override)
           end
         end
@@ -364,7 +392,7 @@ end
 --gets the file info of an item
 function get_file_info(item)
   local path = mp.get_property('playlist/' .. item - 1 .. '/filename')
-  if path:match('^%a[%a%d-_]+://') then return end
+  if is_protocol(path) then return {} end
   local file_info = utils.file_info(path)
   if not file_info then
     msg.warn('failed to read file info for', path)
@@ -382,7 +410,7 @@ function get_name_from_index(i, notitle)
   local title = mp.get_property('playlist/'..i..'/title')
   local name = mp.get_property('playlist/'..i..'/filename')
 
-  local should_use_title = settings.prefer_titles == 'all' or name:match('^https?://') and settings.prefer_titles == 'url'
+  local should_use_title = settings.prefer_titles == 'all' or is_protocol(name) and settings.prefer_titles == 'url'
   --check if file has a media title stored or as property
   if not title and should_use_title then
     local mtitle = mp.get_property('media-title')
@@ -838,7 +866,7 @@ function save_playlist(filename)
       local pwd = mp.get_property("working-directory")
       local filename = mp.get_property('playlist/'..i..'/filename')
       local fullpath = filename
-      if not filename:match("^%a%a+:%/%/") then
+      if not is_protocol(filename) then
         fullpath = utils.join_path(pwd, filename)
       end
       local title = mp.get_property('playlist/'..i..'/title') or url_table[filename]
