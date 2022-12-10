@@ -83,14 +83,11 @@ local settings = {
   --always put loaded files after currently playing file
   loadfiles_always_append = false,
 
-  --sort playlist on mpv start
-  sortplaylist_on_start = false,
-
   --sort playlist when files are added to playlist
   sortplaylist_on_file_add = false,
 
-  --use alphanumerical sort
-  alphanumsort = true,
+  --default sorting method, must be one of: "name", "date-asc", "date-desc", "size-asc", "size-desc".
+  default_sort = "name",
 
   --"linux | windows | auto"
   system = "auto",
@@ -225,8 +222,6 @@ local cursor = 0
 local url_table = {}
 -- table for urls that we have request to be resolved to titles
 local requested_urls = {}
---state for if we sort on playlist size change
-local sort_watching = false
 
 local filetype_lookup = {}
 
@@ -267,6 +262,19 @@ end
 
 update_opts({filename_replace = true, loadfiles_filetypes = true})
 
+local sort_mode = 0
+if settings.default_sort == 'name' then
+  sort_mode = 1
+elseif settings.default_sort == 'date-asc' then
+  sort_mode = 2
+elseif settings.default_sort == 'date-desc' then
+  sort_mode = 3
+elseif settings.default_sort == 'size-asc' then
+  sort_mode = 4
+elseif settings.default_sort == 'size-desc' then
+  sort_mode = 5
+end
+
 function on_loaded()
   filename = mp.get_property("filename")
   path = mp.get_property('path')
@@ -300,28 +308,18 @@ function on_loaded()
     mp.set_property("title", settings.title_prefix..strippedname..settings.title_suffix)
   end
 
-  local didload = false
   if settings.loadfiles_on_start and plen == 1 then
     local ext = filename:match("%.([^%.]+)$")
     -- a directory or playlist has been loaded, let's not do anything as mpv will expand it into files
     if ext and filetype_lookup[ext:lower()] then
-      didload = true --save reference for sorting
       msg.info("Loading files from playing files directory")
       playlist()
     end
   end
 
-  --if we promised to sort files on launch do it
-  if promised_sort then
-    promised_sort = false
-    msg.info("Your playlist is sorted before starting playback")
-    if didload then sortplaylist() else sortplaylist(true) end
-  end
-
   --if we promised to listen and sort on playlist size increase do it
   if promised_sort_watch then
     promised_sort_watch = false
-    sort_watching = true
     msg.info("Added files will be automatically sorted")
     mp.observe_property('playlist-count', "number", autosort)
   end
@@ -368,6 +366,19 @@ function stripfilename(pathfile, media_title)
     tmp = tmp:sub(1, settings.slice_longfilenames_amount).." ..."
   end
   return tmp
+end
+
+--gets the file info of an item
+function get_file_info(item)
+  local path = mp.get_property('playlist/' .. item - 1 .. '/filename')
+  if path:match('^%a[%a%d-_]+://') then return end
+  local file_info = utils.file_info(path)
+  if not file_info then
+    msg.warn('failed to read file info for', path)
+    return {}
+  end
+
+  return file_info
 end
 
 --gets a nicename of playlist entry at 0-based position i
@@ -674,46 +685,16 @@ function playfile()
   end
 end
 
-function get_files_windows(dir)
-  local args = {
-    'powershell', '-NoProfile', '-Command', [[& {
-          Trap {
-              Write-Error -ErrorRecord $_
-              Exit 1
-          }
-          $path = "]]..dir..[["
-          $escapedPath = [WildcardPattern]::Escape($path)
-          cd $escapedPath
-
-          $list = (Get-ChildItem -File | Sort-Object { [regex]::Replace($_.Name, '\d+', { $args[0].Value.PadLeft(20) }) }).Name
-          $string = ($list -join "/")
-          $u8list = [System.Text.Encoding]::UTF8.GetBytes($string)
-          [Console]::OpenStandardOutput().Write($u8list, 0, $u8list.Length)
-      }]]
-  }
-  local process = utils.subprocess({ args = args, cancellable = false })
-  return parse_files(process, '%/')
-end
-
-function get_files_linux(dir)
-  local args = { 'ls', '-1pv', dir }
-  local process = utils.subprocess({ args = args, cancellable = false })
-  return parse_files(process, '\n')
-end
-
-function parse_files(res, delimiter)
-  if not res.error and res.status == 0 then
-    local valid_files = {}
-    for line in res.stdout:gmatch("[^"..delimiter.."]+") do
-      local ext = line:match("%.([^%.]+)$")
-      if ext and filetype_lookup[ext:lower()] then
-        table.insert(valid_files, line)
-      end
+function file_filter(filenames)
+    local files = {}
+    for i = 1, #filenames do
+        local file = filenames[i]
+        local ext = file:match('%.([^%.]+)$')
+        if ext and filetype_lookup[ext:lower()] then
+            table.insert(files, file)
+        end
     end
-    return valid_files, nil
-  else
-    return nil, res.error
-  end
+    return files
 end
 
 function get_playlist_filenames_set()
@@ -738,13 +719,16 @@ function playlist(force_dir)
   else
     dir = directory
   end
+
+  if dir == "." then dir = "" end
   if force_dir then dir = force_dir end
 
-  local files, error
-  if settings.system == "linux" then
-    files, error = get_files_linux(dir)
-  else
-    files, error = get_files_windows(dir)
+  local files = file_filter(utils.readdir(dir, "files"))
+  table.sort(files, alphanumsort)
+
+  if files == nil then
+    msg.verbose("no files in directory")
+    return
   end
 
   local filenames = get_playlist_filenames_set()
@@ -753,6 +737,9 @@ function playlist(force_dir)
     local cur = false
     local filename = mp.get_property("filename")
     for _, file in ipairs(files) do
+      if file == nil or file[1] == "." then
+          break
+      end
       local appendstr = "append"
       if not hasfile then
         cur = true
@@ -775,17 +762,13 @@ function playlist(force_dir)
       end
     end
     if c2 > 0 or c>0 then
-      mp.osd_message("Added "..c + c2.." files to playlist")
+      msg.info("Added "..c + c2.." files to playlist")
     else
-      mp.osd_message("No additional files found")
+      msg.info("No additional files found")
     end
     cursor = mp.get_property_number('playlist-pos', 1)
   else
     msg.error("Could not scan for files: "..(error or ""))
-  end
-  if sort_watching then
-    msg.info("Ignoring directory structure and using playlist sort")
-    sortplaylist()
   end
   refresh_globals()
   if playlist_visible then showplaylist() end
@@ -888,14 +871,6 @@ function alphanumsort(a, b)
        < tostring(b):lower():gsub("%.?%d+",padnum)..("%3d"):format(#a)
 end
 
-function dosort(a,b)
-  if settings.alphanumsort then
-    return alphanumsort(a,b)
-  else
-    return a < b
-  end
-end
-
 -- fast sort algo from https://github.com/zsugabubus/dotfiles/blob/master/.config/mpv/scripts/playlist-filtersort.lua
 function sortplaylist(startover)
   local playlist = mp.get_property_native('playlist')
@@ -908,7 +883,17 @@ function sortplaylist(startover)
 	end
 
   table.sort(order, function(a, b)
-    return dosort(playlist[a].string, playlist[b].string)
+    if sort_mode == 1 then
+      return alphanumsort(playlist[a].string, playlist[b].string)
+    elseif sort_mode == 2 then
+      return (get_file_info(a).mtime or 0) < (get_file_info(b).mtime or 0)
+    elseif sort_mode == 3 then
+      return (get_file_info(a).mtime or 0) > (get_file_info(b).mtime or 0)
+    elseif sort_mode == 4 then
+      return (get_file_info(a).size or 0) < (get_file_info(b).size or 0)
+    elseif sort_mode == 5 then
+      return (get_file_info(a).size or 0) > (get_file_info(b).size or 0)
+    end
   end)
 
   for i=1, #playlist do
@@ -926,6 +911,16 @@ function sortplaylist(startover)
       playlist[j], playlist[i] = playlist[i], playlist[j]
     end
   end
+
+  for i = 1, #playlist do
+    local filename = mp.get_property('playlist/' .. i - 1 .. '/filename')
+    local ext = filename:match("%.([^%.]+)$")
+    if not ext or not filetype_lookup[ext:lower()] then
+      --move the directory to the end of the playlist
+      mp.commandv('playlist-move', i - 1, #playlist)
+    end
+  end
+
   cursor = mp.get_property_number('playlist-pos', 0)
   if startover then
     mp.set_property('playlist-pos', 0)
@@ -961,6 +956,17 @@ function shuffleplaylist()
   mp.command("playlist-shuffle")
   math.randomseed(os.time())
   mp.commandv("playlist-move", pos, math.random(0, plen-1))
+
+  local playlist = mp.get_property_native('playlist')
+  for i = 1, #playlist do
+    local filename = mp.get_property('playlist/' .. i - 1 .. '/filename')
+    local ext = filename:match("%.([^%.]+)$")
+    if not ext or not filetype_lookup[ext:lower()] then
+      --move the directory to the end of the playlist
+      mp.commandv('playlist-move', i - 1, #playlist)
+    end
+  end
+
   mp.set_property('playlist-pos', 0)
   refresh_globals()
   if playlist_visible then
@@ -1061,11 +1067,6 @@ end
 promised_sort_watch = false
 if settings.sortplaylist_on_file_add then
   promised_sort_watch = true
-end
-
-promised_sort = false
-if settings.sortplaylist_on_start then
-  promised_sort = true
 end
 
 mp.observe_property('playlist-count', "number", function()
@@ -1171,7 +1172,11 @@ end
 
 mp.register_script_message("playlistmanager", handlemessage)
 
-bind_keys(settings.key_sortplaylist, "sortplaylist", sortplaylist)
+bind_keys(settings.key_sortplaylist, "sortplaylist", function()
+  sort_mode = sort_mode + 1
+  if sort_mode > 5 then sort_mode = 1 end
+  sortplaylist()
+end)
 bind_keys(settings.key_shuffleplaylist, "shuffleplaylist", shuffleplaylist)
 bind_keys(settings.key_reverseplaylist, "reverseplaylist", reverseplaylist)
 bind_keys(settings.key_loadfiles, "loadfiles", playlist)
