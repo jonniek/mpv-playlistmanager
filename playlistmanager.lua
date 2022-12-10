@@ -275,11 +275,15 @@ elseif settings.default_sort == 'size-desc' then
   sort_mode = 5
 end
 
+function is_protocol(path)
+  return type(path) == 'string' and path:match('^%a[%a%d-_]+://') ~= nil
+end
+
 function on_loaded()
   filename = mp.get_property("filename")
   path = mp.get_property('path')
   --if not a url then join path with working directory
-  if not path:match("^%a%a+:%/%/") then
+  if not is_protocol(path) then
     path = utils.join_path(mp.get_property('working-directory'), path)
     directory = utils.split_path(path)
   else
@@ -294,7 +298,7 @@ function on_loaded()
   end
 
   local media_title = mp.get_property("media-title")
-  if path:match('^https?://') and not url_table[path] and path ~= media_title then
+  if is_protocol(path) and not url_table[path] and path ~= media_title then
     url_table[path] = media_title
   end
 
@@ -371,7 +375,7 @@ end
 --gets the file info of an item
 function get_file_info(item)
   local path = mp.get_property('playlist/' .. item - 1 .. '/filename')
-  if path:match('^%a[%a%d-_]+://') then return end
+  if is_protocol(path) then return {} end
   local file_info = utils.file_info(path)
   if not file_info then
     msg.warn('failed to read file info for', path)
@@ -389,7 +393,7 @@ function get_name_from_index(i, notitle)
   local title = mp.get_property('playlist/'..i..'/title')
   local name = mp.get_property('playlist/'..i..'/filename')
 
-  local should_use_title = settings.prefer_titles == 'all' or name:match('^https?://') and settings.prefer_titles == 'url'
+  local should_use_title = settings.prefer_titles == 'all' or is_protocol(name) and settings.prefer_titles == 'url'
   --check if file has a media title stored or as property
   if not title and should_use_title then
     local mtitle = mp.get_property('media-title')
@@ -845,7 +849,7 @@ function save_playlist(filename)
       local pwd = mp.get_property("working-directory")
       local filename = mp.get_property('playlist/'..i..'/filename')
       local fullpath = filename
-      if not filename:match("^%a%a+:%/%/") then
+      if not is_protocol(filename) then
         fullpath = utils.join_path(pwd, filename)
       end
       local title = mp.get_property('playlist/'..i..'/title') or url_table[filename]
