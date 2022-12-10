@@ -789,7 +789,15 @@ function playlist(force_dir)
     msg.error("Could not scan for files: "..(error or ""))
   end
   refresh_globals()
-  if playlist_visible then showplaylist() end
+  if playlist_visible then
+    showplaylist()
+  elseif settings.display_osd_feedback then
+    if c2 > 0 or c>0 then
+      mp.osd_message("Added "..c + c2.." files to playlist")
+    else
+      mp.osd_message("No additional files found")
+    end
+  end
   return c + c2
 end
 
@@ -943,7 +951,11 @@ function sortplaylist(startover)
   if startover then
     mp.set_property('playlist-pos', 0)
   end
-  if playlist_visible then showplaylist() end
+  if playlist_visible then
+    showplaylist()
+  elseif settings.display_osd_feedback then
+    mp.osd_message("Playlist sorted")
+  end
 end
 
 function reverseplaylist()
