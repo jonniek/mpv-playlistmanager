@@ -349,12 +349,9 @@ function escapepath(dir, escapechar)
   return string.gsub(dir, escapechar, '\\'..escapechar)
 end
 
-function replace_lefthand_matches(value, valid_values)
+function replace_table_has_value(value, valid_values)
   if value == nil or valid_values == nil then
     return false
-  end
-  if valid_values['all'] then
-    return true
   end
   return valid_values['all'] or valid_values[value]
 end
@@ -373,7 +370,7 @@ function stripfilename(pathfile, media_title)
   local tmp = pathfile
   if settings.filename_replace and not media_title then
     for k,v in ipairs(settings.filename_replace) do
-      if replace_lefthand_matches(ext, v['ext']) or replace_lefthand_matches(protocol, v['protocol']) then
+      if replace_table_has_value(ext, v['ext']) or replace_table_has_value(protocol, v['protocol']) then
         for ruleindex, indexrules in ipairs(v['rules']) do
           for rule, override in pairs(indexrules) do
             override = filename_replace_functions[override] or override
