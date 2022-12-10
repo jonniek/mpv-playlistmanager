@@ -86,6 +86,9 @@ local settings = {
   --sort playlist when files are added to playlist
   sortplaylist_on_file_add = false,
 
+  --default sorting method, must be one of: "name", "date-asc", "date-desc", "size-asc", "size-desc".
+  default_sort = "name",
+
   --"linux | windows | auto"
   system = "auto",
 
@@ -259,6 +262,19 @@ end
 
 update_opts({filename_replace = true, loadfiles_filetypes = true})
 
+local sort_mode = 0
+if settings.default_sort == 'name' then
+  sort_mode = 1
+elseif settings.default_sort == 'date-asc' then
+  sort_mode = 2
+elseif settings.default_sort == 'date-desc' then
+  sort_mode = 3
+elseif settings.default_sort == 'size-asc' then
+  sort_mode = 4
+elseif settings.default_sort == 'size-desc' then
+  sort_mode = 5
+end
+
 function on_loaded()
   filename = mp.get_property("filename")
   path = mp.get_property('path')
@@ -350,6 +366,19 @@ function stripfilename(pathfile, media_title)
     tmp = tmp:sub(1, settings.slice_longfilenames_amount).." ..."
   end
   return tmp
+end
+
+--gets the file info of an item
+function get_file_info(item)
+  local path = mp.get_property('playlist/' .. item - 1 .. '/filename')
+  if path:match('^%a[%a%d-_]+://') then return end
+  local file_info = utils.file_info(path)
+  if not file_info then
+    msg.warn('failed to read file info for', path)
+    return {}
+  end
+
+  return file_info
 end
 
 --gets a nicename of playlist entry at 0-based position i
@@ -854,7 +883,17 @@ function sortplaylist(startover)
 	end
 
   table.sort(order, function(a, b)
-    return alphanumsort(playlist[a].string, playlist[b].string)
+    if sort_mode == 1 then
+      return alphanumsort(playlist[a].string, playlist[b].string)
+    elseif sort_mode == 2 then
+      return (get_file_info(a).mtime or 0) < (get_file_info(b).mtime or 0)
+    elseif sort_mode == 3 then
+      return (get_file_info(a).mtime or 0) > (get_file_info(b).mtime or 0)
+    elseif sort_mode == 4 then
+      return (get_file_info(a).size or 0) < (get_file_info(b).size or 0)
+    elseif sort_mode == 5 then
+      return (get_file_info(a).size or 0) > (get_file_info(b).size or 0)
+    end
   end)
 
   for i=1, #playlist do
@@ -872,6 +911,16 @@ function sortplaylist(startover)
       playlist[j], playlist[i] = playlist[i], playlist[j]
     end
   end
+
+  for i = 1, #playlist do
+    local filename = mp.get_property('playlist/' .. i - 1 .. '/filename')
+    local ext = filename:match("%.([^%.]+)$")
+    if not ext or not filetype_lookup[ext:lower()] then
+      --move the directory to the end of the playlist
+      mp.commandv('playlist-move', i - 1, #playlist)
+    end
+  end
+
   cursor = mp.get_property_number('playlist-pos', 0)
   if startover then
     mp.set_property('playlist-pos', 0)
@@ -907,6 +956,17 @@ function shuffleplaylist()
   mp.command("playlist-shuffle")
   math.randomseed(os.time())
   mp.commandv("playlist-move", pos, math.random(0, plen-1))
+
+  local playlist = mp.get_property_native('playlist')
+  for i = 1, #playlist do
+    local filename = mp.get_property('playlist/' .. i - 1 .. '/filename')
+    local ext = filename:match("%.([^%.]+)$")
+    if not ext or not filetype_lookup[ext:lower()] then
+      --move the directory to the end of the playlist
+      mp.commandv('playlist-move', i - 1, #playlist)
+    end
+  end
+
   mp.set_property('playlist-pos', 0)
   refresh_globals()
   if playlist_visible then
@@ -1112,7 +1172,11 @@ end
 
 mp.register_script_message("playlistmanager", handlemessage)
 
-bind_keys(settings.key_sortplaylist, "sortplaylist", sortplaylist)
+bind_keys(settings.key_sortplaylist, "sortplaylist", function()
+  sort_mode = sort_mode + 1
+  if sort_mode > 5 then sort_mode = 1 end
+  sortplaylist()
+end)
 bind_keys(settings.key_shuffleplaylist, "shuffleplaylist", shuffleplaylist)
 bind_keys(settings.key_reverseplaylist, "reverseplaylist", reverseplaylist)
 bind_keys(settings.key_loadfiles, "loadfiles", playlist)
