@@ -38,7 +38,16 @@ local settings = {
   --'all' will match any extension or protocol if it has one
   --uses json and parses it into a lua table to be able to support .conf file
 
-  filename_replace = "",
+  filename_replace = [[
+    [
+      {
+        "protocol": { "all": true },
+        "rules": [
+          { "%%(%x%x)": "hex_to_char" }
+        ]
+      }
+    ]
+  ]],
 
 --[=====[ START OF SAMPLE REPLACE - Remove this line to use it
   --Sample replace: replaces underscore to space on all files
@@ -347,6 +356,21 @@ function escapepath(dir, escapechar)
   return string.gsub(dir, escapechar, '\\'..escapechar)
 end
 
+function replace_lefthand_matches(value, valid_values)
+  if value == nil or valid_values == nil then
+    return false
+  end
+  if valid_values['all'] then
+    return true
+  end
+  return valid_values['all'] or valid_values[value]
+end
+
+local filename_replace_functions = {
+  --decode special characters in url
+  hex_to_char = function(x) return string.char(tonumber(x, 16)) end
+}
+
 --strip a filename based on its extension or protocol according to rules in settings
 function stripfilename(pathfile, media_title)
   if pathfile == nil then return '' end
@@ -356,10 +380,10 @@ function stripfilename(pathfile, media_title)
   local tmp = pathfile
   if settings.filename_replace and not media_title then
     for k,v in ipairs(settings.filename_replace) do
-      if ( v['ext'] and (v['ext'][ext] or (ext and not protocol and v['ext']['all'])) )
-      or ( v['protocol'] and (v['protocol'][protocol] or (protocol and not ext and v['protocol']['all'])) ) then
+      if replace_lefthand_matches(ext, v['ext']) or replace_lefthand_matches(protocol, v['protocol']) then
         for ruleindex, indexrules in ipairs(v['rules']) do
           for rule, override in pairs(indexrules) do
+            override = filename_replace_functions[override] or override
             tmp = tmp:gsub(rule, override)
           end
         end
