@@ -674,46 +674,16 @@ function playfile()
   end
 end
 
-function get_files_windows(dir)
-  local args = {
-    'powershell', '-NoProfile', '-Command', [[& {
-          Trap {
-              Write-Error -ErrorRecord $_
-              Exit 1
-          }
-          $path = "]]..dir..[["
-          $escapedPath = [WildcardPattern]::Escape($path)
-          cd $escapedPath
-
-          $list = (Get-ChildItem -File | Sort-Object { [regex]::Replace($_.Name, '\d+', { $args[0].Value.PadLeft(20) }) }).Name
-          $string = ($list -join "/")
-          $u8list = [System.Text.Encoding]::UTF8.GetBytes($string)
-          [Console]::OpenStandardOutput().Write($u8list, 0, $u8list.Length)
-      }]]
-  }
-  local process = utils.subprocess({ args = args, cancellable = false })
-  return parse_files(process, '%/')
-end
-
-function get_files_linux(dir)
-  local args = { 'ls', '-1pv', dir }
-  local process = utils.subprocess({ args = args, cancellable = false })
-  return parse_files(process, '\n')
-end
-
-function parse_files(res, delimiter)
-  if not res.error and res.status == 0 then
-    local valid_files = {}
-    for line in res.stdout:gmatch("[^"..delimiter.."]+") do
-      local ext = line:match("%.([^%.]+)$")
-      if ext and filetype_lookup[ext:lower()] then
-        table.insert(valid_files, line)
-      end
+function file_filter(filenames)
+    local files = {}
+    for i = 1, #filenames do
+        local file = filenames[i]
+        local ext = file:match('%.([^%.]+)$')
+        if ext and filetype_lookup[ext:lower()] then
+            table.insert(files, file)
+        end
     end
-    return valid_files, nil
-  else
-    return nil, res.error
-  end
+    return files
 end
 
 function get_playlist_filenames_set()
@@ -738,13 +708,15 @@ function playlist(force_dir)
   else
     dir = directory
   end
+
+  if dir == "." then dir = "" end
   if force_dir then dir = force_dir end
 
-  local files, error
-  if settings.system == "linux" then
-    files, error = get_files_linux(dir)
-  else
-    files, error = get_files_windows(dir)
+  local files = file_filter(utils.readdir(dir, "files"))
+
+  if files == nil then
+    msg.verbose("no files in directory")
+    return
   end
 
   local filenames = get_playlist_filenames_set()
@@ -753,6 +725,9 @@ function playlist(force_dir)
     local cur = false
     local filename = mp.get_property("filename")
     for _, file in ipairs(files) do
+      if file == nil or file[1] == "." then
+          break
+      end
       local appendstr = "append"
       if not hasfile then
         cur = true
@@ -775,9 +750,9 @@ function playlist(force_dir)
       end
     end
     if c2 > 0 or c>0 then
-      mp.osd_message("Added "..c + c2.." files to playlist")
+      msg.info("Added "..c + c2.." files to playlist")
     else
-      mp.osd_message("No additional files found")
+      msg.info("No additional files found")
     end
     cursor = mp.get_property_number('playlist-pos', 1)
   else
