@@ -163,6 +163,9 @@ local settings = {
   --paddings from top left corner
   text_padding_x = 10,
   text_padding_y = 30,
+  
+  --screen dim when menu is open 0.0 - 1.0 (0 is no dim, 1 is black)
+  curtain_opacity=0,
 
   --set title of window with stripped name
   set_title_stripped = false,
@@ -499,7 +502,21 @@ end
 function draw_playlist()
   refresh_globals()
   local ass = assdraw.ass_new()
-  ass:new_event()
+	
+  local _, _, a = mp.get_osd_size()
+  local h = 360
+  local w = h * a
+
+  if settings.curtain_opacity ~= nil and settings.curtain_opacity ~= 0 and settings.curtain_opacity < 1.0 then
+  -- curtain dim from https://github.com/christoph-heinrich/mpv-quality-menu/blob/501794bfbef468ee6a61e54fc8821fe5cd72c4ed/quality-menu.lua#L699-L707
+    local alpha = 255 - math.ceil(255 * settings.curtain_opacity)
+    ass.text = string.format('{\\pos(0,0)\\rDefault\\an7\\1c&H000000&\\alpha&H%X&}', alpha)
+    ass:draw_start()
+    ass:rect_cw(0, 0, w, h)
+    ass:draw_stop()
+    ass:new_event()
+  end
+	
   ass:append(settings.style_ass_tags)
 
   -- TODO: padding should work even on different osd alignments
@@ -531,7 +548,6 @@ function draw_playlist()
       ass:append(settings.playlist_sliced_suffix)
     end
   end
-  local w, h = mp.get_osd_size()
   if settings.scale_playlist_by_window then w,h = 0, 0 end
   mp.set_osd_ass(w, h, ass.text)
 end
