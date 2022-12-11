@@ -143,6 +143,9 @@ local settings = {
   -- timeout in seconds for title resolving
   resolve_title_timeout = 15,
 
+  -- how many titles can be resolved at a time. Higher number might lead to stutters.
+  concurrent_title_resolve_limit = 5,
+
   --osd timeout on inactivity, with high value on this open_toggles is good to be true
   playlist_display_timeout = 5,
 
@@ -1104,9 +1107,6 @@ mp.observe_property('playlist-count', "number", function(_, plcount)
 end)
 
 
-local concurrent_title_resolve_limit = 30
-local title_resolve_timeout = 1
-
 request_queue = {}
 function request_queue.push(item) table.insert(request_queue, item) end
 function request_queue.pop() return table.remove(request_queue, 1) end
@@ -1122,7 +1122,7 @@ function title_fetching_throttler()
     end
   end
 
-  local amount_to_fetch = math.max(0, concurrent_title_resolve_limit - ongoing_request_count)
+  local amount_to_fetch = math.max(0, settings.concurrent_title_resolve_limit - ongoing_request_count)
   for index=1,amount_to_fetch,1 do
     local file = file_titles_to_fetch.pop()
     if file then
@@ -1136,7 +1136,7 @@ function title_fetching_throttler()
   end
 end
 
-title_fetch_timer = mp.add_periodic_timer(title_resolve_timeout, title_fetching_throttler)
+title_fetch_timer = mp.add_periodic_timer(1, title_fetching_throttler)
 title_fetch_timer:kill()
 
 function resolve_titles()
