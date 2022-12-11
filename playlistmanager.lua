@@ -261,11 +261,11 @@ function update_opts(changelog)
   end
 
   if changelog.resolve_url_titles then
-    resolve_url_titles()
+    resolve_titles()
   end
 
   if changelog.resolve_local_titles then
-    resolve_local_titles()
+    resolve_titles()
   end
 
   if changelog.playlist_display_timeout then
@@ -1088,127 +1088,146 @@ mp.observe_property('playlist-count', "number", function(_, plcount)
     sortplaylist()
   end
   if playlist_visible then showplaylist() end
-  if settings.prefer_titles == 'none' then return end
-  -- resolve titles
-  if settings.resolve_url_titles then
-    resolve_url_titles()
-  end
-  if settings.resolve_local_titles then
-    resolve_local_titles()
-  end
+  resolve_titles()
 end)
 
---resolves url titles by calling youtube-dl
-function resolve_url_titles()
-  if not settings.resolve_url_titles then return end
-  local length = mp.get_property_number('playlist-count', 0)
-  if length < 2 then return end
-  local i=0
-  -- loop all items in playlist because we can't predict how it has changed
-  while i < length do
-    local filename = mp.get_property('playlist/'..i..'/filename')
-    local title = mp.get_property('playlist/'..i..'/title')
-    if i ~= pos
-      and filename
-      and filename:match('^https?://')
-      and not title
-      and not title_table[filename]
-      and not requested_titles[filename]
-    then
-      requested_titles[filename] = true
 
-      local args = { settings.youtube_dl_executable, '--no-playlist', '--flat-playlist', '-sJ', filename }
-      local req = mp.command_native_async(
-        {
-          name = "subprocess",
-          args = args,
-          playback_only = false,
-          capture_stdout = true
-        }, function (success, res)
-            if res.killed_by_us then
-              msg.verbose('Request to resolve url title ' .. filename .. ' timed out')
-              return
-            end
-            if res.status == 0 then
-              local json, err = utils.parse_json(res.stdout)
-              if not err then
-                local is_playlist = json['_type'] and json['_type'] == 'playlist'
-                local title = (is_playlist and '[playlist]: ' or '') .. json['title']
-                msg.verbose(filename .. " resolved to '" .. title .. "'")
-                title_table[filename] = title
-                refresh_globals()
-                if playlist_visible then showplaylist() end
-                return
-              else
-                msg.error("Failed parsing json, reason: "..(err or "unknown"))
-              end
-            else
-              msg.error("Failed to resolve url title "..filename.." Error: "..(res.error or "unknown"))
-            end
-          end)
+local concurrent_title_resolve_limit = 30
+local title_resolve_timeout = 1
 
-        mp.add_timeout(settings.resolve_title_timeout, function()
-        mp.abort_async_command(req)
-      end)
+request_queue = {}
+function request_queue.push(item) table.insert(request_queue, item) end
+function request_queue.pop() return table.remove(request_queue, 1) end
+local file_titles_to_fetch = request_queue
 
+local ongoing_title_requests = {}
+
+function title_fetching_throttler()
+  local ongoing_request_count = 0
+  for _, ongoing in pairs(ongoing_title_requests) do
+    if ongoing then
+      ongoing_request_count = ongoing_request_count + 1
     end
-    i=i+1
+  end
+
+  local amount_to_fetch = math.max(0, concurrent_title_resolve_limit - ongoing_request_count)
+  for index=1,amount_to_fetch,1 do
+    local file = file_titles_to_fetch.pop()
+    if file then
+      ongoing_title_requests[file] = true
+      if file:match('^https?://') then
+        resolve_ytdl_title(file)
+      elseif settings.prefer_titles == "all" then
+        resolve_ffprobe_title(file)
+      end
+    end
   end
 end
 
---resolves local file titles by calling ffprobe
-function resolve_local_titles()
-  if not settings.resolve_local_titles then return end
-  if settings.prefer_titles == 'url' then return end
+title_fetch_timer = mp.add_periodic_timer(title_resolve_timeout, title_fetching_throttler)
+title_fetch_timer:kill()
+
+function resolve_titles()
+  if settings.prefer_titles == 'none' then return end
+  if not settings.resolve_url_titles and not settings.resolve_local_titles then return end
+
   local length = mp.get_property_number('playlist-count', 0)
   if length < 2 then return end
-  local i=0
   -- loop all items in playlist because we can't predict how it has changed
-  while i < length do
+  for i=0,length - 1,1 do
     local filename = mp.get_property('playlist/'..i..'/filename')
     local title = mp.get_property('playlist/'..i..'/title')
     if i ~= pos
       and filename
-      and not filename:match('^https?://')
       and not title
       and not title_table[filename]
       and not requested_titles[filename]
     then
       requested_titles[filename] = true
-
-      local args = { "ffprobe", "-show_format", "-show_entries", "format=tags", "-loglevel", "quiet", filename }
-      local req = mp.command_native_async(
-        {
-          name = "subprocess",
-          args = args,
-          playback_only = false,
-          capture_stdout = true
-        }, function (success, res)
-            if res.killed_by_us then
-              msg.verbose('Request to resolve local title ' .. filename .. ' timed out')
-              return
-            end
-
-            local title = string.match(res.stdout, "title=([^\n\r]+)")
-
-	    if not title then
-	      return
-	    else
-              msg.verbose(filename .. " resolved to '" .. title .. "'")
-              title_table[filename] = title
-              refresh_globals()
-            if playlist_visible then showplaylist() end
-              return
-            end
-          end)
-
-        mp.add_timeout(settings.resolve_title_timeout, function()
-        mp.abort_async_command(req)
-      end)
-
+      file_titles_to_fetch.push(filename)
     end
-    i=i+1
   end
+  title_fetch_timer:resume()
+end
+
+function resolve_ytdl_title(filename)
+  local args = { settings.youtube_dl_executable, '--no-playlist', '--flat-playlist', '-sJ', filename }
+  local req = mp.command_native_async(
+    {
+      name = "subprocess",
+      args = args,
+      playback_only = false,
+      capture_stdout = true
+    },
+    function (success, res)
+      ongoing_title_requests[filename] = false
+      if res.killed_by_us then
+        msg.verbose('Request to resolve url title ' .. filename .. ' timed out')
+        return
+      end
+      if res.status == 0 then
+        local json, err = utils.parse_json(res.stdout)
+        if not err then
+          local is_playlist = json['_type'] and json['_type'] == 'playlist'
+          local title = (is_playlist and '[playlist]: ' or '') .. json['title']
+          msg.verbose(filename .. " resolved to '" .. title .. "'")
+          title_table[filename] = title
+          refresh_globals()
+          if playlist_visible then showplaylist() end
+        else
+          msg.error("Failed parsing json, reason: "..(err or "unknown"))
+        end
+      else
+        msg.error("Failed to resolve url title "..filename.." Error: "..(res.error or "unknown"))
+      end
+    end
+  )
+
+  mp.add_timeout(
+    settings.resolve_title_timeout,
+    function()
+      mp.abort_async_command(req)
+      ongoing_title_requests[filename] = false
+    end
+  )
+end
+
+function resolve_ffprobe_title(filename)
+  local args = { "ffprobe", "-show_format", "-show_entries", "format=tags", "-loglevel", "quiet", filename }
+  local req = mp.command_native_async(
+    {
+      name = "subprocess",
+      args = args,
+      playback_only = false,
+      capture_stdout = true
+    },
+    function (success, res)
+      ongoing_title_requests[filename] = false
+      if res.killed_by_us then
+        msg.verbose('Request to resolve local title ' .. filename .. ' timed out')
+        return
+      end
+      if res.status == 0 then
+        local title = string.match(res.stdout, "title=([^\n\r]+)")
+        if title then
+          msg.verbose(filename .. " resolved to '" .. title .. "'")
+          title_table[filename] = title
+          refresh_globals()
+          if playlist_visible then showplaylist() end
+        end
+      else
+        msg.error("Failed to resolve local title "..filename.." Error: "..(res.error or "unknown"))
+      end
+    end
+  )
+
+  mp.add_timeout(
+    settings.resolve_title_timeout,
+    function()
+      mp.abort_async_command(req)
+      ongoing_title_requests[filename] = false
+    end
+  )
 end
 
 --script message handler
