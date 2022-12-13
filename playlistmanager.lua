@@ -301,7 +301,16 @@ function is_protocol(path)
   return type(path) == 'string' and path:match('^%a[%a%d-_]+://') ~= nil
 end
 
-function on_loaded()
+function on_file_loaded()
+  filename = mp.get_property("filename")
+  path = mp.get_property('path')
+  local media_title = mp.get_property("media-title")
+  if is_protocol(path) and not title_table[path] and path ~= media_title then
+    title_table[path] = media_title
+  end
+end
+
+function on_start_file()
   filename = mp.get_property("filename")
   path = mp.get_property('path')
   --if not a url then join path with working directory
@@ -317,11 +326,6 @@ function on_loaded()
     cursor=pos
     --refresh playlist if cursor moved
     if playlist_visible then draw_playlist() end
-  end
-
-  local media_title = mp.get_property("media-title")
-  if is_protocol(path) and not title_table[path] and path ~= media_title then
-    title_table[path] = media_title
   end
 
   strippedname = stripfilename(mp.get_property('media-title'))
@@ -344,7 +348,7 @@ function on_loaded()
   end
 end
 
-function on_closed()
+function on_end_file()
   if settings.save_playlist_on_file_end then save_playlist() end
   strippedname = nil
   path = nil
@@ -1337,5 +1341,6 @@ bind_keys(settings.key_loadfiles, "loadfiles", playlist)
 bind_keys(settings.key_saveplaylist, "saveplaylist", activate_playlist_save)
 bind_keys(settings.key_showplaylist, "showplaylist", toggle_playlist)
 
-mp.register_event("start-file", on_loaded)
-mp.register_event("end-file", on_closed)
+mp.register_event("start-file", on_start_file)
+mp.register_event("file-loaded", on_file_loaded)
+mp.register_event("end-file", on_end_file)
