@@ -140,11 +140,11 @@ local settings = {
   --call ffprobe to resolve the titles of local files in the playlist (if they exist in the metadata)
   resolve_local_titles = false,
 
-  -- timeout in seconds for title resolving
+  -- timeout in seconds for url title resolving
   resolve_title_timeout = 15,
 
-  -- how many titles can be resolved at a time. Higher number might lead to stutters.
-  concurrent_title_resolve_limit = 5,
+  -- how many url titles can be resolved at a time. Higher number might lead to stutters.
+  concurrent_title_resolve_limit = 10,
 
   --osd timeout on inactivity, with high value on this open_toggles is good to be true
   playlist_display_timeout = 5,
@@ -1123,37 +1123,54 @@ mp.observe_property('playlist-count', "number", function(_, plcount)
 end)
 
 
-request_queue = {}
-function request_queue.push(item) table.insert(request_queue, item) end
-function request_queue.pop() return table.remove(request_queue, 1) end
-local file_titles_to_fetch = request_queue
+url_request_queue = {}
+function url_request_queue.push(item) table.insert(url_request_queue, item) end
+function url_request_queue.pop() return table.remove(url_request_queue, 1) end
+local url_titles_to_fetch = url_request_queue
+local ongoing_url_requests = {}
 
-local ongoing_title_requests = {}
+function url_fetching_throttler()
+  if #url_titles_to_fetch == 0 then
+    url_title_fetch_timer:kill()
+  end
 
-function title_fetching_throttler()
-  local ongoing_request_count = 0
-  for _, ongoing in pairs(ongoing_title_requests) do
+  local ongoing_url_requests_count = 0
+  for _, ongoing in pairs(ongoing_url_requests) do
     if ongoing then
-      ongoing_request_count = ongoing_request_count + 1
+      ongoing_url_requests_count = ongoing_url_requests_count + 1
     end
   end
 
-  local amount_to_fetch = math.max(0, settings.concurrent_title_resolve_limit - ongoing_request_count)
+  -- start resolving some url titles if there is available slots
+  local amount_to_fetch = math.max(0, settings.concurrent_title_resolve_limit - ongoing_url_requests_count)
   for index=1,amount_to_fetch,1 do
-    local file = file_titles_to_fetch.pop()
+    local file = url_titles_to_fetch.pop()
     if file then
-      ongoing_title_requests[file] = true
-      if file:match('^https?://') then
-        resolve_ytdl_title(file)
-      elseif settings.prefer_titles == "all" then
-        resolve_ffprobe_title(file)
-      end
+      ongoing_url_requests[file] = true
+      resolve_ytdl_title(file)
     end
   end
 end
 
-title_fetch_timer = mp.add_periodic_timer(1, title_fetching_throttler)
-title_fetch_timer:kill()
+url_title_fetch_timer = mp.add_periodic_timer(0.1, url_fetching_throttler)
+url_title_fetch_timer:kill()
+
+local_request_queue = {}
+function local_request_queue.push(item) table.insert(local_request_queue, item) end
+function local_request_queue.pop() return table.remove(local_request_queue, 1) end
+local local_titles_to_fetch = local_request_queue
+local ongoing_local_request = false
+
+-- this will only allow 1 concurrent local title resolve process
+function local_fetching_throttler()
+  if not ongoing_local_request then
+    local file = local_titles_to_fetch.pop()
+    if file then
+      ongoing_local_request = true
+      resolve_ffprobe_title(file)
+    end
+  end
+end
 
 function resolve_titles()
   if settings.prefer_titles == 'none' then return end
@@ -1162,6 +1179,8 @@ function resolve_titles()
   local length = mp.get_property_number('playlist-count', 0)
   if length < 2 then return end
   -- loop all items in playlist because we can't predict how it has changed
+  local added_urls = false
+  local added_local = false
   for i=0,length - 1,1 do
     local filename = mp.get_property('playlist/'..i..'/filename')
     local title = mp.get_property('playlist/'..i..'/title')
@@ -1172,14 +1191,32 @@ function resolve_titles()
       and not requested_titles[filename]
     then
       requested_titles[filename] = true
-      file_titles_to_fetch.push(filename)
+      if filename:match('^https?://') then
+        url_titles_to_fetch.push(filename)
+        added_urls = true
+      elseif settings.prefer_titles == "all" then
+        local_titles_to_fetch.push(filename)
+        added_local = true
+      end
     end
   end
-  title_fetch_timer:resume()
+  if added_urls then
+    url_title_fetch_timer:resume()
+  end
+  if added_local then
+    local_fetching_throttler()
+  end
 end
 
 function resolve_ytdl_title(filename)
-  local args = { settings.youtube_dl_executable, '--no-playlist', '--flat-playlist', '-sJ', filename }
+  local args = {
+    settings.youtube_dl_executable,
+    '--no-playlist',
+    '--flat-playlist',
+    '-sJ',
+    '--no-config',
+    filename,
+  }
   local req = mp.command_native_async(
     {
       name = "subprocess",
@@ -1188,7 +1225,7 @@ function resolve_ytdl_title(filename)
       capture_stdout = true
     },
     function (success, res)
-      ongoing_title_requests[filename] = false
+      ongoing_url_requests[filename] = false
       if res.killed_by_us then
         msg.verbose('Request to resolve url title ' .. filename .. ' timed out')
         return
@@ -1215,7 +1252,7 @@ function resolve_ytdl_title(filename)
     settings.resolve_title_timeout,
     function()
       mp.abort_async_command(req)
-      ongoing_title_requests[filename] = false
+      ongoing_url_requests[filename] = false
     end
   )
 end
@@ -1230,7 +1267,8 @@ function resolve_ffprobe_title(filename)
       capture_stdout = true
     },
     function (success, res)
-      ongoing_title_requests[filename] = false
+      ongoing_local_request = false
+      local_fetching_throttler()
       if res.killed_by_us then
         msg.verbose('Request to resolve local title ' .. filename .. ' timed out')
         return
@@ -1246,14 +1284,6 @@ function resolve_ffprobe_title(filename)
       else
         msg.error("Failed to resolve local title "..filename.." Error: "..(res.error or "unknown"))
       end
-    end
-  )
-
-  mp.add_timeout(
-    settings.resolve_title_timeout,
-    function()
-      mp.abort_async_command(req)
-      ongoing_title_requests[filename] = false
     end
   )
 end
