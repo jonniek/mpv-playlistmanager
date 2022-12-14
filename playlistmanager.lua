@@ -302,26 +302,14 @@ function is_protocol(path)
 end
 
 function on_file_loaded()
+  refresh_globals()
   filename = mp.get_property("filename")
   path = mp.get_property('path')
   local media_title = mp.get_property("media-title")
   if is_protocol(path) and not title_table[path] and path ~= media_title then
     title_table[path] = media_title
   end
-end
 
-function on_start_file()
-  filename = mp.get_property("filename")
-  path = mp.get_property('path')
-  --if not a url then join path with working directory
-  if not is_protocol(path) then
-    path = utils.join_path(mp.get_property('working-directory'), path)
-    directory = utils.split_path(path)
-  else
-    directory = nil
-  end
-
-  refresh_globals()
   if settings.sync_cursor_on_load then
     cursor=pos
     --refresh playlist if cursor moved
@@ -336,6 +324,19 @@ function on_start_file()
   end
   if settings.set_title_stripped then
     mp.set_property("title", settings.title_prefix..strippedname..settings.title_suffix)
+  end
+end
+
+function on_start_file()
+  refresh_globals()
+  filename = mp.get_property("filename")
+  path = mp.get_property('path')
+  --if not a url then join path with working directory
+  if not is_protocol(path) then
+    path = utils.join_path(mp.get_property('working-directory'), path)
+    directory = utils.split_path(path)
+  else
+    directory = nil
   end
 
   if settings.loadfiles_on_start and plen == 1 then
