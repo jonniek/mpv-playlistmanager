@@ -12,7 +12,7 @@ local settings = {
   key_showplaylist = "SHIFT+ENTER",
 
   -- display playlist while key is held down
-  key_peek_at_playlist = "y",
+  key_peek_at_playlist = "",
 
   -- dynamic keys
   key_moveup = "UP",
