@@ -96,6 +96,7 @@ loadfiles | - / path | - | Loads files from playing files dir(default), or speci
 save | - / filename | - | Saves the playlist
 playlist-next | - | - | Plays next item in playlist (position of current file saved)
 playlist-prev | - | - | Plays previous item in playlist (position of current file saved)
+close | - | - | Hides the playlist if it's being rendered
     
     
 examples:  
