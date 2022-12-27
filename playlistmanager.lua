@@ -568,7 +568,20 @@ function handle_complex_playlist_toggle(table)
   elseif event == "down" then
     showplaylist(1000000)
   elseif event == "up" then
-    remove_keybinds()
+
+    -- set playlist state to not visible, doesn't actually hide playlist yet
+    playlist_visible = false
+
+    function remove_keybinds_after_timeout()
+      -- if playlist is still not visible then lets actually hide it
+      -- this lets other keys that interupt the peek to render playlist without peek up event closing it
+      if not playlist_visible then
+        remove_keybinds()
+      end
+    end
+
+    -- use small delay to let dynamic binds run before keys are potentially unbound
+    mp.add_timeout(0.01, remove_keybinds_after_timeout)
   end
 end
 
