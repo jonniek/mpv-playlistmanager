@@ -563,15 +563,12 @@ end
 function handle_complex_playlist_toggle(table)
   local event = table["event"]
   if event == "press" then
-    -- not supported, use normal toggle
-    msg.error("Complex key event not supported. Falling back to normal playlist visibility toggle.")
-    toggle_playlist(showplaylist_non_interactive)
-  elseif event == "down" or event == "up" then
-    function showplaylist_non_interactive_forever()
-      -- nobody will hold peek button down for more than 250 hours
-      showplaylist_non_interactive(1000000)
-    end
-    toggle_playlist(showplaylist_non_interactive_forever)
+    msg.error("Complex key event not supported. Falling back to normal playlist display.")
+    showplaylist()
+  elseif event == "down" then
+    showplaylist(1000000)
+  elseif event == "up" then
+    remove_keybinds()
   end
 end
 
