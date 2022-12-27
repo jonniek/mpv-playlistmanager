@@ -8,8 +8,11 @@ local settings = {
 
   -- to bind multiple keys separate them by a space
 
-  -- main key
+  -- main key to show playlist
   key_showplaylist = "SHIFT+ENTER",
+
+  -- display playlist while key is held down
+  key_peek_at_playlist = "",
 
   -- dynamic keys
   key_moveup = "UP",
@@ -555,6 +558,21 @@ function draw_playlist()
   end
   if settings.scale_playlist_by_window then w,h = 0, 0 end
   mp.set_osd_ass(w, h, ass.text)
+end
+
+function handle_complex_playlist_toggle(table)
+  local event = table["event"]
+  if event == "press" then
+    -- not supported, use normal toggle
+    msg.error("Complex key event not supported. Falling back to normal playlist visibility toggle.")
+    toggle_playlist(showplaylist_non_interactive)
+  elseif event == "down" or event == "up" then
+    function showplaylist_non_interactive_forever()
+      -- nobody will hold peek button down for more than 250 hours
+      showplaylist_non_interactive(1000000)
+    end
+    toggle_playlist(showplaylist_non_interactive_forever)
+  end
 end
 
 function toggle_playlist(show_function)
@@ -1341,6 +1359,12 @@ bind_keys(settings.key_reverseplaylist, "reverseplaylist", reverseplaylist)
 bind_keys(settings.key_loadfiles, "loadfiles", playlist)
 bind_keys(settings.key_saveplaylist, "saveplaylist", activate_playlist_save)
 bind_keys(settings.key_showplaylist, "showplaylist", toggle_playlist)
+bind_keys(
+  settings.key_peek_at_playlist,
+  "peek_at_playlist",
+  handle_complex_playlist_toggle,
+  { complex=true }
+)
 
 mp.register_event("start-file", on_start_file)
 mp.register_event("file-loaded", on_file_loaded)
