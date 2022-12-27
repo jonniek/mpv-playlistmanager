@@ -1355,6 +1355,8 @@ function handlemessage(msg, value, value2)
   if msg == "playlist-next" then playlist_next(true) ; return end
   if msg == "playlist-prev" then playlist_prev(true) ; return end
   if msg == "enable-interactive-save" then interactive_save = true end
+  if msg == "peek_open" then showplaylist(1000000) end
+  if msg == "peek_close" then remove_keybinds() end
 end
 
 mp.register_script_message("playlistmanager", handlemessage)
