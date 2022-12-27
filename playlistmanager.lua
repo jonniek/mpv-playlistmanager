@@ -12,7 +12,7 @@ local settings = {
   key_showplaylist = "SHIFT+ENTER",
 
   -- display playlist while key is held down
-  key_peek_at_playlist = "",
+  key_peek_at_playlist = "y",
 
   -- dynamic keys
   key_moveup = "UP",
@@ -151,6 +151,9 @@ local settings = {
 
   --osd timeout on inactivity, with high value on this open_toggles is good to be true
   playlist_display_timeout = 5,
+
+  -- when peeking at playlist, show playlist at the very least for display timeout
+  peek_respect_display_timeout = false,
 
   --amount of entries to show before slicing. Optimal value depends on font/video size etc.
   showamount = 16,
@@ -560,6 +563,16 @@ function draw_playlist()
   mp.set_osd_ass(w, h, ass.text)
 end
 
+local peek_display_timer = nil
+local peek_button_pressed = false
+
+function peek_timeout()
+  peek_display_timer:kill()
+  if not peek_button_pressed and not playlist_visible then
+    remove_keybinds()
+  end
+end
+
 function handle_complex_playlist_toggle(table)
   local event = table["event"]
   if event == "press" then
@@ -567,21 +580,32 @@ function handle_complex_playlist_toggle(table)
     showplaylist()
   elseif event == "down" then
     showplaylist(1000000)
+    if settings.peek_respect_display_timeout then
+      peek_button_pressed = true
+      peek_display_timer = mp.add_periodic_timer(settings.playlist_display_timeout, peek_timeout)
+    end
   elseif event == "up" then
-
     -- set playlist state to not visible, doesn't actually hide playlist yet
+    -- this will allow us to check if other functionality has rendered playlist before removing binds
     playlist_visible = false
 
-    function remove_keybinds_after_timeout()
-      -- if playlist is still not visible then lets actually hide it
-      -- this lets other keys that interupt the peek to render playlist without peek up event closing it
-      if not playlist_visible then
+    if settings.peek_respect_display_timeout then
+      peek_button_pressed = false
+      if not peek_display_timer:is_enabled() then
         remove_keybinds()
       end
-    end
+    else
+      function remove_keybinds_after_timeout()
+        -- if playlist is still not visible then lets actually hide it
+        -- this lets other keys that interupt the peek to render playlist without peek up event closing it
+        if not playlist_visible then
+          remove_keybinds()
+        end
+      end
 
-    -- use small delay to let dynamic binds run before keys are potentially unbound
-    mp.add_timeout(0.01, remove_keybinds_after_timeout)
+      -- use small delay to let dynamic binds run before keys are potentially unbound
+      mp.add_timeout(0.01, remove_keybinds_after_timeout)
+    end
   end
 end
 
@@ -610,7 +634,7 @@ function showplaylist(duration)
   if duration then
     keybindstimer = mp.add_periodic_timer(duration, remove_keybinds)
   else
-    keybindstimer:resume()
+    keybindstimer = mp.add_periodic_timer(settings.playlist_display_timeout, remove_keybinds)
   end
 end
 
