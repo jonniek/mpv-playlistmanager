@@ -25,7 +25,7 @@ local settings = {
   key_unselectfile = "",
   key_playfile = "ENTER",
   key_removefile = "BS",
-  key_closeplaylist = "ESC",
+  key_closeplaylist = "ESC SHIFT+ENTER",
 
   -- extra functionality keys
   key_sortplaylist = "",
@@ -122,9 +122,6 @@ local settings = {
   --good side is cursor always following current file when going back and forth files with playlist-next/prev
   sync_cursor_on_load = true,
 
-  --playlist open key will toggle visibility instead of refresh, best used with long timeout
-  open_toggles = true,
-
   --allow the playlist cursor to loop from end to start and vice versa
   loop_cursor = true,
 
@@ -149,8 +146,8 @@ local settings = {
   -- how many url titles can be resolved at a time. Higher number might lead to stutters.
   concurrent_title_resolve_limit = 10,
 
-  --osd timeout on inactivity, with high value on this open_toggles is good to be true
-  playlist_display_timeout = 5,
+  --osd timeout on inactivity in seconds, use 0 for no timeout
+  playlist_display_timeout = 0,
 
   -- when peeking at playlist, show playlist at the very least for display timeout
   peek_respect_display_timeout = false,
@@ -589,20 +586,20 @@ function handle_complex_playlist_toggle(table)
     -- this will allow us to check if other functionality has rendered playlist before removing binds
     playlist_visible = false
 
+    function remove_keybinds_after_timeout()
+      -- if playlist is still not visible then lets actually hide it
+      -- this lets other keys that interupt the peek to render playlist without peek up event closing it
+      if not playlist_visible then
+        remove_keybinds()
+      end
+    end
+
     if settings.peek_respect_display_timeout then
       peek_button_pressed = false
       if not peek_display_timer:is_enabled() then
-        remove_keybinds()
+        mp.add_timeout(0.01, remove_keybinds_after_timeout)
       end
     else
-      function remove_keybinds_after_timeout()
-        -- if playlist is still not visible then lets actually hide it
-        -- this lets other keys that interupt the peek to render playlist without peek up event closing it
-        if not playlist_visible then
-          remove_keybinds()
-        end
-      end
-
       -- use small delay to let dynamic binds run before keys are potentially unbound
       mp.add_timeout(0.01, remove_keybinds_after_timeout)
     end
@@ -610,16 +607,12 @@ function handle_complex_playlist_toggle(table)
 end
 
 function toggle_playlist(show_function)
-  if settings.open_toggles then
-    if playlist_visible then
-      remove_keybinds()
-      return
-    end
-  end
-  if show_function then
-    show_function()
+  local show = show_function or showplaylist
+  if playlist_visible then
+    remove_keybinds()
   else
-    showplaylist()
+    -- toggle always shows without timeout
+    show(0)
   end
 end
 
@@ -631,10 +624,10 @@ function showplaylist(duration)
 
   draw_playlist()
   keybindstimer:kill()
-  if duration then
-    keybindstimer = mp.add_periodic_timer(duration, remove_keybinds)
-  else
-    keybindstimer = mp.add_periodic_timer(settings.playlist_display_timeout, remove_keybinds)
+
+  local dur = duration or settings.playlist_display_timeout
+  if dur > 0 then
+    keybindstimer = mp.add_periodic_timer(dur, remove_keybinds)
   end
 end
 
@@ -644,10 +637,10 @@ function showplaylist_non_interactive(duration)
   playlist_visible = true
   draw_playlist()
   keybindstimer:kill()
-  if duration then
-    keybindstimer = mp.add_periodic_timer(duration, remove_keybinds)
-  else
-    keybindstimer:resume()
+
+  local dur = duration or settings.playlist_display_timeout
+  if dur > 0 then
+    keybindstimer = mp.add_periodic_timer(dur, remove_keybinds)
   end
 end
 
@@ -1393,7 +1386,7 @@ bind_keys(settings.key_shuffleplaylist, "shuffleplaylist", shuffleplaylist)
 bind_keys(settings.key_reverseplaylist, "reverseplaylist", reverseplaylist)
 bind_keys(settings.key_loadfiles, "loadfiles", playlist)
 bind_keys(settings.key_saveplaylist, "saveplaylist", activate_playlist_save)
-bind_keys(settings.key_showplaylist, "showplaylist", toggle_playlist)
+bind_keys(settings.key_showplaylist, "showplaylist", showplaylist)
 bind_keys(
   settings.key_peek_at_playlist,
   "peek_at_playlist",
