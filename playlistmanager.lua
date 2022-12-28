@@ -128,6 +128,9 @@ local settings = {
   --youtube-dl executable for title resolving if enabled, probably "youtube-dl" or "yt-dlp", can be absolute path
   youtube_dl_executable = "youtube-dl",
 
+  -- allow playlistmanager to write watch later config when navigating between files
+  allow_write_watch_later_config = true,
+
 
   --####  VISUAL SETTINGS
 
@@ -744,8 +747,10 @@ function moveend()
 end
 
 function write_watch_later(force_write)
-  if mp.get_property_bool("save-position-on-quit") or force_write then
-    mp.command("write-watch-later-config")
+  if settings.allow_write_watch_later_config then
+    if mp.get_property_bool("save-position-on-quit") or force_write then
+      mp.command("write-watch-later-config")
+    end
   end
 end
 
