@@ -107,6 +107,9 @@ local settings = {
   --Use ~ for home directory. Leave as empty to use mpv/playlists
   playlist_savepath = "",
 
+  -- constant filename to save playlist as. Note that it will override existing playlist. Leave empty for generated name.
+  playlist_save_filename = "",
+
   --save playlist automatically after current file was unloaded
   save_playlist_on_file_end = false,
 
@@ -940,7 +943,14 @@ function save_playlist(filename)
   local date = os.date("*t")
   local datestring = ("%02d-%02d-%02d_%02d-%02d-%02d"):format(date.year, date.month, date.day, date.hour, date.min, date.sec)
 
-  local name = filename or datestring.."_playlist-size_"..length..".m3u"
+  local name = filename
+  if name == nil then
+    if settings.playlist_save_filename == nil or settings.playlist_save_filename == "" then
+      name = datestring.."_playlist-size_"..length..".m3u"
+    else
+      name = settings.playlist_save_filename
+    end
+  end
 
   local savepath = utils.join_path(savepath, name)
   local file, err = io.open(savepath, "w")
