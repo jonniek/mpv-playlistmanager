@@ -668,6 +668,7 @@ function unselectfile()
 end
 
 function resetcursor()
+  selection = nil
   cursor = mp.get_property_number('playlist-pos', 1)
 end
 
