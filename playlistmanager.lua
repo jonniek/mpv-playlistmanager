@@ -158,7 +158,7 @@ local settings = {
   -- when peeking at playlist, show playlist at the very least for display timeout
   peek_respect_display_timeout = false,
 
-  --amount of entries to show before slicing. Optimal value depends on font/video size etc.
+  -- the maximum amount of lines playlist will render. Optimal value depends on font/video size etc.
   showamount = 9,
 
   --font size scales by window, if false requires larger font and padding sizes
