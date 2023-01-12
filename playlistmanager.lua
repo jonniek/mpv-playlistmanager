@@ -967,12 +967,12 @@ function save_playlist(filename)
     end
   end
 
-  local date = os.date("*t")
-  local datestring = ("%02d-%02d-%02d_%02d-%02d-%02d"):format(date.year, date.month, date.day, date.hour, date.min, date.sec)
-
   local name = filename
   if name == nil then
     if settings.playlist_save_filename == nil or settings.playlist_save_filename == "" then
+      local date = os.date("*t")
+      local datestring = ("%02d-%02d-%02d_%02d-%02d-%02d"):format(date.year, date.month, date.day, date.hour, date.min, date.sec)
+
       name = datestring.."_playlist-size_"..length..".m3u"
     else
       name = settings.playlist_save_filename
@@ -984,6 +984,7 @@ function save_playlist(filename)
   if not file then
     msg.error("Error in creating playlist file, check permissions. Error: "..(err or "unknown"))
   else
+    file:write("#EXTM3U\n")
     local i=0
     while i < length do
       local pwd = mp.get_property("working-directory")
