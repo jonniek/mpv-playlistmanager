@@ -134,6 +134,9 @@ local settings = {
   -- allow playlistmanager to write watch later config when navigating between files
   allow_write_watch_later_config = true,
 
+  -- reset cursor navigation when closing or opening playlist
+  reset_cursor_on_close = true,
+  reset_cursor_on_open = true,
 
   --####  VISUAL SETTINGS
 
@@ -214,9 +217,6 @@ local settings = {
 
   --output visual feedback to OSD for tasks
   display_osd_feedback = true,
-
-  -- reset cursor navigation when playlist is not visible
-  reset_cursor_on_close = true,
 }
 local opts = require("mp.options")
 opts.read_options(settings, "playlistmanager", function(list) update_opts(list) end)
@@ -644,6 +644,10 @@ end
 function showplaylist(duration)
   refresh_globals()
   if plen == 0 then return end
+  if not playlist_visible and settings.reset_cursor_on_open then
+    resetcursor()
+  end
+
   playlist_visible = true
   add_keybinds()
 
@@ -659,6 +663,9 @@ end
 function showplaylist_non_interactive(duration)
   refresh_globals()
   if plen == 0 then return end
+  if not playlist_visible and settings.reset_cursor_on_open then
+    resetcursor()
+  end
   playlist_visible = true
   draw_playlist()
   keybindstimer:kill()
