@@ -28,7 +28,7 @@ local settings = {
   key_closeplaylist = "ESC SHIFT+ENTER",
 
   -- extra functionality keys
-  key_sortplaylist = "",
+  key_sortplaylist = "P",
   key_shuffleplaylist = "",
   key_reverseplaylist = "",
   key_loadfiles = "",
@@ -98,8 +98,8 @@ local settings = {
   --sort playlist when files are added to playlist
   sortplaylist_on_file_add = false,
 
-  --default sorting method, must be one of: "name", "date-asc", "date-desc", "size-asc", "size-desc".
-  default_sort = "name",
+  --default sorting method, must be one of: "name-asc", "name-desc", "date-asc", "date-desc", "size-asc", "size-desc".
+  default_sort = "name-asc",
 
   --"linux | windows | auto"
   system = "auto",
@@ -293,17 +293,56 @@ end
 
 update_opts({filename_replace = true, loadfiles_filetypes = true})
 
-local sort_mode = 0
-if settings.default_sort == 'name' then
-  sort_mode = 1
-elseif settings.default_sort == 'date-asc' then
-  sort_mode = 2
-elseif settings.default_sort == 'date-desc' then
-  sort_mode = 3
-elseif settings.default_sort == 'size-asc' then
-  sort_mode = 4
-elseif settings.default_sort == 'size-desc' then
-  sort_mode = 5
+local sort_modes = {
+  {
+    id="name-asc",
+    title="name ascending",
+    sort_fn=function (a, b, playlist)
+      return alphanumsort(playlist[a].string, playlist[b].string)
+    end,
+  },
+  {
+    id="name-desc",
+    title="name descending",
+    sort_fn=function (a, b, playlist)
+      return alphanumsort(playlist[b].string, playlist[a].string)
+    end,
+  },
+  {
+    id="date-asc",
+    title="date ascending",
+    sort_fn=function (a, b)
+      return (get_file_info(a).mtime or 0) < (get_file_info(b).mtime or 0)
+    end,
+  },
+  {
+    id="date-desc",
+    title="date descending",
+    sort_fn=function (a, b)
+      return (get_file_info(a).mtime or 0) > (get_file_info(b).mtime or 0)
+    end,
+  },
+  {
+    id="size-asc",
+    title="size ascending",
+    sort_fn=function (a, b)
+      return (get_file_info(a).size or 0) < (get_file_info(b).size or 0)
+    end,
+  },
+  {
+    id="size-desc",
+    title="size descending",
+    sort_fn=function (a, b)
+      return (get_file_info(a).size or 0) > (get_file_info(b).size or 0)
+    end,
+  },
+}
+
+local sort_mode = 1
+for mode, sort_data in pairs(sort_modes) do
+  if sort_data.id == settings.default_sort then
+    sort_mode = mode
+  end
 end
 
 function is_protocol(path)
@@ -1028,17 +1067,7 @@ function sortplaylist(startover)
 	end
 
   table.sort(order, function(a, b)
-    if sort_mode == 1 then
-      return alphanumsort(playlist[a].string, playlist[b].string)
-    elseif sort_mode == 2 then
-      return (get_file_info(a).mtime or 0) < (get_file_info(b).mtime or 0)
-    elseif sort_mode == 3 then
-      return (get_file_info(a).mtime or 0) > (get_file_info(b).mtime or 0)
-    elseif sort_mode == 4 then
-      return (get_file_info(a).size or 0) < (get_file_info(b).size or 0)
-    elseif sort_mode == 5 then
-      return (get_file_info(a).size or 0) > (get_file_info(b).size or 0)
-    end
+    return sort_modes[sort_mode].sort_fn(a, b, playlist)
   end)
 
   for i=1, #playlist do
@@ -1072,8 +1101,9 @@ function sortplaylist(startover)
   end
   if playlist_visible then
     showplaylist()
-  elseif settings.display_osd_feedback then
-    mp.osd_message("Playlist sorted")
+  end
+  if settings.display_osd_feedback then
+    mp.osd_message("Playlist sorted with "..sort_modes[sort_mode].title)
   end
 end
 
@@ -1421,9 +1451,9 @@ end
 mp.register_script_message("playlistmanager", handlemessage)
 
 bind_keys(settings.key_sortplaylist, "sortplaylist", function()
-  sort_mode = sort_mode + 1
-  if sort_mode > 5 then sort_mode = 1 end
   sortplaylist()
+  sort_mode = sort_mode + 1
+  if sort_mode > #sort_modes then sort_mode = 1 end
 end)
 bind_keys(settings.key_shuffleplaylist, "shuffleplaylist", shuffleplaylist)
 bind_keys(settings.key_reverseplaylist, "reverseplaylist", reverseplaylist)
