@@ -28,7 +28,7 @@ local settings = {
   key_closeplaylist = "ESC SHIFT+ENTER",
 
   -- extra functionality keys
-  key_sortplaylist = "P",
+  key_sortplaylist = "",
   key_shuffleplaylist = "",
   key_reverseplaylist = "",
   key_loadfiles = "",
