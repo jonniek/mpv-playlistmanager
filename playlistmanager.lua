@@ -693,7 +693,7 @@ function showplaylist(duration)
   draw_playlist()
   keybindstimer:kill()
 
-  local dur = duration or settings.playlist_display_timeout
+  local dur = tonumber(duration) or settings.playlist_display_timeout
   if dur > 0 then
     keybindstimer = mp.add_periodic_timer(dur, remove_keybinds)
   end
@@ -709,7 +709,7 @@ function showplaylist_non_interactive(duration)
   draw_playlist()
   keybindstimer:kill()
 
-  local dur = duration or settings.playlist_display_timeout
+  local dur = tonumber(duration) or settings.playlist_display_timeout
   if dur > 0 then
     keybindstimer = mp.add_periodic_timer(dur, remove_keybinds)
   end
