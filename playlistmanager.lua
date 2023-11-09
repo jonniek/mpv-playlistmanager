@@ -115,7 +115,7 @@ local settings = {
 
 
   --show playlist or filename every time a new file is loaded
-  --2 shows playlist, 1 shows current file(filename strip applied) as osd text, 0 shows nothing
+  --3 keep playlist visible(if it is visible before fileload), 2 shows playlist, 1 shows current file(filename strip applied) as osd text, 0 shows nothing
   --instead of using this you can also call script-message playlistmanager show playlist/filename
   --ex. KEY playlist-next ; script-message playlistmanager show playlist
   show_playlist_on_fileload = 0,
@@ -848,7 +848,7 @@ function playfile()
     write_watch_later()
     mp.commandv("playlist-next", "weak")
   end
-  if settings.show_playlist_on_fileload ~= 2 then
+  if settings.show_playlist_on_fileload ~= 2 and settings.show_playlist_on_fileload ~= 3 then
     remove_keybinds()
   end
 end
