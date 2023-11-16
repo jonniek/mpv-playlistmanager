@@ -253,6 +253,13 @@ local requested_titles = {}
 
 local filetype_lookup = {}
 
+function refresh_UI()
+  if not playlist_visible then return end
+  refresh_globals()
+  if plen == 0 then return end
+  draw_playlist()
+end
+
 function update_opts(changelog)
   msg.verbose('updating options')
 
@@ -289,7 +296,7 @@ function update_opts(changelog)
     keybindstimer:kill()
   end
 
-  if playlist_visible then showplaylist() end
+  refresh_UI()
 end
 
 update_opts({filename_replace = true, loadfiles_filetypes = true})
@@ -352,6 +359,9 @@ end
 
 function on_file_loaded()
   refresh_globals()
+  if settings.sync_cursor_on_load then cursor=pos end
+  refresh_UI() -- refresh only after moving cursor
+
   filename = mp.get_property("filename")
   path = mp.get_property('path')
   local media_title = mp.get_property("media-title")
@@ -359,11 +369,6 @@ function on_file_loaded()
     title_table[path] = media_title
   end
 
-  if settings.sync_cursor_on_load then
-    cursor=pos
-    --refresh playlist if cursor moved
-    if playlist_visible then draw_playlist() end
-  end
 
   strippedname = stripfilename(mp.get_property('media-title'))
   if settings.show_title_on_file_load then
@@ -400,12 +405,11 @@ function on_start_file()
 end
 
 function on_end_file()
-  if settings.save_playlist_on_file_end then save_playlist() end
+  if settings.save_palylist_on_file_end then save_playlist() end
   strippedname = nil
   path = nil
   directory = nil
   filename = nil
-  if playlist_visible then showplaylist() end
 end
 
 function refresh_globals()
@@ -552,7 +556,6 @@ function parse_filename_by_index(index)
 
   return parse_filename(template, get_name_from_index(index), index)
 end
-
 
 function draw_playlist()
   refresh_globals()
@@ -831,7 +834,7 @@ function playlist_next(force_write)
   if settings.close_playlist_on_playfile then
     remove_keybinds()
   end
-  if playlist_visible then showplaylist() end
+  refresh_UI()
 end
 
 function playlist_prev(force_write)
@@ -840,7 +843,7 @@ function playlist_prev(force_write)
   if settings.close_playlist_on_playfile then
     remove_keybinds()
   end
-  if playlist_visible then showplaylist() end
+  refresh_UI()
 end
 
 function playfile()
@@ -860,8 +863,9 @@ function playfile()
   end
   if settings.close_playlist_on_playfile then
     remove_keybinds()
+  elseif playlist_visible then
+    showplaylist()
   end
-  if playlist_visible then showplaylist() end
 end
 
 function file_filter(filenames)
@@ -952,7 +956,8 @@ function playlist(force_dir)
   refresh_globals()
   if playlist_visible then
     showplaylist()
-  elseif settings.display_osd_feedback then
+  end
+  if settings.display_osd_feedback then
     if c2 > 0 or c>0 then
       mp.osd_message("Added "..c + c2.." files to playlist")
     else
@@ -1126,7 +1131,8 @@ function reverseplaylist()
   end
   if playlist_visible then
     showplaylist()
-  elseif settings.display_osd_feedback then
+  end
+  if settings.display_osd_feedback then
     mp.osd_message("Playlist reversed")
   end
 end
@@ -1152,7 +1158,8 @@ function shuffleplaylist()
   refresh_globals()
   if playlist_visible then
     showplaylist()
-  elseif settings.display_osd_feedback then
+  end
+  if settings.display_osd_feedback then
     mp.osd_message("Playlist shuffled")
   end
 end
@@ -1252,7 +1259,7 @@ mp.observe_property('playlist-count', "number", function(_, plcount)
     refresh_globals()
     sortplaylist()
   end
-  if playlist_visible then showplaylist() end
+  refresh_UI()
   resolve_titles()
 end)
 
@@ -1371,8 +1378,7 @@ function resolve_ytdl_title(filename)
           local title = (is_playlist and '[playlist]: ' or '') .. json['title']
           msg.verbose(filename .. " resolved to '" .. title .. "'")
           title_table[filename] = title
-          refresh_globals()
-          if playlist_visible then showplaylist() end
+          refresh_UI()
         else
           msg.error("Failed parsing json, reason: "..(err or "unknown"))
         end
@@ -1412,8 +1418,7 @@ function resolve_ffprobe_title(filename)
         if title then
           msg.verbose(filename .. " resolved to '" .. title .. "'")
           title_table[filename] = title
-          refresh_globals()
-          if playlist_visible then showplaylist() end
+          refresh_UI()
         end
       else
         msg.error("Failed to resolve local title "..filename.." Error: "..(res.error or "unknown"))
