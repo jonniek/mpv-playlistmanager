@@ -405,9 +405,6 @@ function on_end_file()
   path = nil
   directory = nil
   filename = nil
-  if settings.close_playlist_on_playfile then
-    remove_keybinds()
-  end
   if playlist_visible then showplaylist() end
 end
 
