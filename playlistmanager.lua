@@ -114,11 +114,12 @@ local settings = {
   save_playlist_on_file_end = false,
 
 
-  --show playlist or filename every time a new file is loaded
-  --2 shows playlist, 1 shows current file(filename strip applied) as osd text, 0 shows nothing
-  --instead of using this you can also call script-message playlistmanager show playlist/filename
-  --ex. KEY playlist-next ; script-message playlistmanager show playlist
-  show_playlist_on_fileload = 0,
+  --show file title every time a new file is loaded
+  show_title_on_file_load = false,
+  --show playlist every time a new file is loaded
+  show_playlist_on_file_load = false,
+  --close playlist when selecting file to play
+  close_playlist_on_playfile = false,
 
   --sync cursor when file is loaded from outside reasons(file-ending, playlist-next shortcut etc.)
   --has the sideeffect of moving cursor if file happens to change when navigating
@@ -365,10 +366,11 @@ function on_file_loaded()
   end
 
   strippedname = stripfilename(mp.get_property('media-title'))
-  if settings.show_playlist_on_fileload == 2 then
-    showplaylist()
-  elseif settings.show_playlist_on_fileload == 1 then
+  if settings.show_title_on_file_load then
     mp.commandv('show-text', strippedname)
+  end
+  if settings.show_playlist_on_file_load then
+    showplaylist()
   end
   if settings.set_title_stripped then
     mp.set_property("title", settings.title_prefix..strippedname..settings.title_suffix)
@@ -826,11 +828,19 @@ end
 function playlist_next(force_write)
   write_watch_later(force_write)
   mp.commandv("playlist-next", "weak")
+  if settings.close_playlist_on_playfile then
+    remove_keybinds()
+  end
+  if playlist_visible then showplaylist() end
 end
 
 function playlist_prev(force_write)
   write_watch_later(force_write)
   mp.commandv("playlist-prev", "weak")
+  if settings.close_playlist_on_playfile then
+    remove_keybinds()
+  end
+  if playlist_visible then showplaylist() end
 end
 
 function playfile()
@@ -848,9 +858,10 @@ function playfile()
     write_watch_later()
     mp.commandv("playlist-next", "weak")
   end
-  if settings.show_playlist_on_fileload ~= 2 then
+  if settings.close_playlist_on_playfile then
     remove_keybinds()
   end
+  if playlist_visible then showplaylist() end
 end
 
 function file_filter(filenames)
