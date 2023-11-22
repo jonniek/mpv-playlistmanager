@@ -301,11 +301,51 @@ end
 
 update_opts({filename_replace = true, loadfiles_filetypes = true})
 
+----- winapi start -----
+-- in windows system, we can use the sorting function provided by the win32 API
+-- see https://learn.microsoft.com/en-us/windows/win32/api/shlwapi/nf-shlwapi-strcmplogicalw
+local winapisort = nil
+if settings.system == "windows" then
+  -- ffiok is false usually means the mpv builds without luajit
+  local ffiok, ffi = pcall(require, "ffi")
+  if ffiok then
+    ffi.cdef[[
+      int MultiByteToWideChar(unsigned int CodePage, unsigned long dwFlags, const char *lpMultiByteStr, int cbMultiByte, wchar_t *lpWideCharStr, int cchWideChar);
+      int StrCmpLogicalW(const wchar_t * psz1, const wchar_t * psz2);        
+    ]]
+   
+    local shlwapi = ffi.load("shlwapi.dll")
+    
+    function MultiByteToWideChar(MultiByteStr)
+      local UTF8_CODEPAGE = 65001
+      if MultiByteStr then
+        local utf16_len = ffi.C.MultiByteToWideChar(UTF8_CODEPAGE, 0, MultiByteStr, -1, nil, 0)
+        if utf16_len > 0 then
+          local utf16_str = ffi.new("wchar_t[?]", utf16_len)
+          if ffi.C.MultiByteToWideChar(UTF8_CODEPAGE, 0, MultiByteStr, -1, utf16_str, utf16_len) > 0 then
+            return utf16_str
+          end
+        end
+      end
+      return ""
+    end
+    
+    winapisort = function (a, b)
+      return shlwapi.StrCmpLogicalW(MultiByteToWideChar(a), MultiByteToWideChar(b)) < 0
+    end
+    
+  end
+end
+----- winapi end -----
+
 local sort_modes = {
   {
     id="name-asc",
     title="name ascending",
     sort_fn=function (a, b, playlist)
+      if winapisort ~= nil then 
+        return winapisort(playlist[a].string, playlist[b].string)
+      end
       return alphanumsort(playlist[a].string, playlist[b].string)
     end,
   },
@@ -313,6 +353,9 @@ local sort_modes = {
     id="name-desc",
     title="name descending",
     sort_fn=function (a, b, playlist)
+      if winapisort ~= nil then 
+        return winapisort(playlist[b].string, playlist[a].string)
+      end
       return alphanumsort(playlist[b].string, playlist[a].string)
     end,
   },
@@ -907,8 +950,13 @@ function playlist(force_dir)
   if force_dir then dir = force_dir end
 
   local files = file_filter(utils.readdir(dir, "files"))
-  table.sort(files, alphanumsort)
-
+  if winapisort ~= nil then
+    table.sort(files, winapisort)
+  else
+    table.sort(files, alphanumsort)
+  end
+  
+  
   if files == nil then
     msg.verbose("no files in directory")
     return
