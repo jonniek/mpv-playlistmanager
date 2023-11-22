@@ -871,8 +871,8 @@ function write_watch_later(force_write)
   end
 end
 
-function playlist_next(force_write)
-  write_watch_later(force_write)
+function playlist_next()
+  write_watch_later(true)
   mp.commandv("playlist-next", "weak")
   if settings.close_playlist_on_playfile then
     remove_keybinds()
@@ -880,13 +880,28 @@ function playlist_next(force_write)
   refresh_UI()
 end
 
-function playlist_prev(force_write)
-  write_watch_later(force_write)
+function playlist_prev()
+  write_watch_later(true)
   mp.commandv("playlist-prev", "weak")
   if settings.close_playlist_on_playfile then
     remove_keybinds()
   end
   refresh_UI()
+end
+
+function playlist_random()
+  write_watch_later()
+  refresh_globals()
+  if plen < 2 then return end
+  math.randomseed(os.time())
+  local random = pos
+  while random == pos do
+    random = math.random(0, plen-1)
+  end
+  mp.set_property("playlist-pos", random)
+  if settings.close_playlist_on_playfile then
+    remove_keybinds()
+  end
 end
 
 function playfile()
@@ -1506,8 +1521,9 @@ function handlemessage(msg, value, value2)
   if msg == "reverse" then reverseplaylist() ; return end
   if msg == "loadfiles" then playlist(value) ; return end
   if msg == "save" then save_playlist(value) ; return end
-  if msg == "playlist-next" then playlist_next(true) ; return end
-  if msg == "playlist-prev" then playlist_prev(true) ; return end
+  if msg == "playlist-next" then playlist_next() ; return end
+  if msg == "playlist-prev" then playlist_prev() ; return end
+  if msg == "playlist-next-random" then playlist_random() ; return end
   if msg == "enable-interactive-save" then interactive_save = true end
   if msg == "close" then remove_keybinds() end
 end
