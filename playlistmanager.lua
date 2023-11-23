@@ -596,7 +596,7 @@ function parse_header(string)
   local esc_title = stripfilename(mp.get_property("media-title"), true):gsub("%%", "%%%%")
   local esc_file = stripfilename(mp.get_property("filename")):gsub("%%", "%%%%")
   return string:gsub("%%N", "\\N")
-               -- add an blank character to ensure that the height of the empty line is the same as the non empty line
+               -- add a blank character at the end of each '\N'  to ensure that the height of the empty line is the same as the non empty line
                :gsub("\\N", "\\N ")
                :gsub("%%pos", mp.get_property_number("playlist-pos",0)+1)
                :gsub("%%plen", mp.get_property("playlist-count"))
