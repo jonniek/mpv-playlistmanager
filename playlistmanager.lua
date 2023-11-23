@@ -265,6 +265,13 @@ if settings.showamount=='auto' then
   -- exclude the header line
   if settings.playlist_header ~= "" then
     settings.showamount = settings.showamount - 1
+    -- probably some newlines (%N or \N) in the header
+    for _ in settings.playlist_header:gmatch('%%N') do
+      settings.showamount = settings.showamount - 1
+    end
+    for _ in settings.playlist_header:gmatch('\\N') do
+      settings.showamount = settings.showamount - 1
+    end
   end
   
   msg.info('auto showamount: ' .. settings.showamount)
@@ -589,6 +596,8 @@ function parse_header(string)
   local esc_title = stripfilename(mp.get_property("media-title"), true):gsub("%%", "%%%%")
   local esc_file = stripfilename(mp.get_property("filename")):gsub("%%", "%%%%")
   return string:gsub("%%N", "\\N")
+               -- add an blank character to ensure that the height of the empty line is the same as the non empty line
+               :gsub("\\N", "\\N ")
                :gsub("%%pos", mp.get_property_number("playlist-pos",0)+1)
                :gsub("%%plen", mp.get_property("playlist-count"))
                :gsub("%%cursor", cursor+1)
