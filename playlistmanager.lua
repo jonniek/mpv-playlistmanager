@@ -163,7 +163,8 @@ local settings = {
   peek_respect_display_timeout = false,
 
   -- the maximum amount of lines playlist will render. Optimal value depends on font/video size etc.
-  showamount = 9,
+  -- special value 'auto' means auto calculate it
+  showamount = '9',
 
   --font size scales by window, if false requires larger font and padding sizes
   scale_playlist_by_window=true,
@@ -235,6 +236,40 @@ if settings.system=="auto" then
   else
     settings.system = "linux"
   end
+end
+
+-- auto calculate showamount
+if settings.showamount=='auto' then
+  -- same as draw_playlist() height
+  local playlist_h = 360
+  if mp.get_property("osd-align-x") == "left" and mp.get_property("osd-align-y") == "top" then
+    -- both top and bottom with same padding
+    playlist_h = playlist_h - settings.text_padding_y * 2
+  end
+  
+  -- osd-font-size is based on 720p height
+  -- see https://mpv.io/manual/stable/#options-osd-font-size 
+  -- details in https://mpv.io/manual/stable/#options-sub-font-size
+  -- draw_playlist() is based on 360p height, so we need to divide by 2
+  local fs = mp.get_property_native('osd-font-size') / 2
+  -- get the ass font size
+  if settings.style_ass_tags ~= nil then
+    local ass_fs_tag = settings.style_ass_tags:match('\\fs%d+')
+    if ass_fs_tag ~= nil then
+      fs = tonumber(ass_fs_tag:match('%d+'))
+    end
+  end
+ 
+  settings.showamount = math.floor(playlist_h / fs)
+  
+  -- exclude the header line
+  if settings.playlist_header ~= "" then
+    settings.showamount = settings.showamount - 1
+  end
+  
+  msg.info('auto showamount: ' .. settings.showamount)
+else
+  settings.showamount = tonumber(settings.showamount)
 end
 
 --global variables
