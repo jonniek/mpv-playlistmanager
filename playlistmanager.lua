@@ -242,6 +242,13 @@ end
 if settings.showamount=='auto' then
   -- same as draw_playlist() height
   local playlist_h = 360
+  if settings.scale_playlist_by_window then
+    -- mp.set_osd_ass(0, 0, ass.text) default res_y is 288
+    -- https://mpv.io/manual/stable/#command-interface-ass-events
+    -- https://github.com/mpv-player/mpv/blob/e22a2f04833852ce825eb7c1235d9bdaaa9b2397/sub/osd_libass.c#L111-L112
+    -- https://github.com/mpv-player/mpv/blob/e22a2f04833852ce825eb7c1235d9bdaaa9b2397/sub/ass_mp.h#L33
+    playlist_h = 288
+  end
   if mp.get_property("osd-align-x") == "left" and mp.get_property("osd-align-y") == "top" then
     -- both top and bottom with same padding
     playlist_h = playlist_h - settings.text_padding_y * 2
