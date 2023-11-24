@@ -284,6 +284,16 @@ if settings.showamount=='auto' then
   end
   
   msg.info('auto showamount: ' .. settings.showamount)
+  
+  -- no word wrapping, let long filenames overflow to the right
+  if settings.style_ass_tags == nil or settings.style_ass_tags == '' then
+    settings.style_ass_tags = '{\\q2}'
+  else
+    -- if wrapstyle tag exists, remove it
+    settings.style_ass_tags = settings.style_ass_tags:gsub('\\q%d+','')
+    -- add to end
+    settings.style_ass_tags = settings.style_ass_tags:gsub('}', '\\q2}')
+  end
 else
   settings.showamount = tonumber(settings.showamount)
 end
