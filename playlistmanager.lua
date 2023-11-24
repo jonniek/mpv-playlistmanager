@@ -241,14 +241,16 @@ end
 -- auto calculate showamount
 if settings.showamount=='auto' then
   -- same as draw_playlist() height
-  local playlist_h = 360
+  local h = 360
   if settings.scale_playlist_by_window then
     -- mp.set_osd_ass(0, 0, ass.text) default res_y is 288
     -- https://mpv.io/manual/stable/#command-interface-ass-events
     -- https://github.com/mpv-player/mpv/blob/e22a2f04833852ce825eb7c1235d9bdaaa9b2397/sub/osd_libass.c#L111-L112
     -- https://github.com/mpv-player/mpv/blob/e22a2f04833852ce825eb7c1235d9bdaaa9b2397/sub/ass_mp.h#L33
-    playlist_h = 288
+    h = 288
   end
+  
+  local playlist_h = h
   if mp.get_property("osd-align-x") == "left" and mp.get_property("osd-align-y") == "top" then
     -- both top and bottom with same padding
     playlist_h = playlist_h - settings.text_padding_y * 2
@@ -257,8 +259,8 @@ if settings.showamount=='auto' then
   -- osd-font-size is based on 720p height
   -- see https://mpv.io/manual/stable/#options-osd-font-size 
   -- details in https://mpv.io/manual/stable/#options-sub-font-size
-  -- draw_playlist() is based on 360p height, so we need to divide by 2
-  local fs = mp.get_property_native('osd-font-size') / 2
+  -- draw_playlist() is based on 360p or 288p height, need some conversion
+  local fs = mp.get_property_native('osd-font-size') * h / 720
   -- get the ass font size
   if settings.style_ass_tags ~= nil then
     local ass_fs_tag = settings.style_ass_tags:match('\\fs%d+')
