@@ -162,18 +162,18 @@ local settings = {
   -- when peeking at playlist, show playlist at the very least for display timeout
   peek_respect_display_timeout = false,
 
-  -- the maximum amount of lines playlist will render. Optimal value depends on font/video size etc.
-  -- special value 'auto' means auto calculate it
-  showamount = '9',
+  -- the maximum amount of lines playlist will render. -1 will automatically calculate lines.
+  showamount = -1,
 
   --font size scales by window, if false requires larger font and padding sizes
   scale_playlist_by_window=true,
   --playlist ass style overrides inside curly brackets, \keyvalue is one field, extra \ for escape in lua
-  --example {\\fnUbuntu\\fs10\\b0\\bord1} equals: font=Ubuntu, size=10, bold=no, border=1
+  --example {\\q2\\fnUbuntu\\fs10\\b0\\bord1} equals: line-wrap=no, font=Ubuntu, size=10, bold=no, border=1
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
   --undeclared tags will use default osd settings
   --these styles will be used for the whole playlist
-  style_ass_tags = "{}",
+  --the q2 style is recommended since filename wrapping may lead to unexpected rendering
+  style_ass_tags = "{\\q2}",
   --paddings from top left corner
   text_padding_x = 10,
   text_padding_y = 30,
@@ -239,7 +239,7 @@ if settings.system=="auto" then
 end
 
 -- auto calculate showamount
-if settings.showamount=='auto' then
+if settings.showamount == -1 then
   -- same as draw_playlist() height
   local h = 360
   if settings.scale_playlist_by_window then
@@ -284,18 +284,6 @@ if settings.showamount=='auto' then
   end
   
   msg.info('auto showamount: ' .. settings.showamount)
-  
-  -- no word wrapping, let long filenames overflow to the right
-  if settings.style_ass_tags == nil or settings.style_ass_tags == '' then
-    settings.style_ass_tags = '{\\q2}'
-  else
-    -- if wrapstyle tag exists, remove it
-    settings.style_ass_tags = settings.style_ass_tags:gsub('\\q%d+','')
-    -- add to end
-    settings.style_ass_tags = settings.style_ass_tags:gsub('}', '\\q2}')
-  end
-else
-  settings.showamount = tonumber(settings.showamount)
 end
 
 --global variables
