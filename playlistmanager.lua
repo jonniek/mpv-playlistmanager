@@ -163,7 +163,8 @@ local settings = {
   peek_respect_display_timeout = false,
 
   -- the maximum amount of lines playlist will render. Optimal value depends on font/video size etc.
-  showamount = 9,
+  -- special value 'auto' means auto calculate it
+  showamount = '9',
 
   --font size scales by window, if false requires larger font and padding sizes
   scale_playlist_by_window=true,
@@ -235,6 +236,66 @@ if settings.system=="auto" then
   else
     settings.system = "linux"
   end
+end
+
+-- auto calculate showamount
+if settings.showamount=='auto' then
+  -- same as draw_playlist() height
+  local h = 360
+  if settings.scale_playlist_by_window then
+    -- mp.set_osd_ass(0, 0, ass.text) default res_y is 288
+    -- https://mpv.io/manual/stable/#command-interface-ass-events
+    -- https://github.com/mpv-player/mpv/blob/e22a2f04833852ce825eb7c1235d9bdaaa9b2397/sub/osd_libass.c#L111-L112
+    -- https://github.com/mpv-player/mpv/blob/e22a2f04833852ce825eb7c1235d9bdaaa9b2397/sub/ass_mp.h#L33
+    h = 288
+  end
+  
+  local playlist_h = h
+  if mp.get_property("osd-align-x") == "left" and mp.get_property("osd-align-y") == "top" then
+    -- both top and bottom with same padding
+    playlist_h = playlist_h - settings.text_padding_y * 2
+  end
+  
+  -- osd-font-size is based on 720p height
+  -- see https://mpv.io/manual/stable/#options-osd-font-size 
+  -- details in https://mpv.io/manual/stable/#options-sub-font-size
+  -- draw_playlist() is based on 360p or 288p height, need some conversion
+  local fs = mp.get_property_native('osd-font-size') * h / 720
+  -- get the ass font size
+  if settings.style_ass_tags ~= nil then
+    local ass_fs_tag = settings.style_ass_tags:match('\\fs%d+')
+    if ass_fs_tag ~= nil then
+      fs = tonumber(ass_fs_tag:match('%d+'))
+    end
+  end
+ 
+  settings.showamount = math.floor(playlist_h / fs)
+  
+  -- exclude the header line
+  if settings.playlist_header ~= "" then
+    settings.showamount = settings.showamount - 1
+    -- probably some newlines (%N or \N) in the header
+    for _ in settings.playlist_header:gmatch('%%N') do
+      settings.showamount = settings.showamount - 1
+    end
+    for _ in settings.playlist_header:gmatch('\\N') do
+      settings.showamount = settings.showamount - 1
+    end
+  end
+  
+  msg.info('auto showamount: ' .. settings.showamount)
+  
+  -- no word wrapping, let long filenames overflow to the right
+  if settings.style_ass_tags == nil or settings.style_ass_tags == '' then
+    settings.style_ass_tags = '{\\q2}'
+  else
+    -- if wrapstyle tag exists, remove it
+    settings.style_ass_tags = settings.style_ass_tags:gsub('\\q%d+','')
+    -- add to end
+    settings.style_ass_tags = settings.style_ass_tags:gsub('}', '\\q2}')
+  end
+else
+  settings.showamount = tonumber(settings.showamount)
 end
 
 --global variables
@@ -554,6 +615,8 @@ function parse_header(string)
   local esc_title = stripfilename(mp.get_property("media-title"), true):gsub("%%", "%%%%")
   local esc_file = stripfilename(mp.get_property("filename")):gsub("%%", "%%%%")
   return string:gsub("%%N", "\\N")
+               -- add a blank character at the end of each '\N'  to ensure that the height of the empty line is the same as the non empty line
+               :gsub("\\N", "\\N ")
                :gsub("%%pos", mp.get_property_number("playlist-pos",0)+1)
                :gsub("%%plen", mp.get_property("playlist-count"))
                :gsub("%%cursor", cursor+1)
