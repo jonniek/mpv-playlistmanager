@@ -239,7 +239,7 @@ end
 -- auto calculate showamount
 if settings.showamount == -1 then
   -- same as draw_playlist() height
-  local h = 360
+  local h = 720
   
   local playlist_h = h
   if mp.get_property("osd-align-x") == "left" and mp.get_property("osd-align-y") == "top" then
@@ -250,7 +250,7 @@ if settings.showamount == -1 then
   -- osd-font-size is based on 720p height
   -- see https://mpv.io/manual/stable/#options-osd-font-size 
   -- details in https://mpv.io/manual/stable/#options-sub-font-size
-  -- draw_playlist() is based on 360p or 288p height, need some conversion
+  -- draw_playlist() is based on 720p, need some conversion
   local fs = mp.get_property_native('osd-font-size') * h / 720
   -- get the ass font size
   if settings.style_ass_tags ~= nil then
@@ -648,10 +648,10 @@ function draw_playlist()
   local ass = assdraw.ass_new()
 	
   local _, _, a = mp.get_osd_size()
-  local h = 360
+  local h = 720
   local w = h * a
 
-  if settings.curtain_opacity ~= nil and settings.curtain_opacity ~= 0 and settings.curtain_opacity < 1.0 then
+  if settings.curtain_opacity ~= nil and settings.curtain_opacity ~= 0 and settings.curtain_opacity <= 1.0 then
   -- curtain dim from https://github.com/christoph-heinrich/mpv-quality-menu/blob/501794bfbef468ee6a61e54fc8821fe5cd72c4ed/quality-menu.lua#L699-L707
     local alpha = 255 - math.ceil(255 * settings.curtain_opacity)
     ass.text = string.format('{\\pos(0,0)\\rDefault\\an7\\1c&H000000&\\alpha&H%X&}', alpha)
