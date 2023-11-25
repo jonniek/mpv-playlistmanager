@@ -177,7 +177,7 @@ local settings = {
   text_padding_y = 60,
   
   --screen dim when menu is open 0.0 - 1.0 (0 is no dim, 1 is black)
-  curtain_opacity=0,
+  curtain_opacity=0.0,
 
   --set title of window with stripped name
   set_title_stripped = false,
