@@ -165,8 +165,6 @@ local settings = {
   -- the maximum amount of lines playlist will render. -1 will automatically calculate lines.
   showamount = -1,
 
-  --font size scales by window, if false requires larger font and padding sizes
-  scale_playlist_by_window=true,
   --playlist ass style overrides inside curly brackets, \keyvalue is one field, extra \ for escape in lua
   --example {\\q2\\fnUbuntu\\fs10\\b0\\bord1} equals: line-wrap=no, font=Ubuntu, size=10, bold=no, border=1
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
@@ -175,8 +173,8 @@ local settings = {
   --the q2 style is recommended since filename wrapping may lead to unexpected rendering
   style_ass_tags = "{\\q2}",
   --paddings from top left corner
-  text_padding_x = 10,
-  text_padding_y = 30,
+  text_padding_x = 30,
+  text_padding_y = 60,
   
   --screen dim when menu is open 0.0 - 1.0 (0 is no dim, 1 is black)
   curtain_opacity=0,
@@ -242,13 +240,6 @@ end
 if settings.showamount == -1 then
   -- same as draw_playlist() height
   local h = 360
-  if settings.scale_playlist_by_window then
-    -- mp.set_osd_ass(0, 0, ass.text) default res_y is 288
-    -- https://mpv.io/manual/stable/#command-interface-ass-events
-    -- https://github.com/mpv-player/mpv/blob/e22a2f04833852ce825eb7c1235d9bdaaa9b2397/sub/osd_libass.c#L111-L112
-    -- https://github.com/mpv-player/mpv/blob/e22a2f04833852ce825eb7c1235d9bdaaa9b2397/sub/ass_mp.h#L33
-    h = 288
-  end
   
   local playlist_h = h
   if mp.get_property("osd-align-x") == "left" and mp.get_property("osd-align-y") == "top" then
@@ -287,6 +278,7 @@ if settings.showamount == -1 then
 end
 
 --global variables
+local playlist_overlay = mp.create_osd_overlay("ass-events")
 local playlist_visible = false
 local strippedname = nil
 local path = nil
@@ -719,8 +711,8 @@ function draw_playlist()
     end
   end
 
-  if settings.scale_playlist_by_window then w,h = 0, 0 end
-  mp.set_osd_ass(w, h, ass.text)
+  playlist_overlay.data = ass.text
+  playlist_overlay:update()
 end
 
 local peek_display_timer = nil
@@ -1335,7 +1327,8 @@ function remove_keybinds()
   keybindstimer:kill()
   keybindstimer = mp.add_periodic_timer(settings.playlist_display_timeout, remove_keybinds)
   keybindstimer:kill()
-  mp.set_osd_ass(0, 0, "")
+  playlist_overlay.data = ""
+  playlist_overlay:update()
   playlist_visible = false
   if settings.reset_cursor_on_close then
     resetcursor()
