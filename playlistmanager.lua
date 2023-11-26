@@ -172,7 +172,7 @@ local settings = {
   --these styles will be used for the whole playlist
   --the q2 style is recommended since filename wrapping may lead to unexpected rendering
   style_ass_tags = "{\\q2}",
-  --paddings from top left corner
+  --paddings for left right and top bottom, depends on alignment 
   text_padding_x = 30,
   text_padding_y = 60,
   
@@ -225,6 +225,17 @@ local utils = require("mp.utils")
 local msg = require("mp.msg")
 local assdraw = require("mp.assdraw")
 
+local alignment_table = {
+    [1] = { ["x"] = "left",   ["y"] = "bottom" },
+    [2] = { ["x"] = "center", ["y"] = "bottom" },
+    [3] = { ["x"] = "right",  ["y"] = "bottom" },
+    [4] = { ["x"] = "left",   ["y"] = "center" },
+    [5] = { ["x"] = "center", ["y"] = "center" },
+    [6] = { ["x"] = "right",  ["y"] = "center" },
+    [7] = { ["x"] = "left",   ["y"] = "top" },
+    [8] = { ["x"] = "center", ["y"] = "top" },
+    [9] = { ["x"] = "right",  ["y"] = "top" },
+}
 
 --check os
 if settings.system=="auto" then
@@ -242,10 +253,8 @@ if settings.showamount == -1 then
   local h = 720
   
   local playlist_h = h
-  if mp.get_property("osd-align-x") == "left" and mp.get_property("osd-align-y") == "top" then
-    -- both top and bottom with same padding
-    playlist_h = playlist_h - settings.text_padding_y * 2
-  end
+  -- both top and bottom with same padding
+  playlist_h = playlist_h - settings.text_padding_y * 2
   
   -- osd-font-size is based on 720p height
   -- see https://mpv.io/manual/stable/#options-osd-font-size 
@@ -649,7 +658,7 @@ function draw_playlist()
 	
   local _, _, a = mp.get_osd_size()
   local h = 720
-  local w = h * a
+  local w = math.ceil(h * a)
 
   if settings.curtain_opacity ~= nil and settings.curtain_opacity ~= 0 and settings.curtain_opacity <= 1.0 then
   -- curtain dim from https://github.com/christoph-heinrich/mpv-quality-menu/blob/501794bfbef468ee6a61e54fc8821fe5cd72c4ed/quality-menu.lua#L699-L707
@@ -663,10 +672,36 @@ function draw_playlist()
 	
   ass:append(settings.style_ass_tags)
 
-  -- TODO: padding should work even on different osd alignments
-  if mp.get_property("osd-align-x") == "left" and mp.get_property("osd-align-y") == "top" then
-    ass:pos(settings.text_padding_x, settings.text_padding_y)
+  -- align from mpv.conf
+  local align_x = mp.get_property("osd-align-x")
+  local align_y = mp.get_property("osd-align-y")
+  -- align from style_ass_tags
+  if settings.style_ass_tags ~= nil then
+    local an = tonumber(settings.style_ass_tags:match('\\an(%d)'))
+    if an ~= nil and alignment_table[an] ~= nil then
+      align_x = alignment_table[an]["x"]
+      align_y = alignment_table[an]["y"]
+    end
   end
+  -- range of x [0, w-1]
+  local pos_x
+  if align_x == 'left' then
+    pos_x = settings.text_padding_x
+  elseif align_x == 'right' then
+    pos_x = w - 1 - settings.text_padding_x
+  else
+    pos_x = math.floor((w - 1) / 2)
+  end
+  -- range of y [0, h-1]
+  local pos_y
+  if align_y == 'top' then
+    pos_y = settings.text_padding_y
+  elseif align_y == 'bottom' then
+    pos_y = h - 1 - settings.text_padding_y
+  else
+    pos_y = math.floor((h - 1) / 2)
+  end
+  ass:pos(pos_x, pos_y)
 
   if settings.playlist_header ~= "" then
     ass:append(parse_header(settings.playlist_header).."\\N")
