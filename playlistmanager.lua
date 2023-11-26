@@ -678,7 +678,7 @@ function draw_playlist()
   -- align from style_ass_tags
   if settings.style_ass_tags ~= nil then
     local an = tonumber(settings.style_ass_tags:match('\\an(%d)'))
-    if an ~= nil then
+    if an ~= nil and alignment_table[an] ~= nil then
       align_x = alignment_table[an]["x"]
       align_y = alignment_table[an]["y"]
     end
