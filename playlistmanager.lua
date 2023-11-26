@@ -225,6 +225,17 @@ local utils = require("mp.utils")
 local msg = require("mp.msg")
 local assdraw = require("mp.assdraw")
 
+local alignment_table = {
+    [1] = { ["x"] = "left",   ["y"] = "bottom" },
+    [2] = { ["x"] = "center", ["y"] = "bottom" },
+    [3] = { ["x"] = "right",  ["y"] = "bottom" },
+    [4] = { ["x"] = "left",   ["y"] = "center" },
+    [5] = { ["x"] = "center", ["y"] = "center" },
+    [6] = { ["x"] = "right",  ["y"] = "center" },
+    [7] = { ["x"] = "left",   ["y"] = "top" },
+    [8] = { ["x"] = "center", ["y"] = "top" },
+    [9] = { ["x"] = "right",  ["y"] = "top" },
+}
 
 --check os
 if settings.system=="auto" then
@@ -666,37 +677,10 @@ function draw_playlist()
   local align_y = mp.get_property("osd-align-y")
   -- align from style_ass_tags
   if settings.style_ass_tags ~= nil then
-    local an_tag = settings.style_ass_tags:match('\\an%d')
-    if an_tag ~= nil then
-      local an = tonumber(an_tag:match('%d'))
-      if an == 1 then
-        align_x = 'left'
-        align_y = 'bottom'
-      elseif an == 2 then
-        align_x = 'center'
-        align_y = 'bottom'
-      elseif an == 3 then
-        align_x = 'right'
-        align_y = 'bottom'
-      elseif an == 4 then
-        align_x = 'left'
-        align_y = 'center'
-      elseif an == 5 then
-        align_x = 'center'
-        align_y = 'center'
-      elseif an == 6 then
-        align_x = 'right'
-        align_y = 'center'
-      elseif an == 7 then
-        align_x = 'left'
-        align_y = 'top'
-      elseif an == 8 then
-        align_x = 'center'
-        align_y = 'top'
-      elseif an == 9 then
-        align_x = 'right'
-        align_y = 'top'
-      end
+    local an = tonumber(settings.style_ass_tags:match('\\an(%d)'))
+    if an ~= nil then
+      align_x = alignment_table[an]["x"]
+      align_y = alignment_table[an]["y"]
     end
   end
   -- range of x [0, w-1]
