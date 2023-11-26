@@ -166,12 +166,13 @@ local settings = {
   showamount = -1,
 
   --playlist ass style overrides inside curly brackets, \keyvalue is one field, extra \ for escape in lua
-  --example {\\q2\\fnUbuntu\\fs10\\b0\\bord1} equals: line-wrap=no, font=Ubuntu, size=10, bold=no, border=1
+  --example {\\q2\\an7\\fnUbuntu\\fs10\\b0\\bord1} equals: line-wrap=no, align=top left, font=Ubuntu, size=10, bold=no, border=1
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
   --undeclared tags will use default osd settings
   --these styles will be used for the whole playlist
-  --the q2 style is recommended since filename wrapping may lead to unexpected rendering
-  style_ass_tags = "{\\q2}",
+  --\\q2 style is recommended since filename wrapping may lead to unexpected rendering
+  --\\an7 style is recommended to align to top left otherwise, osd-align-x/y is respected
+  style_ass_tags = "{\\q2\\an7}",
   --paddings for left right and top bottom, depends on alignment 
   text_padding_x = 30,
   text_padding_y = 60,
