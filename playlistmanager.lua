@@ -499,7 +499,7 @@ function on_start_file()
 end
 
 function on_end_file()
-  if settings.save_palylist_on_file_end then save_playlist() end
+  if settings.save_playlist_on_file_end then save_playlist() end
   strippedname = nil
   path = nil
   directory = nil
