@@ -574,17 +574,10 @@ function get_name_from_index(i, notitle)
   local name = mp.get_property('playlist/'..i..'/filename')
 
   local should_use_title = settings.prefer_titles == 'all' or is_protocol(name) and settings.prefer_titles == 'url'
-  --check if file has a media title stored or as property
-  if not title and should_use_title then
-    local mtitle = mp.get_property('media-title')
-    if i == pos and mp.get_property('filename') ~= mtitle then
-      if not title_table[name] then
-        title_table[name] = mtitle
-      end
-      title = mtitle
-    elseif title_table[name] then
-      title = title_table[name]
-    end
+  
+  --check if file has a media title stored
+  if not title and should_use_title and title_table[name] then
+    title = title_table[name]
   end
 
   --if we have media title use a more conservative strip
