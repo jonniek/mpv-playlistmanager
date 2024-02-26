@@ -1,7 +1,4 @@
 local settings = {
-
-  -- #### FUNCTIONALITY SETTINGS
-
   --navigation keybindings force override only while playlist is visible
   --if "no" then you can display the playlist by any of the navigation keys
   dynamic_binds = true,
@@ -129,8 +126,6 @@ local settings = {
   --allow the playlist cursor to loop from end to start and vice versa
   loop_cursor = true,
 
-  --youtube-dl executable for title resolving if enabled, probably "youtube-dl" or "yt-dlp", can be absolute path
-  youtube_dl_executable = "youtube-dl",
 
   -- allow playlistmanager to write watch later config when navigating between files
   allow_write_watch_later_config = true,
@@ -139,10 +134,11 @@ local settings = {
   reset_cursor_on_close = true,
   reset_cursor_on_open = true,
 
-  --####  VISUAL SETTINGS
-
   --prefer to display titles for following files: "all", "url", "none". Sorting still uses filename.
   prefer_titles = "url",
+
+  --youtube-dl executable for title resolving if enabled, probably "youtube-dl" or "yt-dlp", can be absolute path
+  youtube_dl_executable = "yt-dlp",
 
   --call youtube-dl to resolve the titles of urls in the playlist
   resolve_url_titles = false,
@@ -462,7 +458,6 @@ function on_file_loaded()
   if is_protocol(path) and not title_table[path] and path ~= media_title then
     title_table[path] = media_title
   end
-
 
   strippedname = stripfilename(mp.get_property('media-title'))
   if settings.show_title_on_file_load then
@@ -1468,10 +1463,10 @@ function resolve_titles()
       and not requested_titles[filename]
     then
       requested_titles[filename] = true
-      if filename:match('^https?://') then
+      if filename:match('^https?://') and settings.resolve_url_titles then
         url_titles_to_fetch.push(filename)
         added_urls = true
-      elseif settings.prefer_titles == "all" then
+      elseif settings.prefer_titles == "all" and settings.resolve_local_titles then
         local_titles_to_fetch.push(filename)
         added_local = true
       end
