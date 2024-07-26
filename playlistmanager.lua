@@ -1539,6 +1539,7 @@ function resolve_ytdl_title(filename)
           local title = (is_playlist and '[playlist]: ' or '') .. json['title']
           msg.verbose(filename .. " resolved to '" .. title .. "'")
           title_table[filename] = title
+          mp.set_property_native('user-data/playlistmanager/titles', title_table)
           refresh_UI()
         else
           msg.error("Failed parsing json, reason: "..(err or "unknown"))
@@ -1579,6 +1580,7 @@ function resolve_ffprobe_title(filename)
         if title then
           msg.verbose(filename .. " resolved to '" .. title .. "'")
           title_table[filename] = title
+          mp.set_property_native('user-data/playlistmanager/titles', title_table)
           refresh_UI()
         end
       else
