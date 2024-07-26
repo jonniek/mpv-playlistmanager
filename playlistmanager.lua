@@ -169,7 +169,7 @@ local settings = {
   --\\q2 style is recommended since filename wrapping may lead to unexpected rendering
   --\\an7 style is recommended to align to top left otherwise, osd-align-x/y is respected
   style_ass_tags = "{\\q2\\an7}",
-  --paddings for left right and top bottom, depends on alignment 
+  --paddings for left right and top bottom
   text_padding_x = 30,
   text_padding_y = 60,
   
@@ -660,6 +660,13 @@ function draw_playlist()
   end
 	
   ass:append(settings.style_ass_tags)
+
+  -- add \clip style
+  -- make both left and right follow text_padding_x
+  --      both top and bottom follow text_padding_y
+  ass:append(string.format('{\\clip(%d,%d,%d,%d)}',
+            settings.text_padding_x,         settings.text_padding_y,
+            w - 1 - settings.text_padding_x, h - 1 - settings.text_padding_y))
 
   -- align from mpv.conf
   local align_x = mp.get_property("osd-align-x")
@@ -1352,7 +1359,7 @@ function remove_keybinds()
   keybindstimer = mp.add_periodic_timer(settings.playlist_display_timeout, remove_keybinds)
   keybindstimer:kill()
   playlist_overlay.data = ""
-  playlist_overlay:update()
+  playlist_overlay:remove()
   playlist_visible = false
   if settings.reset_cursor_on_close then
     resetcursor()
