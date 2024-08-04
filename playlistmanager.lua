@@ -8,6 +8,9 @@ local settings = {
   -- main key to show playlist
   key_showplaylist = "SHIFT+ENTER",
 
+  -- toggle playlist loop
+  key_toggleplaylistloop = "CTRL+l",
+
   -- display playlist while key is held down
   key_peek_at_playlist = "",
 
@@ -844,6 +847,17 @@ function showplaylist(duration)
   end
 end
 
+local function toggle_loop_playlist()
+    local current_loop = mp.get_property("loop-playlist")
+    if current_loop == "inf" then
+        mp.set_property("loop-playlist", "no")
+        mp.osd_message("Loop Playlist: Off")
+    else
+        mp.set_property("loop-playlist", "inf")
+        mp.osd_message("Loop Playlist: Infinite")
+    end
+end
+
 function showplaylist_non_interactive(duration)
   refresh_globals()
   if plen == 0 then return end
@@ -1640,6 +1654,7 @@ bind_keys(settings.key_reverseplaylist, "reverseplaylist", reverseplaylist)
 bind_keys(settings.key_loadfiles, "loadfiles", playlist)
 bind_keys(settings.key_saveplaylist, "saveplaylist", activate_playlist_save)
 bind_keys(settings.key_showplaylist, "showplaylist", showplaylist)
+bind_keys(settings.key_toggleplaylistloop, "looplaylist", toggle_loop_playlist)
 bind_keys(
   settings.key_peek_at_playlist,
   "peek_at_playlist",
