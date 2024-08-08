@@ -687,9 +687,14 @@ function draw_playlist()
   -- add \clip style
   -- make both left and right follow text_padding_x
   --      both top and bottom follow text_padding_y
-  ass:append(string.format('{\\clip(%d,%d,%d,%d)}',
-            settings.text_padding_x,         settings.text_padding_y,
-            w - 1 - settings.text_padding_x, h - 1 - settings.text_padding_y))
+  local border_size = mp.get_property_number('osd-border-size')
+  if settings.style_ass_tags ~= nil then
+    local bord = tonumber(settings.style_ass_tags:match('\\bord(%d+%.?%d*)'))
+    if bord ~= nil then border_size = bord end
+  end
+  ass:append(string.format('{\\clip(%f,%f,%f,%f)}',
+    settings.text_padding_x - border_size,         settings.text_padding_y - border_size,
+    w - 1 - settings.text_padding_x + border_size, h - 1 - settings.text_padding_y + border_size))
 
   -- align from mpv.conf
   local align_x = mp.get_property("osd-align-x")
