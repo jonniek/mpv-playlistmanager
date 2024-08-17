@@ -1428,6 +1428,7 @@ mp.observe_property('playlist-count', "number", function(_, plcount)
   refresh_UI()
   resolve_titles()
 end)
+mp.observe_property('osd-dimensions', 'native', refresh_UI)
 
 
 url_request_queue = {}
