@@ -927,25 +927,43 @@ function movedown()
   showplaylist()
 end
 
+
 function movepageup()
   refresh_globals()
   if plen == 0 or cursor == 0 then return end
+  local offset = settings.showamount % 2 == 0 and 1 or 0
+  local last_file_that_doesnt_scroll = math.ceil(settings.showamount / 2)
+  local reverse_cursor = plen - cursor
+  local files_to_jump = math.max(last_file_that_doesnt_scroll + offset - reverse_cursor, 0) + settings.showamount - 2
   local prev_cursor = cursor
-  cursor = cursor - settings.showamount
-  if cursor < 0 then cursor = 0 end
-  if selection then mp.commandv("playlist-move", prev_cursor, cursor) end
+  cursor = cursor - files_to_jump
+  if cursor < last_file_that_doesnt_scroll then
+    cursor = 0
+  end
+  if selection then
+    mp.commandv("playlist-move", prev_cursor, cursor)
+  end
   showplaylist()
 end
 
 function movepagedown()
   refresh_globals()
-  if plen == 0 or cursor == plen-1 then return end
+  if plen == 0 or cursor == plen - 1 then return end
+  local last_file_that_doesnt_scroll = math.ceil(settings.showamount / 2) - 1
+  local files_to_jump = math.max(last_file_that_doesnt_scroll - cursor, 0) + settings.showamount - 2
   local prev_cursor = cursor
-  cursor = cursor + settings.showamount
-  if cursor >= plen then cursor = plen-1 end
-  if selection then mp.commandv("playlist-move", prev_cursor, cursor+1) end
+  cursor = cursor + files_to_jump
+
+  local cursor_on_last_page = plen - (settings.showamount - 3)
+  if cursor > cursor_on_last_page then
+    cursor = plen - 1
+  end
+  if selection then
+    mp.commandv("playlist-move", prev_cursor, cursor + 1)
+  end
   showplaylist()
 end
+
 
 function movebegin()
   refresh_globals()
