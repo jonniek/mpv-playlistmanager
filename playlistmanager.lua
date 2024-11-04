@@ -25,7 +25,7 @@ local settings = {
   key_closeplaylist = "ESC SHIFT+ENTER",
 
   -- extra functionality keys
-  key_sortplaylist = "",
+  key_sortplaylist = "s",
   key_shuffleplaylist = "",
   key_reverseplaylist = "",
   key_loadfiles = "",
@@ -96,7 +96,7 @@ local settings = {
   sortplaylist_on_file_add = false,
 
   --default sorting method, must be one of: "name-asc", "name-desc", "date-asc", "date-desc", "size-asc", "size-desc".
-  default_sort = "name-asc",
+  default_sort = "date-asc",
 
   --"linux | windows | auto"
   system = "auto",
@@ -572,6 +572,7 @@ end
 
 --gets the file info of an item
 function get_file_info(item)
+  msg.info("getting file info for", item)
   local path = mp.get_property('playlist/' .. item - 1 .. '/filename')
   if is_protocol(path) then return {} end
   local file_info = utils.file_info(path)
@@ -579,6 +580,8 @@ function get_file_info(item)
     msg.warn('failed to read file info for', path)
     return {}
   end
+
+  msg.info("file_info", utils.to_string(file_info))
 
   return file_info
 end
