@@ -664,9 +664,15 @@ function parse_filename_by_index(index)
   return parse_filename(template, get_name_from_index(index), index)
 end
 
+function is_terminal_mode()
+  local width, height, aspect_ratio = mp.get_osd_size()
+  return width == 0 and height == 0 and aspect_ratio == 0
+end
+
 function draw_playlist()
   refresh_globals()
   local ass = assdraw.ass_new()
+  local terminaloutput = ""
 	
   local _, _, a = mp.get_osd_size()
   local h = 720
@@ -728,7 +734,9 @@ function draw_playlist()
   ass:pos(pos_x, pos_y)
 
   if settings.playlist_header ~= "" then
-    ass:append(parse_header(settings.playlist_header).."\\N")
+    local header = parse_header(settings.playlist_header)
+    ass:append(header.."\\N")
+    terminaloutput = terminaloutput..header.."\n"
   end
 
   -- (visible index, playlist index) pairs of playlist entries that should be rendered
@@ -762,16 +770,28 @@ function draw_playlist()
   for display_index, playlist_index in pairs(visible_indices) do
     if display_index == 1 and playlist_index ~= 1 then
       ass:append(settings.playlist_sliced_prefix.."\\N")
+      terminaloutput = terminaloutput..settings.playlist_sliced_prefix.."\n"
     elseif display_index == settings.showamount and playlist_index ~= plen then
       ass:append(settings.playlist_sliced_suffix)
+      terminaloutput = terminaloutput..settings.playlist_sliced_suffix.."\n"
     else
       -- parse_filename_by_index expects 0 based index
-      ass:append(parse_filename_by_index(playlist_index - 1).."\\N")
+      local fname = parse_filename_by_index(playlist_index - 1)
+      ass:append(fname.."\\N")
+      terminaloutput = terminaloutput..fname.."\n"
     end
   end
 
-  playlist_overlay.data = ass.text
-  playlist_overlay:update()
+  if is_terminal_mode() then
+    local timeout_setting = settings.playlist_display_timeout
+    local timeout = timeout_setting == 0 and 2147483 or timeout_setting
+    -- TODO: probably have to strip ass tags from terminal output
+    -- would maybe be possible to use terminal color output instead
+    mp.osd_message(terminaloutput, timeout)
+  else
+    playlist_overlay.data = ass.text
+    playlist_overlay:update()
+  end
 end
 
 local peek_display_timer = nil
@@ -1406,6 +1426,9 @@ function remove_keybinds()
   keybindstimer:kill()
   playlist_overlay.data = ""
   playlist_overlay:remove()
+  if is_terminal_mode() then
+    mp.osd_message("")
+  end
   playlist_visible = false
   if settings.reset_cursor_on_close then
     resetcursor()
