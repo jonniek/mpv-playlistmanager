@@ -671,6 +671,12 @@ end
 
 function draw_playlist()
   refresh_globals()
+
+  -- if there is no playing file, then cursor can be -1. That would break rendering of playlist.
+  if cursor == -1 then
+    cursor = 0
+  end
+
   local ass = assdraw.ass_new()
   local terminaloutput = ""
 	
