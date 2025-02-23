@@ -5,8 +5,9 @@ local settings = {
 
   -- to bind multiple keys separate them by a space
 
-  -- main key to show playlist
+  -- main keys to show playlist and command menu
   key_showplaylist = "SHIFT+ENTER",
+  key_openmenu = "",
 
   -- display playlist while key is held down
   key_peek_at_playlist = "",
@@ -30,6 +31,7 @@ local settings = {
   key_reverseplaylist = "",
   key_loadfiles = "",
   key_saveplaylist = "",
+  key_selectplaylist = "",
 
   --replaces matches on filenames based on extension, put as empty string to not replace anything
   --replace rules are executed in provided order
@@ -103,6 +105,9 @@ local settings = {
 
   --Use ~ for home directory. Leave as empty to use mpv/playlists
   playlist_savepath = "",
+
+  -- prompt for playlist filename on save
+  playlist_save_interactive = true,
 
   -- constant filename to save playlist as. Note that it will override existing playlist. Leave empty for generated name.
   playlist_save_filename = "",
@@ -221,6 +226,7 @@ opts.read_options(settings, "playlistmanager", function(list) update_opts(list) 
 local utils = require("mp.utils")
 local msg = require("mp.msg")
 local assdraw = require("mp.assdraw")
+local input = require("mp.input")
 
 local alignment_table = {
     [1] = { ["x"] = "left",   ["y"] = "bottom" },
@@ -1176,6 +1182,73 @@ function playlist(force_dir)
   return c + c2
 end
 
+local menu_items = {
+  {
+    label = "Show playlist",
+    action = function()
+      showplaylist()
+    end,
+  },
+  {
+    label = "Save playlist",
+    action = function()
+      mp.add_timeout(0.1, activate_playlist_save)
+    end,
+  },
+  {
+    label = "Select playlist",
+    action = function()
+      mp.add_timeout(0.1, select_playlist)
+    end,
+  },
+  {
+    label = "Load files to playlist",
+    action = function()
+      playlist()
+    end,
+  },
+  {
+    label = "Sort playlist",
+    action = function()
+      sortplaylist_by_next_mode()
+    end,
+  },
+  {
+    label = "Reverse playlist",
+    action = function()
+      reverseplaylist()
+    end,
+  },
+  {
+    label = "Shuffle playlist",
+    action = function()
+      shuffleplaylist()
+    end,
+  },
+  {
+    label = "Play random file",
+    action = function()
+      playlist_random()
+    end,
+  },
+}
+
+local menu_labels = {}
+for _, item in pairs(menu_items) do
+  table.insert(menu_labels, item.label)
+end
+
+function open_menu()
+  remove_keybinds()
+  input.select({
+    prompt = "Search menu: ",
+    items = menu_labels,
+    submit = function (index)
+      menu_items[index].action()
+    end,
+  })
+end
+
 function parse_home(path)
   if not path:find("^~") then
     return path
@@ -1195,13 +1268,60 @@ function parse_home(path)
   return result
 end
 
-local interactive_save = false
+function activate_playlist_name_prompt()
+  input.get({
+    cursor_position = 1,
+    prompt = "Enter playlist name: ",
+    submit = function (text)
+      input.terminate()
+      save_playlist(text)
+    end,
+    default_text = ".m3u"
+  })
+end
+
 function activate_playlist_save()
-  if interactive_save then
+  if settings.playlist_save_interactive then
     remove_keybinds()
-    mp.command("script-message playlistmanager-save-interactive \"start interactive filenaming process\"")
+    activate_playlist_name_prompt()
   else
     save_playlist()
+  end
+end
+
+
+function select_playlist()
+  remove_keybinds()
+  local save_path = get_playlist_save_path()
+  local files, err = utils.readdir(save_path, "files")
+  if err ~= nil then
+    mp.error("Error reading playlist files", err)
+    return
+  end
+
+  local playlists = {}
+  for index, file in pairs(files) do
+    table.insert(playlists, file)
+  end
+
+  input.select({
+    prompt = "Search for playlist: ",
+    items = playlists,
+    submit = function (index)
+      mp.commandv("loadfile", utils.join_path(save_path, playlists[index]))
+    end,
+  })
+end
+
+function get_playlist_save_path()
+  if settings.playlist_savepath == nil or settings.playlist_savepath == "" then
+    return mp.command_native({"expand-path", "~~home/"}).."/playlists"
+  else
+    local p = parse_home(settings.playlist_savepath)
+    if p == nil then
+      msg.error("Could not resolve playlist save path")
+    end
+    return p or ""
   end
 end
 
@@ -1211,13 +1331,7 @@ function save_playlist(filename)
   if length == 0 then return end
 
   --get playlist save path
-  local savepath
-  if settings.playlist_savepath == nil or settings.playlist_savepath == "" then
-    savepath = mp.command_native({"expand-path", "~~home/"}).."/playlists"
-  else
-    savepath = parse_home(settings.playlist_savepath)
-    if savepath == nil then return end
-  end
+  local savepath = get_playlist_save_path()
 
   --create savepath if it doesn't exist
   if utils.readdir(savepath) == nil then
@@ -1330,6 +1444,12 @@ function sortplaylist(startover)
   if settings.display_osd_feedback then
     mp.osd_message("Playlist sorted with "..sort_modes[sort_mode].title)
   end
+end
+
+function sortplaylist_by_next_mode()
+  sortplaylist()
+  sort_mode = sort_mode + 1
+  if sort_mode > #sort_modes then sort_mode = 1 end
 end
 
 function reverseplaylist()
@@ -1674,24 +1794,24 @@ function handlemessage(msg, value, value2)
   if msg == "reverse" then reverseplaylist() ; return end
   if msg == "loadfiles" then playlist(value) ; return end
   if msg == "save" then save_playlist(value) ; return end
+  if msg == "save-interactive" then activate_playlist_name_prompt() ; return end
+  if msg == "open-menu" then open_menu() ; return end
+  if msg == "select-playlist" then select_playlist() ; return end
   if msg == "playlist-next" then playlist_next() ; return end
   if msg == "playlist-prev" then playlist_prev() ; return end
   if msg == "playlist-next-random" then playlist_random() ; return end
-  if msg == "enable-interactive-save" then interactive_save = true end
   if msg == "close" then remove_keybinds() end
 end
 
 mp.register_script_message("playlistmanager", handlemessage)
 
-bind_keys(settings.key_sortplaylist, "sortplaylist", function()
-  sortplaylist()
-  sort_mode = sort_mode + 1
-  if sort_mode > #sort_modes then sort_mode = 1 end
-end)
+bind_keys(settings.key_sortplaylist, "sortplaylist", sortplaylist_by_next_mode)
 bind_keys(settings.key_shuffleplaylist, "shuffleplaylist", shuffleplaylist)
 bind_keys(settings.key_reverseplaylist, "reverseplaylist", reverseplaylist)
 bind_keys(settings.key_loadfiles, "loadfiles", playlist)
 bind_keys(settings.key_saveplaylist, "saveplaylist", activate_playlist_save)
+bind_keys(settings.key_selectplaylist, "selectplaylist", select_playlist)
+bind_keys(settings.key_openmenu, "openmenu", open_menu)
 bind_keys(settings.key_showplaylist, "showplaylist", showplaylist)
 bind_keys(
   settings.key_peek_at_playlist,

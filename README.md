@@ -1,7 +1,7 @@
 # Mpv-Playlistmanager
 Mpv lua script to create and manage playlists.
 
-This script allows you to see and interact with your playlist in an intuitive way. The key features are removing, reordering and playing files. Additional features include resolving url titles, stripping filenames according to patterns and creating/saving/shuffling/sorting playlists.
+This script allows you to see and interact with your playlist in an intuitive way. The key features are removing, reordering and playing files. Additional features include resolving url titles, stripping filenames according to patterns and creating/saving/selecting/shuffling/sorting playlists.
 
 ![](playlistmanager.png)  
 Default visual cues(might render differently on browsers):  
@@ -35,6 +35,9 @@ This script is able to resolve titles for local files with ffprobe and urls with
   - Displays the current playlist and loads the dynamic keybinds for navigating  
 
 #### Functions without default keybindings
+- __openmenu__ 
+  - One keybind to execute all playlistmanager functions. This is useful if you do not use the individual actions often and do not want to bind individual keys for every action.
+![](menu.png)  
 - __sortplaylist__ 
   - Sorts the current playlist with stripped values from filename(not media title, no paths, usercreated strips applied). To start playlist from start you can use a script message `KEY script-message playlistmanager sortplaylist startover`. Settings involving sort include alphanumeric sort(nonpadded numbers in order, case insensitivity), sort on mpv start and sort on file added to playlist. Sort algorithm credit [zsugabubus](https://github.com/zsugabubus/dotfiles/blob/master/.config/mpv/scripts/playlist-filtersort.lua)  
 - __shuffleplaylist__
@@ -44,7 +47,9 @@ This script is able to resolve titles for local files with ffprobe and urls with
 - __loadfiles__
   - Attempts to load all files from the currently playing files directory to the playlist keeping the order. Option to run at startup if 0 or 1 files are opened, with 0 opens files from working directory. On startup with no file requires `--idle=yes or --idle=once`.  
 - __saveplaylist__
-  - Saves the current playlist to m3u file. Saves to `mpv/playlists/` by default. If you want to name playlists manually rather than the automatic naming you can use [playlistmanager-save-interactive.lua](https://github.com/jonniek/mpv-playlistmanager/blob/master/playlistmanager-save-interactive.lua) module. It will prompt for a name when you save the playlist.
+  - Saves the current playlist to m3u file. Saves to `mpv/playlists/` by default. Prompts for filename by default.
+- __selectplaylist__
+  - Opens a search prompt of saved playlists and loads the playlist on enter.
 
 The above functions do not have default keybindings(except for showplaylist). There is a couple of ways to bind keys for them:
  - Edit the `playlistmanager.lua` settings
@@ -54,8 +59,6 @@ The above functions do not have default keybindings(except for showplaylist). Th
  - Edit `input.conf` with for example `KEY script-binding playlistmanager/showplaylist`
    - in above example you might want to remove the default keybind of `showplaylist` or use `--no-input-default-bindings`
 
-If you want to use the above controls from a "gui" rather than keybinds, then you can check out 
-[mpv-menu](https://github.com/jonniek/mpv-menu) and use the `menu.json` found in this repository.
 
 ### Dynamic keybindings for navigating the playlist
 - __moveup__(UP)
@@ -94,6 +97,9 @@ shuffle | - | - | Shuffles the playlist
 reverse | - | - | Reverses the playlist
 loadfiles | - / path | - | Loads files from playing files dir(default), or specified path
 save | - / filename | - | Saves the playlist
+save-interactive  | - | - | Prompts for playlist name and saves on enter
+open-menu  | - | - | Opens the playlistmanager menu
+select-playlist  | - | - | Opens the saved playlist list
 playlist-next | - | - | Plays next item in playlist (position of current file saved)
 playlist-prev | - | - | Plays previous item in playlist (position of current file saved)
 playlist-next-random | - | - | Jumps to a random file in the playlist
