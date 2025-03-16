@@ -3,6 +3,8 @@ Mpv lua script to create and manage playlists.
 
 This script allows you to see and interact with your playlist in an intuitive way. The key features are removing, reordering and playing files. Additional features include resolving url titles, stripping filenames according to patterns and creating/saving/selecting/shuffling/sorting playlists.
 
+Requires mpv version 0.39.0, for a more compatible playlistmanager version see [this](https://github.com/jonniek/mpv-playlistmanager/tree/16e18949e3d604c2ffe43e95391f420227881139).
+
 ![](playlistmanager.png)  
 Default visual cues(might render differently on browsers):  
 ○ default file  
