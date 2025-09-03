@@ -97,6 +97,8 @@ local settings = {
   --sort playlist when files are added to playlist
   sortplaylist_on_file_add = false,
 
+  reverseplaylist_on_startup = false,
+
   --default sorting method, must be one of: "name-asc", "name-desc", "date-asc", "date-desc", "size-asc", "size-desc".
   default_sort = "name-asc",
 
@@ -299,6 +301,7 @@ local filename = nil
 local pos = 0
 local plen = 0
 local cursor = 0
+local reversed_playlist_on_startup = false
 --table for saved media titles for later if we prefer them
 local title_table = {}
 -- table for urls and local file paths that we have requested to be resolved to titles
@@ -451,6 +454,15 @@ end
 
 function is_protocol(path)
   return type(path) == 'string' and path:match('^%a[%a%d-_]+://') ~= nil
+end
+
+function on_preloaded_hook()
+  if settings.reverseplaylist_on_startup and not reversed_playlist_on_startup then
+    reverseplaylist()
+    mp.set_property("playlist-pos", 0)
+    cursor = 0
+    reversed_playlist_on_startup = true
+  end
 end
 
 function on_file_loaded()
@@ -1823,3 +1835,4 @@ bind_keys(
 mp.register_event("start-file", on_start_file)
 mp.register_event("file-loaded", on_file_loaded)
 mp.register_event("end-file", on_end_file)
+mp.add_hook("on_preloaded", 50, on_preloaded_hook)
