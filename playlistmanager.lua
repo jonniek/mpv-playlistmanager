@@ -1414,7 +1414,7 @@ function sortplaylist(startover)
   local order = {}
   for i=1, #playlist do
 		order[i] = i
-    playlist[i].string = get_name_from_index(i - 1, true)
+    playlist[i].string = get_name_from_index(i - 1)
 	end
 
   table.sort(order, function(a, b)
