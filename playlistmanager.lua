@@ -168,14 +168,17 @@ local settings = {
   -- the maximum amount of lines playlist will render. -1 will automatically calculate lines.
   showamount = -1,
 
+  --font size used by the wrapping/line-budget math can be overridden manually via the
+  --environment variable PLAYLISTMANAGER_OSD_FONT_SIZE (takes precedence over everything else)
+
   --playlist ass style overrides inside curly brackets, \keyvalue is one field, extra \ for escape in lua
-  --example {\\q2\\an7\\fnUbuntu\\fs10\\b0\\bord1} equals: line-wrap=no, align=top left, font=Ubuntu, size=10, bold=no, border=1
+  --example {\\an7\\fnUbuntu\\fs10\\b0\\bord1} equals: align=top left, font=Ubuntu, size=10, bold=no, border=1
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
   --undeclared tags will use default osd settings
   --these styles will be used for the whole playlist
-  --\\q2 style is recommended since filename wrapping may lead to unexpected rendering
+  --line wrapping is handled by wrap_longfilenames; without it, long titles auto-wrap instead of clipping
   --\\an7 style is recommended to align to top left otherwise, osd-align-x/y is respected
-  style_ass_tags = "{\\q2\\an7}",
+  style_ass_tags = "{\\an7}",
   --paddings for left right and top bottom
   text_padding_x = 30,
   text_padding_y = 60,
@@ -191,6 +194,9 @@ local settings = {
   --slice long filenames, and how many chars to show
   slice_longfilenames = false,
   slice_longfilenames_amount = 70,
+
+  --wrap long titles into multiple lines instead of truncating/clipping (word wrap)
+  wrap_longfilenames = true,
 
   --Playlist header template
   --%mediatitle or %filename = title or name of playing file
@@ -553,13 +559,89 @@ local function utf8_sub(s, i, j)
   local t = {}
   local idx = 1
   for char in s:gmatch(UTF8_PATTERN) do
+    local width = #char > 2 and 2 or 1
     if i <= idx and idx <= j then
-      local width = #char > 2 and 2 or 1
-      idx = idx + width
       t[#t + 1] = char
     end
+    idx = idx + width
   end
   return table.concat(t)
+end
+
+-- count display width in utf8 chars (fullwidth counts as 2, consistent with utf8_sub)
+local function uwidth(s)
+  local n = 0
+  for char in s:gmatch(UTF8_PATTERN) do
+    n = n + (#char > 2 and 2 or 1)
+  end
+  return n
+end
+
+-- resolve the font size for the wrapping/line-budget math:
+-- PLAYLISTMANAGER_OSD_FONT_SIZE env var > \fs tag in style_ass_tags > mpv osd-font-size property > 20
+local function resolve_font_size()
+  local e = os.getenv('PLAYLISTMANAGER_OSD_FONT_SIZE')
+  if e and tonumber(e) and tonumber(e) > 0 then return tonumber(e) end
+  local fs = mp.get_property_number('osd-font-size', 20)
+  local fso = settings.style_ass_tags and tonumber(settings.style_ass_tags:match('\\fs(%d+%.?%d*)'))
+  if fso then fs = fso end
+  return fs
+end
+
+-- estimate how many utf8 chars fit on one osd line (720p coordinate space, same math as draw_playlist)
+local function chars_per_line()
+  local _, _, a = mp.get_osd_size()
+  if a == 0 then return 70 end
+  local w = math.ceil(720 * a)
+  local fs = resolve_font_size()
+  local usable = w - 2 * settings.text_padding_x
+  return math.max(10, math.floor(usable / (fs * 0.5)))
+end
+
+-- word-wrap one line into \N-separated lines; hard-slice only single words longer than a line
+local function wrap_words(s, max)
+  if max <= 0 or uwidth(s) <= max then return s end
+  local lines, cur = {}, ''
+  for word in s:gmatch('%S+') do
+    local wlen = uwidth(word)
+    if wlen > max and cur == '' then
+      local remain = word
+      while uwidth(remain) > max do
+        lines[#lines + 1] = utf8_sub(remain, 1, max)
+        remain = utf8_sub(remain, max + 1, uwidth(remain))
+      end
+      cur = remain
+    elseif cur == '' then
+      cur = word
+    elseif uwidth(cur) + 1 + wlen <= max then
+      cur = cur .. ' ' .. word
+    elseif wlen <= max then
+      lines[#lines + 1] = cur
+      cur = word
+    else
+      lines[#lines + 1] = cur
+      local remain = word
+      while uwidth(remain) > max do
+        lines[#lines + 1] = utf8_sub(remain, 1, max)
+        remain = utf8_sub(remain, max + 1, uwidth(remain))
+      end
+      cur = remain
+    end
+  end
+  if cur ~= '' then lines[#lines + 1] = cur end
+  return table.concat(lines, '\\N')
+end
+
+-- wrap assembled osd text at word boundaries, preserving existing \N breaks
+local function wrap_osd(s)
+  if not settings.wrap_longfilenames or not s or s == '' then return s end
+  local max = chars_per_line()
+  if max <= 0 then return s end
+  local out = {}
+  for part in (s .. '\\N'):gmatch('(.-)\\N') do
+    out[#out + 1] = wrap_words(part, max)
+  end
+  return table.concat(out, '\\N ')
 end
 
 --strip a filename based on its extension or protocol according to rules in settings
@@ -582,7 +664,7 @@ function stripfilename(pathfile, media_title)
     end
   end
   local tmp_clip = utf8_sub(tmp, 1, settings.slice_longfilenames_amount)
-  if settings.slice_longfilenames and tmp ~= tmp_clip then
+  if settings.slice_longfilenames and not settings.wrap_longfilenames and tmp ~= tmp_clip then
     tmp = tmp_clip .. "..."
   end
   return tmp
@@ -633,7 +715,7 @@ end
 function parse_header(string)
   local esc_title = stripfilename(mp.get_property("media-title"), true):gsub("%%", "%%%%")
   local esc_file = stripfilename(mp.get_property("filename")):gsub("%%", "%%%%")
-  return string:gsub("%%N", "\\N")
+  return wrap_osd(string:gsub("%%N", "\\N")
                -- add a blank character at the end of each '\N'  to ensure that the height of the empty line is the same as the non empty line
                :gsub("\\N", "\\N ")
                :gsub("%%pos", mp.get_property_number("playlist-pos",0)+1)
@@ -642,17 +724,17 @@ function parse_header(string)
                :gsub("%%mediatitle", esc_title)
                :gsub("%%filename", esc_file)
                -- undo name escape
-               :gsub("%%%%", "%%")
+               :gsub("%%%%", "%%"))
 end
 
 function parse_filename(string, name, index)
   local base = tostring(plen):len()
   local esc_name = stripfilename(name):gsub("%%", "%%%%")
-  return string:gsub("%%N", "\\N")
+  return wrap_osd(string:gsub("%%N", "\\N")
                :gsub("%%pos", string.format("%0"..base.."d", index+1))
                :gsub("%%name", esc_name)
                -- undo name escape
-               :gsub("%%%%", "%%")
+               :gsub("%%%%", "%%"))
 end
 
 function parse_filename_by_index(index)
@@ -769,25 +851,57 @@ function draw_playlist()
   local one_based_cursor = cursor + 1
   table.insert(visible_indices, one_based_cursor)
 
+  -- when wrapping is on, count the window in rendered LINES not entries,
+  -- so wrapped multi-line titles never overflow the \clip area (last items stay visible)
+  local max_lines = settings.showamount
+  local used_lines = 1
+  local entry_lines = nil
+  if settings.wrap_longfilenames then
+    local fs = resolve_font_size()
+    max_lines = math.max(3, math.floor((h - settings.text_padding_y * 2) / fs))
+    if settings.playlist_header ~= '' then
+      max_lines = max_lines - 1
+      for _ in (parse_header(settings.playlist_header)):gmatch('\\N') do
+        max_lines = max_lines - 1
+      end
+    end
+    entry_lines = function(index)
+      local fname = parse_filename_by_index(index - 1)
+      local n = 1
+      fname:gsub('\\N', function() n = n + 1 end)
+      return n
+    end
+    used_lines = entry_lines(one_based_cursor)
+  end
+
   local offset = 1;
   local visible_indices_length = 1;
   while visible_indices_length < settings.showamount and visible_indices_length < plen do
     -- add entry for offset steps below the cursor
     local below = one_based_cursor + offset
     if below <= plen then
-      table.insert(visible_indices, below)
-      visible_indices_length = visible_indices_length + 1;
+      local bl = entry_lines and entry_lines(below) or 1
+      if used_lines + bl <= max_lines then
+        table.insert(visible_indices, below)
+        visible_indices_length = visible_indices_length + 1;
+        used_lines = used_lines + bl
+      end
     end
 
     -- add entry for offset steps above the cursor
     -- also need to double check that there is still space, this happens if we have even numbered limit
     local above = one_based_cursor - offset
     if above >= 1 and visible_indices_length < settings.showamount and visible_indices_length < plen then
-      table.insert(visible_indices, 1, above)
-      visible_indices_length = visible_indices_length + 1;
+      local al = entry_lines and entry_lines(above) or 1
+      if used_lines + al <= max_lines then
+        table.insert(visible_indices, 1, above)
+        visible_indices_length = visible_indices_length + 1;
+        used_lines = used_lines + al
+      end
     end
 
     offset = offset + 1
+    if offset > plen then break end
   end
 
   -- both indices are 1 based
